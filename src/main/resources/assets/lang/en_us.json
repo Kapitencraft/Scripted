@@ -1,0 +1,11 @@
+{
+  "error.code_after_cancel": "Unreachable statement",
+  "error.missing_var": "can not resolve var '%1s'",
+  "error.wrong_var_type": "Got Var with wrong type '%1$s': expected: '%3$s', found: '%2$s'",
+
+  "var_types.scripted.item": "Item",
+  "var_types.scripted.integer": "int",
+  "var_types.scripted.data_storage": "DataStorage",
+  "var_types.scripted.item_stack": "ItemStack",
+  "var_types.scripted.var_type": "VarType"
+}
