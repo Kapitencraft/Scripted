@@ -3,6 +3,7 @@ package net.kapitencraft.scripted;
 import com.mojang.logging.LogUtils;
 import net.kapitencraft.scripted.code.var.VarManager;
 import net.kapitencraft.scripted.init.ModFunctions;
+import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.ModScriptTypes;
 import net.kapitencraft.scripted.init.ModVarTypes;
 import net.kapitencraft.scripted.init.custom.ModRegistryBuilders;
@@ -39,6 +40,7 @@ public class Scripted {
         ModFunctions.REGISTRY.register(modEventBus);
         ModVarTypes.REGISTRY.register(modEventBus);
         ModScriptTypes.REGISTRY.register(modEventBus);
+        ModMethods.REGISTRY.register(modEventBus);
 
         VarManager.bootstrap();
     }
@@ -54,6 +56,7 @@ public class Scripted {
             event.create(ModRegistryBuilders.VAR_TYPE_BUILDER);
             event.create(ModRegistryBuilders.FUNCTION_BUILDER);
             event.create(ModRegistryBuilders.SCRIPT_TYPES);
+            event.create(ModRegistryBuilders.METHODS);
         }
     }
 }

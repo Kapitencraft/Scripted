@@ -2,9 +2,9 @@ package net.kapitencraft.scripted.code.oop;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.kapitencraft.scripted.code.method.Method;
-import net.kapitencraft.scripted.code.method.param.ParamSet;
-import net.kapitencraft.scripted.code.method.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;

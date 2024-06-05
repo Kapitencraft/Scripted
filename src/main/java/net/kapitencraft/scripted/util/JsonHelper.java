@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.kapitencraft.scripted.code.method.elements.abstracts.Function;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.init.custom.ModRegistries;

@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.init;
 
 import net.kapitencraft.scripted.Scripted;
-import net.kapitencraft.scripted.code.method.elements.abstracts.Function;
-import net.kapitencraft.scripted.code.method.elements.builtin.*;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
+import net.kapitencraft.scripted.code.exe.functions.builtin.*;
 import net.kapitencraft.scripted.init.custom.ModRegistryKeys;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;

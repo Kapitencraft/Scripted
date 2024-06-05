@@ -1,9 +1,9 @@
 package net.kapitencraft.scripted.code.var.type.data;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.method.Method;
-import net.kapitencraft.scripted.code.method.param.ParamData;
-import net.kapitencraft.scripted.code.method.param.ParamSet;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.Constructor;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
@@ -15,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 public class DataStorageType extends VarType<CompoundTag> {
 
     public DataStorageType() {
+        super(null, null, null, null);
         this.setConstructor(new DataStorageConstructor());
     }
 
@@ -26,6 +27,11 @@ public class DataStorageType extends VarType<CompoundTag> {
 
         @Override
         public Method<CompoundTag>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
+            return new Instance();
+        }
+
+        @Override
+        public Method<CompoundTag>.Instance construct(ParamData data) {
             return new Instance();
         }
 

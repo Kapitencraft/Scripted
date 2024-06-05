@@ -1,11 +1,11 @@
 package net.kapitencraft.scripted.code.var.type;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.method.Method;
-import net.kapitencraft.scripted.code.method.MethodPipeline;
-import net.kapitencraft.scripted.code.method.elements.abstracts.InstanceFunction;
-import net.kapitencraft.scripted.code.method.param.ParamSet;
-import net.kapitencraft.scripted.code.method.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.InstanceFunction;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.oop.Constructor;
 import net.kapitencraft.scripted.code.oop.Field;
 import net.kapitencraft.scripted.code.oop.InstanceMethod;
@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 public class ItemStackType extends VarType<ItemStack> {
 
     public ItemStackType() {
+        super(null, null, null, null);
         this.setConstructor(new InstConstructor()); //constructor
         //fields
         this.addField("count", new Field<>(ItemStack::getCount, ItemStack::setCount, ModVarTypes.INTEGER));
@@ -34,17 +35,22 @@ public class ItemStackType extends VarType<ItemStack> {
     private static class InstConstructor extends Constructor<ItemStack> {
 
         protected InstConstructor() {
-            super(ParamSet.single(ParamSet.builder().addParam("item", ModVarTypes.ITEM).addOptionalParam("amount", ModVarTypes.INTEGER.get()).addOptionalParam("")), "newItemStack");
+            super(ParamSet.single(ParamSet.builder().addParam("item", ModVarTypes.ITEM).addOptionalParam("amount", ModVarTypes.INTEGER).addOptionalParam("data", ModVarTypes.DATA_STORAGE)), "newItemStack");
         }
 
         @Override
         public Method<ItemStack>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-            return new Instance();
+            return new Instance(data);
+        }
+
+        @Override
+        public Method<ItemStack>.Instance construct(ParamData data) {
+            return new Instance(data);
         }
 
         public class Instance extends Method<ItemStack>.Instance {
-            protected Instance() {
-                super(null);
+            protected Instance(ParamData data) {
+                super(data);
             }
 
             @Override
@@ -155,7 +161,7 @@ public class ItemStackType extends VarType<ItemStack> {
             @Override
             public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<ItemStack> instance) {
                 ItemStack stack = instance.getValue();
-                stack.setDamageValue(stack.getDamageValue() + this.amount.call(map).getValue());
+                stack.setDamageValue(stack.getDamageValue() + this.amount.callInit(map).getValue());
             }
 
             @Override

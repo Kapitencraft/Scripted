@@ -4,7 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import net.kapitencraft.scripted.code.method.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.script.Script;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;

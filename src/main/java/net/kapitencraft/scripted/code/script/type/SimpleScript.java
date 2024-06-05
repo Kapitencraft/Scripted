@@ -19,7 +19,7 @@ public class SimpleScript extends ScriptType<CommandSourceStack, Void> {
     public VarMap instantiate(CommandSourceStack inst) {
         VarMap map = new VarMap();
         map.addVar("pos", inst.getPosition());
-        //map.addVar("permissionLevel", );
+        map.addVar("permissionLevel", inst.permissionLevel);
         return map;
     }
 }

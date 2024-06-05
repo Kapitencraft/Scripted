@@ -1,8 +1,7 @@
 package net.kapitencraft.scripted.code.oop;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.method.elements.abstracts.Function;
-import net.kapitencraft.scripted.code.method.elements.abstracts.InstanceFunction;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.InstanceFunction;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.minecraft.util.GsonHelper;
 

@@ -8,17 +8,17 @@ import net.kapitencraft.scripted.code.var.type.Vec3Type;
 import net.kapitencraft.scripted.code.var.type.data.DataStorageType;
 import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.init.custom.ModRegistryKeys;
-import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
 public interface ModVarTypes {
     DeferredRegister<VarType<?>> REGISTRY = Scripted.createRegistry(ModRegistryKeys.VAR_TYPES);
 
-    RegistryObject<VarType<Integer>> INTEGER = REGISTRY.register("integer", VarType::new);
-    RegistryObject<VarType<Double>> DOUBLE = REGISTRY.register("double", VarType::new);
-    RegistryObject<VarType<String>> STRING = REGISTRY.register("string", VarType::new);
-    RegistryObject<VarType<Character>> CHAR = REGISTRY.register("char", VarType::new);
+    RegistryObject<VarType<Integer>> INTEGER = REGISTRY.register("integer", () -> new VarType<Integer>(null, null, null, null));
+    RegistryObject<VarType<Double>> DOUBLE = REGISTRY.register("double", () -> new VarType<Double>(null, null, null, null));
+    RegistryObject<VarType<String>> STRING = REGISTRY.register("string", () -> new VarType<String>(null, null, null, null));
+    RegistryObject<VarType<Character>> CHAR = REGISTRY.register("char", () -> new VarType<Character>(null, null, null, null));
+    RegistryObject<VarType<Boolean>> BOOL = REGISTRY.register("bool", () -> new VarType<Boolean>(null, null, null, null));
 
     RegistryObject<Vec3Type> VEC3 = REGISTRY.register("vec3", Vec3Type::new);
 

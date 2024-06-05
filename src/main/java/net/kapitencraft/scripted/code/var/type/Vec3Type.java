@@ -1,9 +1,9 @@
 package net.kapitencraft.scripted.code.var.type;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.method.Method;
-import net.kapitencraft.scripted.code.method.param.ParamData;
-import net.kapitencraft.scripted.code.method.param.ParamSet;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.InstanceMethod;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
@@ -16,16 +16,22 @@ import net.minecraft.world.phys.Vec3;
 public class Vec3Type extends VarType<Vec3> {
 
     public Vec3Type() {
+        super(Vec3::add, Vec3::multiply, Vec3Type::makeDivide, Vec3::subtract, Vec3::length);
         this.addMethod("getX", Axis.x());
         this.addMethod("getY", Axis.y());
         this.addMethod("getZ", Axis.z());
+    }
+
+    private static Vec3 makeDivide(Vec3 a, Vec3 b) {
+        return new Vec3(a.x / b.x, a.y / b.y, a.z/ b.z);
+
     }
 
     private static final class Axis extends InstanceMethod<Vec3, Double> {
 
         private final Direction.Axis axis;
 
-        protected Axis(String name, Direction.Axis axis) {
+        private Axis(String name, Direction.Axis axis) {
             super(ParamSet.empty(), name);
             this.axis = axis;
         }

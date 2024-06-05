@@ -3,6 +3,8 @@ package net.kapitencraft.scripted.code.var;
 import java.util.function.Supplier;
 
 public class Var<T> {
+    public static final Var<?> NULL = new Var<>();
+
     private T value;
 
     public Var() {
@@ -29,5 +31,12 @@ public class Var<T> {
         } catch (Exception e) {
             throw new NullPointerException("unable to get Type for value '" + this.value.getClass().getCanonicalName() + "': " + e.getMessage());
         }
+    }
+
+    public boolean matchesType(Var<?> other) {
+        if (this == NULL || other == NULL) {
+            return true;
+        }
+        return this.getType() == other.getType();
     }
 }
