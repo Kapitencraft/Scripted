@@ -8,34 +8,22 @@ import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
 public class MathOperationMethod<T> extends Method<T> {
-    private final Type type;
 
-    private MathOperationMethod(Type type) {
-        super(ParamSet.single(ParamSet.builder().addWildCardParam("left", "right").addWildCardParam("right", "left")), type.getSerializedName());
-        this.type = type;
-    }
-
-    public static <T> MathOperationMethod<T> add() {
-        return new MathOperationMethod<>(Type.ADDITION);
-    }
-    public static <T> MathOperationMethod<T> mul() {
-        return new MathOperationMethod<>(Type.MULTIPLICATION);
-    }
-    public static <T> MathOperationMethod<T> div() {
-        return new MathOperationMethod<>(Type.DIVISION);
-    }
-    public static <T> MathOperationMethod<T> sub() {
-        return new MathOperationMethod<>(Type.SUBTRACTION);
+    public MathOperationMethod() {
+        super(ParamSet.single(ParamSet.builder().addWildCardParam("left", "right").addWildCardParam("right", "left")), "math_operation");
     }
 
     public class Instance extends Method<T>.Instance {
+        private Type type;
 
-        protected Instance(ParamData paramData) {
+        private Instance(ParamData paramData, Type type) {
             super(paramData);
+            this.type = type;
         }
 
         @Override
@@ -44,7 +32,7 @@ public class MathOperationMethod<T> extends Method<T> {
             Var<T> right = params.getVar("right");
             VarType<T> type = left.getType();
             T a = left.getValue(); T b = right.getValue();
-            return new Var<>(switch (MathOperationMethod.this.type) {
+            return new Var<>(switch (this.type) {
                 case ADDITION -> type.add(a, b);
                 case DIVISION -> type.divide(a, b);
                 case SUBTRACTION -> type.sub(a, b);
@@ -60,7 +48,7 @@ public class MathOperationMethod<T> extends Method<T> {
 
     @Override
     public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return new Instance(data);
+        return new Instance(data, Type.CODEC.byName(GsonHelper.getAsString(object, "operation_type")));
     }
 
     enum Type implements StringRepresentable {
@@ -68,6 +56,8 @@ public class MathOperationMethod<T> extends Method<T> {
         MULTIPLICATION("mul"),
         DIVISION("div"),
         SUBTRACTION("sub");
+
+        public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
         private final String name;
 

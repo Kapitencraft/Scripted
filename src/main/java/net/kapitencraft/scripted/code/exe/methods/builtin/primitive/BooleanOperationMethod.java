@@ -9,36 +9,27 @@ import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModVarTypes;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
 public class BooleanOperationMethod extends Method<Boolean> {
-    private final Type type;
 
-    private BooleanOperationMethod(Type type) {
-        super(ParamSet.single(ParamSet.builder().addParam("left", ModVarTypes.BOOL).addParam("right", ModVarTypes.BOOL)), type.name);
-        this.type = type;
-    }
-
-    public static BooleanOperationMethod and() {
-        return new BooleanOperationMethod(Type.AND);
-    }
-    public static BooleanOperationMethod or() {
-        return new BooleanOperationMethod(Type.OR);
-    }
-    public static BooleanOperationMethod xor() {
-        return new BooleanOperationMethod(Type.XOR);
+    public BooleanOperationMethod() {
+        super(ParamSet.single(ParamSet.builder().addParam("left", ModVarTypes.BOOL).addParam("right", ModVarTypes.BOOL)), "bool_operation");
     }
 
     @Override
     public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return new Instance(data);
+        return new Instance(data, Type.CODEC.byName(GsonHelper.getAsString(object, "operation_type")));
     }
 
     public class Instance extends Method<Boolean>.Instance {
+        private Type type;
 
-        protected Instance(ParamData paramData) {
+        private Instance(ParamData paramData, Type type) {
             super(paramData);
+            this.type = type;
         }
 
         @Override
@@ -62,6 +53,8 @@ public class BooleanOperationMethod extends Method<Boolean> {
         AND("and"),
         OR("or"),
         XOR("xor");
+
+        public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
         private final String name;
 

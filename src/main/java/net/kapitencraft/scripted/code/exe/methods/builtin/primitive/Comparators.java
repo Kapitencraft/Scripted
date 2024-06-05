@@ -8,13 +8,12 @@ import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.init.ModVarTypes;
 
-public class SizeCompMethod<T> extends Method<Boolean> {
-    private final Type type;
+public class Comparators<T> extends Method<Boolean> {
 
-    private SizeCompMethod(Type type) {
-        super(ParamSet.single(ParamSet.builder().addWildCardParam("left", "right").addWildCardParam("right", "left")), type.name);
-        this.type = type;
+    public Comparators() {
+        super(ParamSet.single(ParamSet.builder().addWildCardParam("left", "right").addWildCardParam("right", "left")), "comparators");
     }
 
     @Override
@@ -23,6 +22,7 @@ public class SizeCompMethod<T> extends Method<Boolean> {
     }
 
     public class Instance extends Method<Boolean>.Instance {
+        private Type type;
 
         protected Instance(ParamData paramData) {
             super(paramData);
@@ -35,20 +35,23 @@ public class SizeCompMethod<T> extends Method<Boolean> {
             T left = leftVar.getValue();
             T right = rightVar.getValue();
             VarType<T> varType = leftVar.getType();
-            double a = varType.
-            return new Var<>(switch (type) {
-                case EQUAL -> ;
-                case NEQUAL -> null;
-                case GEQUAL -> null;
-                case LEQUAL -> null;
-                case GREATER -> null;
-                case LESSER -> null;
+            if (!varType.allowsComparing()) {
+                return new Var<>((this.type == Type.EQUAL) == (leftVar == rightVar));
+            }
+            double a = varType.compare(left); double b = varType.compare(right);
+            return new Var<>(switch (this.type) {
+                case EQUAL -> a == b;
+                case NEQUAL -> a != b;
+                case GEQUAL -> a >= b;
+                case LEQUAL -> a <= b;
+                case GREATER -> a > b;
+                case LESSER -> a < b;
             });
         }
 
         @Override
         public VarType<Boolean> getType(VarAnalyser analyser) {
-            return null;
+            return ModVarTypes.BOOL.get();
         }
     }
 

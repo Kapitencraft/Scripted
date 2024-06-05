@@ -97,6 +97,10 @@ public class VarType<T> {
         return sub.apply(a, b);
     }
 
+    public double compare(T a) {
+        return comp.applyAsDouble(a);
+    }
+
     public boolean allowsMul() {
         return mult != null;
     }
@@ -111,5 +115,9 @@ public class VarType<T> {
 
     public boolean allowsSub() {
         return sub != null;
+    }
+
+    public boolean allowsComparing() {
+        return comp != null;
     }
 }
