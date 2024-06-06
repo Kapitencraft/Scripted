@@ -16,23 +16,25 @@ public class VarType<T> {
     Constructor<T> constructor;
     private final FieldMap<T> fields;
     private final FunctionMap<T> functions;
-    private final BiFunction<T, T, T> add, mult, div, sub;
+    private final BiFunction<T, T, T> add, mult, div, sub, mod;
     private final ToDoubleFunction<T> comp;
 
     /**
      * override in your own type to add {@link VarType#addMethod(String, InstanceMethod) methods}, {@link VarType#addField fields}, {@link VarType#addFunction(String, InstanceFunction) functions} and a {@link VarType#setConstructor(Constructor) constructor}
      * <br> see {@link ItemStackType#ItemStackType() ItemStackType#init()}  as an example
      * @param add a method to compute two values using addition
-     * @param mult similar for mu
-     * @param div
-     * @param sub
-     * @param comp
+     * @param mult similar for multiplication
+     * @param div similar for division
+     * @param sub similar for subtraction
+     * @param mod similar for modulus
+     * @param comp method to map a var with this type to double to use comparators like >=, ==, <=
      */
-    public VarType(BiFunction<T, T, T> add, BiFunction<T, T, T> mult, BiFunction<T, T, T> div, BiFunction<T, T, T> sub, ToDoubleFunction<T> comp) {
+    public VarType(BiFunction<T, T, T> add, BiFunction<T, T, T> mult, BiFunction<T, T, T> div, BiFunction<T, T, T> sub, BiFunction<T, T, T> mod, ToDoubleFunction<T> comp) {
         this.add = add;
         this.mult = mult;
         this.div = div;
         this.sub = sub;
+        this.mod = mod;
         this.comp = comp;
         this.methods = new MethodMap<>();
         this.fields = new FieldMap<>();
@@ -97,6 +99,10 @@ public class VarType<T> {
         return sub.apply(a, b);
     }
 
+    public T mod(T a, T b) {
+        return mod.apply(a, b);
+    }
+
     public double compare(T a) {
         return comp.applyAsDouble(a);
     }
@@ -115,6 +121,10 @@ public class VarType<T> {
 
     public boolean allowsSub() {
         return sub != null;
+    }
+
+    public boolean allowsMod() {
+        return mod != null;
     }
 
     public boolean allowsComparing() {

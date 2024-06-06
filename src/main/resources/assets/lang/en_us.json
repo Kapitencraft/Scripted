@@ -5,6 +5,7 @@
 
   "var_types.scripted.item": "Item",
   "var_types.scripted.integer": "int",
+  "var_types.scripted.double": "double",
   "var_types.scripted.data_storage": "DataStorage",
   "var_types.scripted.item_stack": "ItemStack",
   "var_types.scripted.var_type": "VarType"

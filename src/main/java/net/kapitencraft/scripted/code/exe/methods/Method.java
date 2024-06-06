@@ -17,7 +17,7 @@ import net.minecraft.util.GsonHelper;
 import java.util.function.Function;
 
 public abstract class Method<T> {
-    private final ParamSet set;
+    protected final ParamSet set;
     private final String name;
 
     protected Method(ParamSet set, String name) {
@@ -29,7 +29,7 @@ public abstract class Method<T> {
     public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
 
     public abstract class Instance {
-        private final ParamData paramData;
+        protected final ParamData paramData;
 
         protected Instance(ParamData paramData) {
             this.paramData = paramData;
@@ -41,7 +41,9 @@ public abstract class Method<T> {
             return name + "(" + paramData + ")";
         }
 
-        public void analyse(VarAnalyser analyser) {}
+        public void analyse(VarAnalyser analyser) {
+            set.analyse(analyser, paramData);
+        }
 
         public Var<T> callInit(VarMap parent) {
             return callInit(this::call, parent);

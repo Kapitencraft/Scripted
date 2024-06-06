@@ -41,6 +41,13 @@ public class MathOperationMethod<T> extends Method<T> {
         }
 
         @Override
+        public JsonObject toJson() {
+            JsonObject parent = super.toJson();
+            parent.addProperty("operation_type", type.getSerializedName());
+            return parent;
+        }
+
+        @Override
         public VarType<T> getType(VarAnalyser analyser) {
             return (VarType<T>) analyser.getType("left");
         }

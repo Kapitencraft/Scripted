@@ -6,6 +6,8 @@ import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.minecraft.network.chat.Component;
+import org.checkerframework.checker.units.qual.A;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,6 +39,13 @@ public class ParamSet {
 
     public Entry getEntryForData(ParamData paramData) {
         return null;
+    }
+
+    public void analyse(VarAnalyser analyser, ParamData data) {
+        if (this.possibles.size() == 1) {
+            Entry entry = this.possibles.get(0);
+            entry.check(data, analyser);
+        }
     }
 
     public static class Entry {
@@ -102,7 +111,7 @@ public class ParamSet {
 
         public void check(ParamData data, VarAnalyser analyser) { //TODO fix method var types doing issues
             List<Method<?>.Instance> methods = data.getParams();
-            VarMap map = new VarMap();
+            VarAnalyser newAnalyser = new VarAnalyser();
             int i = 0;
             int mandatorySize = mandatoryParamsNameMap.size();
             for (; i < mandatorySize; i++) {//adding mandatory
@@ -110,8 +119,8 @@ public class ParamSet {
                 String name = mandatoryParamsNameMap.get(i);
                 if (typeMatch.containsKey(name)) {
                     typeMatch.get(name).forEach(s -> {
-                        if (!map.hasVar(s) || method.getType(analyser).matches()) {
-                            throw new JsonSyntaxException("data match failed");
+                        if (newAnalyser.getVar(s) != null || method.getType(analyser).matches(data.getParams().get())) {
+                            analyser.addError(Component.translatable("error.type_match"));
                         }
                     });
                 }
@@ -122,7 +131,6 @@ public class ParamSet {
                 Method<?>.Instance method = methods.get(i);
                 method.getType(analyser);
             }
-            return map;
         }
     }
 }

@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.code.var.type;
+package net.kapitencraft.scripted.code.var.type.registry;
 
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;

@@ -13,7 +13,7 @@ public abstract class RegistryType<T> extends VarType<T> {
     private final IForgeRegistry<T> registry;
 
     protected RegistryType(IForgeRegistry<T> registry) {
-        super(null, null, null, null);
+        super(null, null, null, null, null, null);
         this.registry = registry;
     }
 

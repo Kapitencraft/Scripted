@@ -47,6 +47,13 @@ public class BooleanOperationMethod extends Method<Boolean> {
         public VarType<Boolean> getType(VarAnalyser analyser) {
             return ModVarTypes.BOOL.get();
         }
+
+        @Override
+        public JsonObject toJson() {
+            JsonObject object = super.toJson();
+            object.addProperty("operation_type", type.getSerializedName());
+            return object;
+        }
     }
 
     private enum Type implements StringRepresentable {

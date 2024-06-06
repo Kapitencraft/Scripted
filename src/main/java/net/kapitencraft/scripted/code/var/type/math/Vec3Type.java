@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.code.var.type;
+package net.kapitencraft.scripted.code.var.type.math;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
