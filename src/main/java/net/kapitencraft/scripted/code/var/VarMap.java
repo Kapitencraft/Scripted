@@ -15,8 +15,8 @@ public class VarMap extends Leveled<String, Var<?>> {
         this.addValue(name, new Var<>(varType));
     }
 
-    public <T> void addVar(String name, T val) {
-        this.addValue(name, new Var<>(val));
+    public <T> void setVar(String name, T val) {
+        this.getVar(name).setValue(val);
     }
 
     public <T> Var<T> getVar(String varName) {

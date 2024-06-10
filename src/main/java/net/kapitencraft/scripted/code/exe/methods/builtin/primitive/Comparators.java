@@ -36,10 +36,10 @@ public class Comparators<T> extends Method<Boolean> {
             T right = rightVar.getValue();
             VarType<T> varType = leftVar.getType();
             if (!varType.allowsComparing()) {
-                return new Var<>((this.type == Type.EQUAL) == (leftVar == rightVar));
+                return new Var<>(ModVarTypes.BOOL.get(), (this.type == Type.EQUAL) == (leftVar == rightVar));
             }
             double a = varType.compare(left); double b = varType.compare(right);
-            return new Var<>(switch (this.type) {
+            return new Var<>(ModVarTypes.BOOL.get(), switch (this.type) {
                 case EQUAL -> a == b;
                 case NEQUAL -> a != b;
                 case GEQUAL -> a >= b;

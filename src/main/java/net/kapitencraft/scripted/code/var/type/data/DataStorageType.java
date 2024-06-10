@@ -15,7 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 public class DataStorageType extends VarType<CompoundTag> {
 
     public DataStorageType() {
-        super(null, null, null, null);
+        super(null, null, null, null, null, null);
         this.setConstructor(new DataStorageConstructor());
     }
 
@@ -48,7 +48,7 @@ public class DataStorageType extends VarType<CompoundTag> {
 
             @Override
             public Var<CompoundTag> call(VarMap params) {
-                return new Var<>(new CompoundTag());
+                return new Var<>(ModVarTypes.DATA_STORAGE.get(), new CompoundTag());
             }
         }
     }

@@ -36,7 +36,7 @@ public class BooleanOperationMethod extends Method<Boolean> {
         protected Var<Boolean> call(VarMap params) {
             boolean left = params.getVarValue("left", ModVarTypes.BOOL);
             boolean right = params.getVarValue("right", ModVarTypes.BOOL);
-            return new Var<>(switch (type) {
+            return new Var<>(ModVarTypes.BOOL.get(), switch (type) {
                 case OR -> left || right;
                 case AND -> left && right;
                 case XOR -> left ^ right;

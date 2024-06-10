@@ -5,9 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.var.Var;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 
@@ -82,11 +82,11 @@ public class MethodPipeline<T> {
                 if ((broken || continued) && !isLoop) {
                     throw new IllegalStateException("can not break nor continue not-loop pipeline");
                 } else {
-                    return new Var<>(this.ret);
+                    return new Var<>(returnType, this.ret);
                 }
             }
         }
-        return new Var<>(null);
+        return new Var<>(returnType);
     }
 
     public void setCanceled() {

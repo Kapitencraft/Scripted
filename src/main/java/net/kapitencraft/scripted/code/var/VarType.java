@@ -2,12 +2,14 @@ package net.kapitencraft.scripted.code.var;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.InstanceFunction;
+import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.oop.*;
-import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.ItemStackType;
+import net.kapitencraft.scripted.init.custom.ModRegistries;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.ToDoubleFunction;
 
@@ -73,6 +75,11 @@ public class VarType<T> {
     public void setConstructor(Constructor<T> constructor) {
         if (this.constructor != null) throw new IllegalStateException("can not set constructor twice");
         this.constructor = constructor;
+    }
+
+    @Override
+    public String toString() {
+        return Objects.requireNonNull(ModRegistries.VAR_TYPES.getKey(this)).toString();
     }
 
     public void addFunction(String name, InstanceFunction<T> function) {

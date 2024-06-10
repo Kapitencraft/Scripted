@@ -1,17 +1,21 @@
 package net.kapitencraft.scripted.code.var;
 
-import java.util.function.Supplier;
+import net.kapitencraft.scripted.init.ModVarTypes;
+import org.jetbrains.annotations.NotNull;
 
 public class Var<T> {
-    public static final Var<?> NULL = new Var<>();
+    public static final Var<?> NULL = new Var<>(ModVarTypes.VAR_TYPE.get());
 
     private T value;
+    private final @NotNull VarType<T> type;
 
-    public Var() {
+    public Var(@NotNull VarType<T> type) {
+        this.type = type;
     }
 
-    public Var(T value) {
+    public Var(@NotNull VarType<T> type, T value) {
         this.value = value;
+        this.type = type;
     }
 
     public void setValue(T value) {
@@ -22,15 +26,8 @@ public class Var<T> {
         return value;
     }
 
-    public VarType<T> getType() {
-        if (this.value == null) {
-            throw new NullPointerException("can invoke method cuz value is null");
-        }
-        try {
-            return (VarType<T>) VarManager.INSTANCE.getType(this.value.getClass());
-        } catch (Exception e) {
-            throw new NullPointerException("unable to get Type for value '" + this.value.getClass().getCanonicalName() + "': " + e.getMessage());
-        }
+    public @NotNull VarType<T> getType() {
+        return this.type;
     }
 
     public boolean matchesType(Var<?> other) {

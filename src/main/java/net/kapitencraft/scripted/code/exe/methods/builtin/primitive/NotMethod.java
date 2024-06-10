@@ -28,7 +28,7 @@ public class NotMethod extends Method<Boolean> {
 
         @Override
         protected Var<Boolean> call(VarMap params) {
-            return new Var<>(!params.getVarValue("val", ModVarTypes.BOOL));
+            return new Var<>(ModVarTypes.BOOL.get(), !params.getVarValue("val", ModVarTypes.BOOL));
         }
 
         @Override

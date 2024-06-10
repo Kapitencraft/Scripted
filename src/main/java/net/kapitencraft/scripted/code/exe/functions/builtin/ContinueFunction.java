@@ -3,8 +3,8 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarMap;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
 public class ContinueFunction extends Function {
     @Override
@@ -21,6 +21,11 @@ public class ContinueFunction extends Function {
         @Override
         public void execute(VarMap map, MethodPipeline<?> source) {
             source.setContinued();
+        }
+
+        @Override
+        public void analyse(VarAnalyser analyser) {
+            analyser.setCanceled();
         }
     }
 }

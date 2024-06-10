@@ -32,7 +32,7 @@ public class MathOperationMethod<T> extends Method<T> {
             Var<T> right = params.getVar("right");
             VarType<T> type = left.getType();
             T a = left.getValue(); T b = right.getValue();
-            return new Var<>(switch (this.type) {
+            return new Var<>(left.getType(), switch (this.type) {
                 case ADDITION -> type.add(a, b);
                 case DIVISION -> type.divide(a, b);
                 case SUBTRACTION -> type.sub(a, b);

@@ -16,7 +16,9 @@ import net.minecraft.world.phys.Vec3;
 public class Vec3Type extends VarType<Vec3> {
 
     public Vec3Type() {
-        super(Vec3::add, Vec3::multiply, Vec3Type::makeDivide, Vec3::subtract, Vec3::length);
+        super(Vec3::add, Vec3::multiply, Vec3Type::makeDivide, Vec3::subtract,
+                ((vec3, vec32) -> new Vec3(vec3.x % vec32.x, vec3.y % vec32.y, vec3.z % vec32.z)),
+                Vec3::length);
         this.addMethod("getX", Axis.x());
         this.addMethod("getY", Axis.y());
         this.addMethod("getZ", Axis.z());
@@ -66,7 +68,7 @@ public class Vec3Type extends VarType<Vec3> {
 
             @Override
             public Var<Double> call(VarMap map, Var<Vec3> inst) {
-                return new Var<>(inst.getValue().get(axis));
+                return new Var<>(ModVarTypes.DOUBLE.get(), inst.getValue().get(axis));
             }
 
             @Override

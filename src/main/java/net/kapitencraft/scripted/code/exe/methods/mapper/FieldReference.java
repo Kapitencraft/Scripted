@@ -2,14 +2,14 @@ package net.kapitencraft.scripted.code.exe.methods.mapper;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.Field;
 import net.kapitencraft.scripted.code.oop.InstanceMethod;
 import net.kapitencraft.scripted.code.var.Var;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
 public final class FieldReference<P, T> extends InstanceMethod<P, T> {
 
@@ -37,7 +37,7 @@ public final class FieldReference<P, T> extends InstanceMethod<P, T> {
 
         @Override
         public Var<T> call(VarMap map, Var<P> inst) {
-            return new Var<>(field.getValue(inst.getValue()));
+            return new Var<>(field.getType(), field.getValue(inst.getValue()));
         }
 
         @Override

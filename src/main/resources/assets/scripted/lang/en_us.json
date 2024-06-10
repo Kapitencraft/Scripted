@@ -1,6 +1,8 @@
 {
+  "edit_screen.title": "Edit Screen",
+
   "error.code_after_cancel": "Unreachable statement",
-  "error.missing_var": "can not resolve var '%1s'",
+  "error.missing_var": "can not resolve var '%1$s'",
   "error.wrong_var_type": "Got Var with wrong type '%1$s': expected: '%3$s', found: '%2$s'",
 
   "var_types.scripted.item": "Item",

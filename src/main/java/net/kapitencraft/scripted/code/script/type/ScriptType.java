@@ -8,8 +8,8 @@ import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.script.Script;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 
@@ -22,14 +22,14 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public abstract class ScriptType<T, R> {
-    private final HashMap<String, VarType<?>> possibleParams = new HashMap<>();
+    private final HashMap<String, Supplier<? extends VarType<?>>> possibleParams = new HashMap<>();
+    private final File dataDirectory;
     private final String fileSuffix;
-    private final String fileDirectory;
     private final @Nullable Consumer<R> afterExecute;
 
-    public ScriptType(String fileSuffix, String fileDirectory, @Nullable Consumer<R> afterExecute) {
+    public ScriptType(String fileSuffix, File dataDirectory, @Nullable Consumer<R> afterExecute) {
         this.fileSuffix = fileSuffix;
-        this.fileDirectory = fileDirectory;
+        this.dataDirectory = dataDirectory;
         this.afterExecute = afterExecute;
     }
 
@@ -37,14 +37,14 @@ public abstract class ScriptType<T, R> {
         if (possibleParams.containsKey(name)) {
             throw new IllegalStateException("can not add param '" + name + "' twice");
         }
-        possibleParams.put(name, type.get());
+        possibleParams.put(name, type);
     }
 
     public abstract VarMap instantiate(T inst);
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void saveScript(Script<R> script, String name) {
-        File file = new File(this.fileDirectory + "/" + name + "." + fileSuffix);
+        File file = new File(dataDirectory,  name + "." + fileSuffix);
         file.getParentFile().mkdirs();
         try {
             file.createNewFile();
@@ -56,6 +56,14 @@ public abstract class ScriptType<T, R> {
         }
     }
 
+    public File getDataDirectory() {
+        return dataDirectory;
+    }
+
+    public String getFileSuffix() {
+        return fileSuffix;
+    }
+
     public void execute(Script<R> script, T in) {
         VarMap map = instantiate(in);
         Var<R> var = script.execute(map);
@@ -64,15 +72,15 @@ public abstract class ScriptType<T, R> {
         }
     }
 
-    public Script<R> load(JsonObject in) {
+    public Script<R> load(JsonElement element) {
+        JsonObject in = element.getAsJsonObject();
         JsonArray array = GsonHelper.getAsJsonArray(in, "params");
-        Script<R> script = new Script<>(array.asList().stream()
+        return new Script<>(array.asList().stream()
                 .filter(JsonElement::isJsonPrimitive)
                 .map(JsonElement::getAsJsonPrimitive)
                 .map(JsonPrimitive::getAsString).toList(),
                 this,
                 MethodPipeline.load(GsonHelper.getAsJsonObject(in, "code"), new VarAnalyser(), false)
         );
-        return script;
     }
 }

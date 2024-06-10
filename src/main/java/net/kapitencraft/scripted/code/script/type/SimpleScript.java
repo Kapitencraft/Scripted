@@ -2,15 +2,15 @@ package net.kapitencraft.scripted.code.script.type;
 
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.init.ModVarTypes;
+import net.kapitencraft.scripted.io.IOHelper;
 import net.minecraft.commands.CommandSourceStack;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.function.Consumer;
+import java.io.File;
 
 public class SimpleScript extends ScriptType<CommandSourceStack, Void> {
 
     public SimpleScript() {
-        super("sct", "scripts", null);
+        super("sct", new File(IOHelper.SCRIPTED_DIRECTORY, "scripts"), null);
         this.addPossibleParam("pos", ModVarTypes.VEC3);
         this.addPossibleParam("permissionLevel", ModVarTypes.INTEGER);
     }
@@ -18,8 +18,8 @@ public class SimpleScript extends ScriptType<CommandSourceStack, Void> {
     @Override
     public VarMap instantiate(CommandSourceStack inst) {
         VarMap map = new VarMap();
-        map.addVar("pos", inst.getPosition());
-        map.addVar("permissionLevel", inst.permissionLevel);
+        map.setVar("pos", inst.getPosition());
+        map.setVar("permissionLevel", inst.permissionLevel);
         return map;
     }
 }
