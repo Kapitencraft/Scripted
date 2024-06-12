@@ -1,10 +1,9 @@
 package net.kapitencraft.scripted.code.var;
 
-import net.kapitencraft.scripted.init.ModVarTypes;
 import org.jetbrains.annotations.NotNull;
 
 public class Var<T> {
-    public static final Var<?> NULL = new Var<>(ModVarTypes.VAR_TYPE.get());
+    //there's no null value; add a new Var with the expected type but without value
 
     private T value;
     private final @NotNull VarType<T> type;
@@ -31,9 +30,6 @@ public class Var<T> {
     }
 
     public boolean matchesType(Var<?> other) {
-        if (this == NULL || other == NULL) {
-            return true;
-        }
         return this.getType() == other.getType();
     }
 }

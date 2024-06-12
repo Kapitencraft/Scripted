@@ -2,15 +2,18 @@ package net.kapitencraft.scripted.code.exe.methods;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.InstanceMethod;
 import net.kapitencraft.scripted.code.var.Var;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.edit.client.IRenderable;
+import net.kapitencraft.scripted.edit.client.RenderMap;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
+import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
@@ -74,6 +77,26 @@ public abstract class Method<T> {
             VarType<?> otherType = other.getType(analyser);
             return type.matches(otherType);
         }
+    }
+
+    public abstract class Builder implements IRenderable {
+
+        @Override
+        public boolean allowMethodRendering() {
+            return false;
+        }
+
+        @Override
+        public String translationKey() {
+            return Util.makeDescriptionId("method", ModRegistries.METHODS.getKey(Method.this));
+        }
+
+        @Override
+        public RenderMap getParamData() {
+            return null;
+        }
+
+        public abstract Method<T>.Instance build();
     }
 
     public static <T> Method<T>.Instance loadInstance(JsonObject object, VarAnalyser analyser) {

@@ -31,7 +31,7 @@ public class WhenMethod<T> extends Method<T> {
             if (params.getVarValue("condition", ModVarTypes.BOOL)) {
                 return params.getVar("ifTrue");
             } else {
-                return params.hasVar("ifFalse") ? params.getVar("ifFalse") : (Var<T>) Var.NULL;
+                return params.hasVar("ifFalse") ? params.getVar("ifFalse") : (Var<T>) new Var<>(params.getVar("ifTrue").getType());
             }
         }
 

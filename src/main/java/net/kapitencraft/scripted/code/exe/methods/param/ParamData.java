@@ -5,12 +5,13 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.edit.client.RenderMap;
 import net.minecraft.util.GsonHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ParamData {
+public class ParamData extends RenderMap {
     private final List<Method<?>.Instance> params = new ArrayList<>();
 
     public static ParamData of(JsonObject parent, VarAnalyser analyser) {

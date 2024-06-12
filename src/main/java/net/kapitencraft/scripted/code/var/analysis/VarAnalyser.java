@@ -7,16 +7,21 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  *
  */
 public class VarAnalyser extends Leveled<String, VarType<?>> {
+    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]+");
     private boolean canceled;
     private int methodId = 0;
     private final List<Component> errors = new ArrayList<>();
 
     public void registerVar(String name, VarType<?> varType) {
+        if (!NAME_PATTERN.matcher(name).matches()) {
+            this.addError(Component.translatable("error.malformed_var_name", name));
+        }
         this.addValue(name, varType);
     }
 
