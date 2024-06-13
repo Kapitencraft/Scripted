@@ -8,20 +8,24 @@ import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.ModVarTypes;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.apache.logging.log4j.util.TriConsumer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PrimitiveReference<T> extends Method<T> {
     public static final Pattern STRING = Pattern.compile("\"(.+)\"");
     public static final Pattern CHAR = Pattern.compile("'(.)'");
-    public static final Pattern INT = Pattern.compile("(\\d+)");
+    public static final Pattern NUMBER = Pattern.compile("(\\d+)");
 
     public PrimitiveReference() {
         super(ParamSet.empty(), "primitive"); //name ignored;
@@ -80,23 +84,27 @@ public class PrimitiveReference<T> extends Method<T> {
     }
 
     private enum Type implements StringRepresentable {
-        STRING(ModVarTypes.STRING, "string", GsonHelper::getAsString, JsonObject::addProperty),
-        CHAR(ModVarTypes.CHAR, "char", GsonHelper::getAsCharacter, JsonObject::addProperty),
-        INTEGER(ModVarTypes.INTEGER, "integer", GsonHelper::getAsInt, JsonObject::addProperty),
-        DOUBLE(ModVarTypes.DOUBLE, "double", GsonHelper::getAsDouble, JsonObject::addProperty);
+        STRING(PrimitiveReference.STRING, ModVarTypes.STRING, "string", GsonHelper::getAsString, String::toString, JsonObject::addProperty),
+        CHAR(PrimitiveReference.CHAR, ModVarTypes.CHAR, "char", GsonHelper::getAsCharacter, s -> s.charAt(0), JsonObject::addProperty),
+        INTEGER(PrimitiveReference.NUMBER, ModVarTypes.INTEGER, "integer", GsonHelper::getAsInt, Integer::valueOf, JsonObject::addProperty),
+        DOUBLE(PrimitiveReference.NUMBER, ModVarTypes.DOUBLE, "double", GsonHelper::getAsDouble, Double::valueOf, JsonObject::addProperty);
 
         private final Supplier<? extends VarType<?>> typeSupplier;
+        private final Pattern pattern;
         private final String name;
         private final BiFunction<JsonObject, String, ?> loader;
+        private final Function<String, ?> mapper;
         private final TriConsumer<JsonObject, String, ?> saver;
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
-        <T> Type(Supplier<? extends VarType<T>> typeSupplier, String name, BiFunction<JsonObject, String, T> loader, TriConsumer<JsonObject, String, T> saver) {
+        <T> Type(Pattern pattern, Supplier<? extends VarType<T>> typeSupplier, String name, BiFunction<JsonObject, String, T> loader, Function<String, T> mapper, TriConsumer<JsonObject, String, T> saver) {
             this.typeSupplier = typeSupplier;
             this.name = name;
             this.loader = loader;
+            this.mapper = mapper;
             this.saver = saver;
+            this.pattern = pattern;
         }
 
         public VarType<?> getType() {
@@ -115,5 +123,19 @@ public class PrimitiveReference<T> extends Method<T> {
         public <T> void saveValue(JsonObject object, T value) {
             ((TriConsumer<JsonObject, String, T>) saver).accept(object, "value", value);
         }
+    }
+
+    public static @Nullable PrimitiveReference<?>.Instance loadFromString(String string) {
+        for (Type type : Type.values()) {
+            Matcher matcher = type.pattern.matcher(string);
+            if (matcher.matches()) {
+                return ModMethods.PRIMITIVE.get().create(type, matcher.group(1));
+            }
+        }
+        return null;
+    }
+
+    private PrimitiveReference<?>.Instance create(Type type, String value) {
+        return new Instance((T) type.mapper.apply(value), type);
     }
 }
