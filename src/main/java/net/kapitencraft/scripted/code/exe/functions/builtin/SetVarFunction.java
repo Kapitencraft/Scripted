@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.exe.functions.builtin;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.exe.IExecutable;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
@@ -15,6 +16,10 @@ public class SetVarFunction extends Function {
         String name = GsonHelper.getAsString(object, "name");
         Method<?>.Instance method = Method.loadFromSubObject(object, "val", analyser);
         return new Instance<>(name, method);
+    }
+
+    public <T> SetVarFunction.Instance<T> create(String varName, Method<T>.Instance inst) {
+        return new Instance<>(varName, inst);
     }
 
     public class Instance<T> extends Function.Instance {

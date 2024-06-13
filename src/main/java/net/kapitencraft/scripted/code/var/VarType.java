@@ -59,6 +59,10 @@ public class VarType<T> {
         return fields.getOrThrow(name);
     }
 
+    public InstanceMethod<T, ?> getMethodForName(String name) {
+        return methods.getOrThrow(name);
+    }
+
     /**
      * adds a new Method to be registered
      * @param name the name of the method. should match the name inside the builder
@@ -136,5 +140,8 @@ public class VarType<T> {
 
     public boolean allowsComparing() {
         return comp != null;
+    }
+
+    public void loadFunction() {
     }
 }

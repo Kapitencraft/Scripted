@@ -11,8 +11,8 @@ import java.util.function.Supplier;
  */
 public class VarMap extends Leveled<String, Var<?>> {
 
-    public void addVarType(String name, VarType<?> varType) {
-        this.addValue(name, new Var<>(varType));
+    public void addVarType(String name, VarType<?> varType, boolean isFinal) {
+        this.addValue(name, new Var<>(varType, isFinal));
     }
 
     public <T> void setVar(String name, T val) {

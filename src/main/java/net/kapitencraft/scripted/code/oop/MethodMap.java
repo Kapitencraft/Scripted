@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.minecraft.util.GsonHelper;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MethodMap<T> {
     private final HashMap<String, InstanceMethod<T, ?>> builders = new HashMap<>();
@@ -22,5 +23,9 @@ public class MethodMap<T> {
     public void registerMethod(String name, InstanceMethod<T, ?> builder) {
         if (builders.containsKey(name)) throw new IllegalArgumentException("tried to register method '" + name + "' twice");
         builders.put(name, builder);
+    }
+
+    public InstanceMethod<T,?> getOrThrow(String name) {
+        return Objects.requireNonNull(builders.get(name), "unknown method '" + name + "'");
     }
 }

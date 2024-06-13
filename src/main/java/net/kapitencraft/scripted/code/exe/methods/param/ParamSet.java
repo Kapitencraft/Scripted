@@ -7,10 +7,7 @@ import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 public class ParamSet {
@@ -36,8 +33,8 @@ public class ParamSet {
         return new Entry();
     }
 
-    public Entry getEntryForData(ParamData paramData) {
-        return null;
+    public Entry getEntryForData(ParamData paramData, VarAnalyser analyser) {
+        return getEntryForArgs(paramData.getParams().stream().map(instance -> instance.getType(analyser)).toList());
     }
 
     public void analyse(VarAnalyser analyser, ParamData data) {
@@ -45,6 +42,26 @@ public class ParamSet {
             Entry entry = this.possibles.get(0);
             entry.check(data, analyser);
         }
+    }
+
+    /**
+     * @param list the varTypes of the arguments applied
+     * @return the applied entry that matches the arguments (nullable)
+     */
+    public Entry getEntryForArgs(List<? extends VarType<?>> list) {
+        List<Entry> entries = new ArrayList<>(possibles);
+        Iterator<? extends VarType<?>> iterator = list.iterator();
+
+        final int[] i = new int[]{0};
+        while (iterator.hasNext() && entries.size() >= 2) {
+            entries.removeIf(entry -> entry.typeForId(i[0]) != iterator.next());
+            i[0] = i[0] + 1;
+        }
+        return entries.isEmpty() ? null : entries.get(0);
+    }
+
+    public boolean isEmpty() {
+        return this.possibles.isEmpty();
     }
 
     public static class Entry {
@@ -82,6 +99,11 @@ public class ParamSet {
             return this;
         }
 
+        VarType<?> typeForId(int id) {
+            return params.get(id < mandatoryParamsNameMap.size() ? mandatoryParamsNameMap.get(id) :
+                    optionalParamsNameMap.get(id - mandatoryParamsNameMap.size())).get();
+        }
+
         public VarMap apply(ParamData paramData, VarMap parent) {
             List<Method<?>.Instance> methods = paramData.getParams();
             VarMap map = new VarMap();
@@ -112,10 +134,9 @@ public class ParamSet {
             List<Method<?>.Instance> methods = data.getParams();
             Map<String, Method<?>.Instance> mapped = new HashMap<>();
             populateMapper(methods, mapped);
-
         }
 
-        private void populateMapper(List<Method<?>.Instance> methods, Map<String, Method<?>.Instance> mapper) {
+        public void populateMapper(List<Method<?>.Instance> methods, Map<String, Method<?>.Instance> mapper) {
             int i = 0;
             int mandatorySize = mandatoryParamsNameMap.size();
             for (; i < mandatorySize; i++) {

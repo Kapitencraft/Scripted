@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  *
  */
 public class VarAnalyser extends Leveled<String, VarType<?>> {
-    private static final Pattern NAME_PATTERN = Pattern.compile("[a-zA-Z0-9_]+");
+    private static final Pattern NAME_PATTERN = Pattern.compile("[\\w_]+");
     private boolean canceled;
     private int methodId = 0;
     private final List<Component> errors = new ArrayList<>();

@@ -2,6 +2,8 @@ package net.kapitencraft.scripted.code.exe.methods;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import net.kapitencraft.scripted.code.exe.IExecutable;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.InstanceMethod;
@@ -11,12 +13,15 @@ import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.edit.client.IRenderable;
 import net.kapitencraft.scripted.edit.client.RenderMap;
+import net.kapitencraft.scripted.edit.client.text.Compiler;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.Function;
 
 public abstract class Method<T> {
@@ -31,7 +36,22 @@ public abstract class Method<T> {
 
     public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
 
-    public abstract class Instance {
+    protected abstract Instance create(ParamData data);
+
+    public Method<?>.Instance readFromCode(String args, VarAnalyser analyser) {
+        if (args == null) {
+            if (this.set.isEmpty()) {
+                return create(ParamData.empty());
+            }
+            return null;
+        } else {
+            String[] split = args.split(",");
+            List<? extends Method<?>.Instance> list = Arrays.stream(split).map(s -> Compiler.compileMethodChain(s, true, analyser)).toList();
+            return create(ParamData.create(list));
+        }
+    }
+
+    public abstract class Instance implements IExecutable {
         protected final ParamData paramData;
 
         protected Instance(ParamData paramData) {
@@ -50,6 +70,11 @@ public abstract class Method<T> {
 
         public Var<T> callInit(VarMap parent) {
             return callInit(this::call, parent);
+        }
+
+        @Override
+        public void execute(VarMap map, MethodPipeline<?> pipeline) {
+            callInit(map);
         }
 
         protected Var<T> callInit(Function<VarMap, Var<T>> callFunc, VarMap parent) {

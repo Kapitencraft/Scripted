@@ -27,6 +27,10 @@ public final class VarReference<T> extends Method<T> {
         throw new JsonSyntaxException("do not load Var References directly");
     }
 
+    public Method<?>.Instance create(String s) {
+        return new Instance(s);
+    }
+
     public class Instance extends Method<T>.Instance {
         private final String methodName;
 

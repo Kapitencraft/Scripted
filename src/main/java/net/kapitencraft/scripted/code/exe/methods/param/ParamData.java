@@ -9,6 +9,7 @@ import net.kapitencraft.scripted.edit.client.RenderMap;
 import net.minecraft.util.GsonHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ParamData extends RenderMap {
@@ -26,6 +27,16 @@ public class ParamData extends RenderMap {
                     set.addParam(method);
                 });
         return set;
+    }
+
+    public static ParamData empty() {
+        return new ParamData();
+    }
+
+    public static ParamData create(List<? extends Method<?>.Instance> list) {
+        ParamData data = new ParamData();
+        data.params.addAll(list);
+        return data;
     }
 
     public void addParam(Method<?>.Instance method) {

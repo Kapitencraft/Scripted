@@ -7,14 +7,17 @@ public class Var<T> {
 
     private T value;
     private final @NotNull VarType<T> type;
+    private final boolean isFinal;
 
-    public Var(@NotNull VarType<T> type) {
+    public Var(@NotNull VarType<T> type, boolean isFinal) {
         this.type = type;
+        this.isFinal = isFinal;
     }
 
-    public Var(@NotNull VarType<T> type, T value) {
+    public Var(@NotNull VarType<T> type, T value, boolean isFinal) {
         this.value = value;
         this.type = type;
+        this.isFinal = isFinal;
     }
 
     public void setValue(T value) {

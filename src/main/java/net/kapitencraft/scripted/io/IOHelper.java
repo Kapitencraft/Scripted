@@ -1,10 +1,17 @@
 package net.kapitencraft.scripted.io;
 
+import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.init.custom.ModRegistries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public interface IOHelper {
     File SCRIPTED_DIRECTORY = new File("./scripted"); //bruh
@@ -35,5 +42,14 @@ public interface IOHelper {
             String[] directories = s.split("\\\\"); //why 4 bro?
             return new ResourceLocation("a");
         }).toList();
+    }
+
+    static @Nullable VarType<?> readFromCode(String codeReference) {
+        for (Map.Entry<ResourceKey<VarType<?>>, VarType<?>> entry : ModRegistries.VAR_TYPES.getEntries()) {
+            if (Objects.equals(entry.getKey().location().getPath(), codeReference)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 }

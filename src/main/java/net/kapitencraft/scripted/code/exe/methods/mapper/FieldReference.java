@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import org.jetbrains.annotations.Nullable;
 
 public final class FieldReference<P, T> extends InstanceMethod<P, T> {
 
@@ -26,6 +27,10 @@ public final class FieldReference<P, T> extends InstanceMethod<P, T> {
         return new Instance((Field<P, T>) fieldForName, (VarReference<P>.Instance) instance);
     }
 
+    public @Nullable Method<?>.Instance create(Field<P, T> field, VarReference<P>.Instance parent) {
+        return new Instance(field, parent);
+    }
+
 
     public class Instance extends InstanceMethod<P, T>.Instance {
         private final Field<P, T> field;
@@ -37,7 +42,7 @@ public final class FieldReference<P, T> extends InstanceMethod<P, T> {
 
         @Override
         public Var<T> call(VarMap map, Var<P> inst) {
-            return new Var<>(field.getType(), field.getValue(inst.getValue()));
+            return new Var<>(field.getType(), field.getValue(inst.getValue()), true);
         }
 
         @Override
