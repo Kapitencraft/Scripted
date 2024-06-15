@@ -3,25 +3,32 @@ package net.kapitencraft.scripted.edit.client.text;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Vector2i;
 
 import javax.annotation.Nullable;
+import java.util.function.BiFunction;
 
 public class MultiLineTextBox extends AbstractWidget {
     private String value = "";
     private final Font font;
-    private int cursorPos;
+    private Vector2i cursorPos;
     private int highlightPos;
+    private int frame;
+    private boolean shiftPressed;
+
+    private BiFunction<String, Integer, FormattedCharSequence> formatter = (p_94147_, p_94148_) -> FormattedCharSequence.forward(p_94147_, Style.EMPTY);
 
     public MultiLineTextBox(int pX, int pY, int pWidth, int pHeight, Font font) {
         super(pX, pY, pWidth, pHeight, Component.empty());
@@ -33,14 +40,19 @@ public class MultiLineTextBox extends AbstractWidget {
 
     }
 
+    public String line(int lineIndex) {
+        return value.split("\n")[lineIndex];
+    }
+
     public String getValue() {
         return value;
     }
 
     public void insertText(String pTextToWrite) {
+
         int i = Math.min(this.cursorPos, this.highlightPos);
         int j = Math.max(this.cursorPos, this.highlightPos);
-        int k = this.maxLength - this.value.length() - (i - j);
+        int k = Integer.MAX_VALUE - this.value.length() - (i - j);
         String s = SharedConstants.filterText(pTextToWrite);
         int l = s.length();
         if (k < l) {
@@ -49,18 +61,9 @@ public class MultiLineTextBox extends AbstractWidget {
         }
 
         String s1 = (new StringBuilder(this.value)).replace(i, j, s).toString();
-        if (this.filter.test(s1)) {
-            this.value = s1;
-            this.setCursorPosition(i + l);
-            this.setHighlightPos(this.cursorPos);
-            this.onValueChange(this.value);
-        }
-    }
-
-    private void onValueChange(String pNewText) {
-        if (this.responder != null) {
-            this.responder.accept(pNewText);
-        }
+        this.value = s1;
+        this.setCursorPosition(i + l);
+        this.setHighlightPos(this.cursorPos);
     }
 
     private void deleteText(int pCount) {
@@ -86,6 +89,10 @@ public class MultiLineTextBox extends AbstractWidget {
         }
     }
 
+    public void tick() {
+        ++this.frame;
+    }
+
     /**
      * Deletes the given number of characters from the current cursor's position, unless there is currently a selection,
      * in which case the selection is deleted instead.
@@ -99,11 +106,8 @@ public class MultiLineTextBox extends AbstractWidget {
                 int j = Math.min(i, this.cursorPos);
                 int k = Math.max(i, this.cursorPos);
                 if (j != k) {
-                    String s = (new StringBuilder(this.value)).delete(j, k).toString();
-                    if (this.filter.test(s)) {
-                        this.value = s;
-                        this.moveCursorTo(j);
-                    }
+                    this.value = (new StringBuilder(this.value)).delete(j, k).toString();
+                    this.moveCursorTo(j);
                 }
             }
         }
@@ -175,8 +179,6 @@ public class MultiLineTextBox extends AbstractWidget {
         if (!this.shiftPressed) {
             this.setHighlightPos(this.cursorPos);
         }
-
-        this.onValueChange(this.value);
     }
 
     public void setCursorPosition(int pPos) {
@@ -206,7 +208,7 @@ public class MultiLineTextBox extends AbstractWidget {
      * @param pModifiers the keyboard modifiers.
      */
     public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers) {
-        if (!this.canConsumeInput()) {
+        if (this.canNotConsumeInput()) {
             return false;
         } else {
             this.shiftPressed = Screen.hasShiftDown();
@@ -218,27 +220,20 @@ public class MultiLineTextBox extends AbstractWidget {
                 Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
                 return true;
             } else if (Screen.isPaste(pKeyCode)) {
-                if (this.isEditable) {
-                    this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
-                }
+                this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
 
                 return true;
             } else if (Screen.isCut(pKeyCode)) {
                 Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-                if (this.isEditable) {
-                    this.insertText("");
-                }
+                this.insertText("");
 
                 return true;
             } else {
                 switch (pKeyCode) {
                     case 259:
-                        if (this.isEditable) {
-                            this.shiftPressed = false;
-                            this.deleteText(-1);
-                            this.shiftPressed = Screen.hasShiftDown();
-                        }
-
+                        this.shiftPressed = false;
+                        this.deleteText(-1);
+                        this.shiftPressed = Screen.hasShiftDown();
                         return true;
                     case 260:
                     case 264:
@@ -248,12 +243,9 @@ public class MultiLineTextBox extends AbstractWidget {
                     default:
                         return false;
                     case 261:
-                        if (this.isEditable) {
-                            this.shiftPressed = false;
-                            this.deleteText(1);
-                            this.shiftPressed = Screen.hasShiftDown();
-                        }
-
+                        this.shiftPressed = false;
+                        this.deleteText(1);
+                        this.shiftPressed = Screen.hasShiftDown();
                         return true;
                     case 262:
                         if (Screen.hasControlDown()) {
@@ -282,8 +274,14 @@ public class MultiLineTextBox extends AbstractWidget {
         }
     }
 
-    public boolean canConsumeInput() {
-        return this.isVisible() && this.isFocused() && this.isEditable();
+    public String getHighlighted() {
+        int i = Math.min(this.cursorPos, this.highlightPos);
+        int j = Math.max(this.cursorPos, this.highlightPos);
+        return this.value.substring(i, j);
+    }
+
+    public boolean canNotConsumeInput() {
+        return !this.isVisible() || !this.isFocused();
     }
 
     /**
@@ -294,92 +292,71 @@ public class MultiLineTextBox extends AbstractWidget {
      * @param pModifiers the keyboard modifiers.
      */
     public boolean charTyped(char pCodePoint, int pModifiers) {
-        if (!this.canConsumeInput()) {
-            return false;
-        } else if (SharedConstants.isAllowedChatCharacter(pCodePoint)) {
-            if (this.isEditable) {
-                this.insertText(Character.toString(pCodePoint));
-            }
-
-            return true;
-        } else {
+        if (this.canNotConsumeInput()) {
             return false;
         }
+        this.insertText(Character.toString(pCodePoint));
+        return true;
     }
 
     public void onClick(double pMouseX, double pMouseY) {
         int i = Mth.floor(pMouseX) - this.getX();
-        if (this.bordered) {
-            i -= 4;
-        }
 
-        String s = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-        this.moveCursorTo(this.font.plainSubstrByWidth(s, i).length() + this.displayPos);
+        String s = this.font.plainSubstrByWidth(this.value, this.width);
+        this.moveCursorTo(this.font.plainSubstrByWidth(s, i).length());
     }
 
     public void playDownSound(SoundManager pHandler) {
     }
 
-    public void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+    public void renderWidget(@NotNull GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         if (this.isVisible()) {
-            if (this.isBordered()) {
-                int i = this.isFocused() ? -1 : -6250336;
-                pGuiGraphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, i);
-                pGuiGraphics.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
-            }
+            int j = this.cursorPos;
+            int k = this.highlightPos;
+            for (String s : this.value.split("\n")) {
+                boolean flag = j >= 0 && j <= s.length();
+                boolean flag1 = this.isFocused() && this.frame / 6 % 2 == 0 && flag;
+                int i1 = this.getY();
+                int j1 = this.getX();
+                if (k > s.length()) {
+                    k = s.length();
+                }
 
-            int i2 = this.isEditable ? this.textColor : this.textColorUneditable;
-            int j = this.cursorPos - this.displayPos;
-            int k = this.highlightPos - this.displayPos;
-            String s = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-            boolean flag = j >= 0 && j <= s.length();
-            boolean flag1 = this.isFocused() && this.frame / 6 % 2 == 0 && flag;
-            int l = this.bordered ? this.getX() + 4 : this.getX();
-            int i1 = this.bordered ? this.getY() + (this.height - 8) / 2 : this.getY();
-            int j1 = l;
-            if (k > s.length()) {
-                k = s.length();
-            }
+                if (!s.isEmpty()) {
+                    String s1 = flag ? s.substring(0, j) : s;
+                    j1 = pGuiGraphics.drawString(this.font, this.formatter.apply(s1, 0), this.getX(), i1, 0);
+                }
 
-            if (!s.isEmpty()) {
-                String s1 = flag ? s.substring(0, j) : s;
-                j1 = pGuiGraphics.drawString(this.font, this.formatter.apply(s1, this.displayPos), l, i1, i2);
-            }
+                boolean flag2 = this.cursorPos < this.value.length();
+                int k1 = j1;
+                if (!flag) {
+                    k1 = j > 0 ? getX() + this.width : getX();
+                } else if (flag2) {
+                    k1 = j1 - 1;
+                    --j1;
+                }
 
-            boolean flag2 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
-            int k1 = j1;
-            if (!flag) {
-                k1 = j > 0 ? l + this.width : l;
-            } else if (flag2) {
-                k1 = j1 - 1;
-                --j1;
-            }
+                if (!s.isEmpty() && flag && j < s.length()) {
+                    pGuiGraphics.drawString(this.font, this.formatter.apply(s.substring(j), this.cursorPos), j1, i1, 0);
+                }
 
-            if (!s.isEmpty() && flag && j < s.length()) {
-                pGuiGraphics.drawString(this.font, this.formatter.apply(s.substring(j), this.cursorPos), j1, i1, i2);
-            }
+                if (!flag2 && this.suggestion != null) {
+                    pGuiGraphics.drawString(this.font, this.suggestion, k1 - 1, i1, -8355712);
+                }
 
-            if (this.hint != null && s.isEmpty() && !this.isFocused()) {
-                pGuiGraphics.drawString(this.font, this.hint, j1, i1, i2);
-            }
+                if (flag1) {
+                    if (flag2) {
+                        pGuiGraphics.fill(RenderType.guiOverlay(), k1, i1 - 1, k1 + 1, i1 + 1 + 9, -3092272);
+                    } else {
+                        pGuiGraphics.drawString(this.font, "_", k1, i1, 0);
+                    }
+                }
 
-            if (!flag2 && this.suggestion != null) {
-                pGuiGraphics.drawString(this.font, this.suggestion, k1 - 1, i1, -8355712);
-            }
-
-            if (flag1) {
-                if (flag2) {
-                    pGuiGraphics.fill(RenderType.guiOverlay(), k1, i1 - 1, k1 + 1, i1 + 1 + 9, -3092272);
-                } else {
-                    pGuiGraphics.drawString(this.font, "_", k1, i1, i2);
+                if (k != j) {
+                    int l1 = this.getX() + this.font.width(s.substring(0, k));
+                    this.renderHighlight(pGuiGraphics, k1, i1 - 1, l1 - 1, i1 + 1 + 9);
                 }
             }
-
-            if (k != j) {
-                int l1 = l + this.font.width(s.substring(0, k));
-                this.renderHighlight(pGuiGraphics, k1, i1 - 1, l1 - 1, i1 + 1 + 9);
-            }
-
         }
     }
 
@@ -408,41 +385,10 @@ public class MultiLineTextBox extends AbstractWidget {
     }
 
     /**
-     * Sets the maximum length for the text in this text box. If the current text is longer than this length, the current
-     * text will be trimmed.
-     */
-    public void setMaxLength(int pLength) {
-        this.maxLength = pLength;
-        if (this.value.length() > pLength) {
-            this.value = this.value.substring(0, pLength);
-            this.onValueChange(this.value);
-        }
-
-    }
-
-    /**
-     * Returns the maximum number of character that can be contained in this textbox.
-     */
-    private int getMaxLength() {
-        return this.maxLength;
-    }
-
-    /**
      * Returns the current position of the cursor.
      */
-    public int getCursorPosition() {
+    public Vector2i getCursorPosition() {
         return this.cursorPos;
-    }
-
-    /**
-     * Retrieves the next focus path based on the given focus navigation event.
-     * <p>
-     * @return the next focus path as a ComponentPath, or {@code null} if there is no next focus path.
-     * @param pEvent the focus navigation event.
-     */
-    @Nullable
-    public ComponentPath nextFocusPath(FocusNavigationEvent pEvent) {
-        return this.visible && this.isEditable ? super.nextFocusPath(pEvent) : null;
     }
 
     /**
@@ -457,38 +403,6 @@ public class MultiLineTextBox extends AbstractWidget {
     }
 
     /**
-     * Sets the focus state of the GUI element.
-     * @param pFocused {@code true} to apply focus, {@code false} to remove focus
-     */
-    public void setFocused(boolean pFocused) {
-        if (this.canLoseFocus || pFocused) {
-            super.setFocused(pFocused);
-            if (pFocused) {
-                this.frame = 0;
-            }
-
-        }
-    }
-
-    private boolean isEditable() {
-        return this.isEditable;
-    }
-
-    /**
-     * Sets whether this text box is enabled. Disabled text boxes cannot be typed in.
-     */
-    public void setEditable(boolean pEnabled) {
-        this.isEditable = pEnabled;
-    }
-
-    /**
-     * Returns the width of the textbox depending on if background drawing is enabled.
-     */
-    public int getInnerWidth() {
-        return this.isBordered() ? this.width - 8 : this.width;
-    }
-
-    /**
      * Sets the position of the selection anchor (the selection anchor and the cursor position mark the edges of the
      * selection). If the anchor is set beyond the bounds of the current text, it will be put back inside.
      */
@@ -496,29 +410,10 @@ public class MultiLineTextBox extends AbstractWidget {
         int i = this.value.length();
         this.highlightPos = Mth.clamp(pPosition, 0, i);
         if (this.font != null) {
-            if (this.displayPos > i) {
-                this.displayPos = i;
-            }
 
-            int j = this.getInnerWidth();
-            String s = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), j);
-            int k = s.length() + this.displayPos;
-            if (this.highlightPos == this.displayPos) {
-                this.displayPos -= this.font.plainSubstrByWidth(this.value, j, true).length();
-            }
-
-            if (this.highlightPos > k) {
-                this.displayPos += this.highlightPos - k;
-            } else if (this.highlightPos <= this.displayPos) {
-                this.displayPos -= this.displayPos - this.highlightPos;
-            }
-
-            this.displayPos = Mth.clamp(this.displayPos, 0, i);
+            int j = this.width;
+            String s = this.font.plainSubstrByWidth(this.value, j);
         }
-
-    }
-    public void setCanLoseFocus(boolean pCanLoseFocus) {
-        this.canLoseFocus = pCanLoseFocus;
     }
 
     public boolean isVisible() {
@@ -535,9 +430,5 @@ public class MultiLineTextBox extends AbstractWidget {
 
     public int getScreenX(int pCharNum) {
         return pCharNum > this.value.length() ? this.getX() : this.getX() + this.font.width(this.value.substring(0, pCharNum));
-    }
-
-    public void setHint(Component pHint) {
-        this.hint = pHint;
     }
 }

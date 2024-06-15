@@ -95,7 +95,7 @@
  - 47.0.28 Fix not dropping xp for player sourced explosions and various other cases when xp should drop (#9588)
  - 47.0.27 add item handler capability to chiseled bookshelf (#9587)
  - 47.0.26 Fix ignoring maxUpStep method overrides on entities (#9583)
- - 47.0.25 Add missing damage type tag provider modid, existing file helper constructor overload (#9581)
+ - 47.0.25 Add missing damage operationType tag provider modid, existing file helper constructor overload (#9581)
  - 47.0.24 Expose holder lookup registry provider as a helper in RegistriesDatapackGenerator (#9580)
  - 47.0.23 Fix gametest collection causing secondary crash in loading error state (#9568)
  - 47.0.22 Fix SpriteCoordinateExpander not working with chained methods (MC-263524) (#9564)
@@ -229,7 +229,7 @@
  - 45.0.22 [1.19.4] Replace blitOffset parameter with PoseStack in IItemDecorator (#9409)
            * Replace blitOffset with PoseStack in IItemDecorator
            * Circumvent breaking changes
-           * Fix blitOffset type
+           * Fix blitOffset operationType
  - 45.0.21 Fix JSON model root transforms (#9410)
  - 45.0.20 Fix tossed items not being able to be picked up by other players. Closes #9412 (#9404)
  - 45.0.19 Fix infinite BE render bounds failing frustum intersection test. Closes #9321 (#9407)
@@ -254,7 +254,7 @@
            leggings always had the enchantment glint but not any other armor piece.
            Fixes #9394
  - 45.0.10 Fixed ModMismatchDisconnectedScreen displaying missing mods wrongly (#9398)
- - 45.0.9  Fix misaligned text render type patch (#9391)
+ - 45.0.9  Fix misaligned text render operationType patch (#9391)
  - 45.0.8  Remove thread filter from processing clientside custom payloads. Closes @9390
  - 45.0.7  Fix LivingEntity patch which caused crash while entities got hurt. Closes #9389
  - 45.0.6  Fix wrong parameters in `Screen#renderTooltipInternal` patch (#9387)
@@ -287,7 +287,7 @@
  - 44.1.10 Homogenize and/or holdersets when serializing to prevent serializing to NBT from crashing (#9048) Fixes #9043
  - 44.1.9  [1.19.x] Fix `ForgeSlider` not respecting custom height (#9237)
  - 44.1.8  Fix stepsound for blocks in the inside_step_sound_blocks tag. (#9318)
- - 44.1.7  Fix missing hanging sign material for modded wood type (#9303)
+ - 44.1.7  Fix missing hanging sign material for modded wood operationType (#9303)
  - 44.1.6  Fire TickEvent.LevelTickEvent on ClientLevel tick (#9299)
  - 44.1.5  Add ClientChatReceivedEvent for system messages (#9284)
  - 44.1.4  PR Action update (#9274)
@@ -417,7 +417,7 @@
  - 43.1.41 [1.19.x] Add event for items being stacked or swapped in a GUI. (#9050)
  - 43.1.40 [1.19.x] Fix PlayerInteractEvent.EntityInteractSpecific not cancelling on a server (#9079)
  - 43.1.39 Fix canceling phantom spawns preventing any further attempts that tick. (#9041)
- - 43.1.38 Rename fluid type milk translation keys (#9077)
+ - 43.1.38 Rename fluid operationType milk translation keys (#9077)
  - 43.1.37 Fix minecart speed with water (#9076)
  - 43.1.36 Add a cancellable event that gets fired when a Totem of Undying is used (#9069)
  - 43.1.35 Fix performance issue and logging when resource caching is enabled (#9029)
@@ -552,7 +552,7 @@
  - 41.0.96  Fix renderBreakingTexture not using the target's model data (#8849)
  - 41.0.95  Multiple tweaks and fixes to the recent changes in the client refactor PR: Part 2 (#8854)
             * Add getter for the component names in an unbaked geometry
-            * Fix render type hint not being copied in BlockGeometryBakingContext
+            * Fix render operationType hint not being copied in BlockGeometryBakingContext
             * Ensure BlockRenderDispatches's renderSingleBlock uses the correct buffer
  - 41.0.94  [1.19.x] Apply general renames, A SRG is provided for modders. (#8840)
             See https://gist.github.com/SizableShrimp/882a671ff74256d150776da08c89ef72
@@ -561,8 +561,8 @@
  - 41.0.91  Fixed `CompositeModel.Baked.Builder.build()` passing arguments in the wrong order (#8846)
  - 41.0.90  Make cutout mipmaps explicitly opt-in for item/entity rendering (#8845)
             * Make cutout mipmaps explicitly opt-in for item/entity rendering
-            * Default render type domain to "minecraft" in model datagens
- - 41.0.89  Fixed multipart block models not using the new model driven render type system. (#8844)
+            * Default render operationType domain to "minecraft" in model datagens
+ - 41.0.89  Fixed multipart block models not using the new model driven render operationType system. (#8844)
  - 41.0.88  Update to the latest JarJar to fix a collision issue where multiple jars could provide an exact match. (#8847)
  - 41.0.87  Add FML config to disable DFU optimizations client-side. (#8842)
             * Add client-side command line argument to disable DFU optimizations.
@@ -718,13 +718,13 @@
             - Remove multipart geometries and geometry parts. After some discussion, these should not be exposed. Instead, geometries should be baked with only the necessary parts enabled
             * Make render types a first-class citizen in baked models
             - Add named render types (block + entity + fabulous entity)
-            - Add named render type manager + registration event
+            - Add named render operationType manager + registration event
             - Make BakedModel aware of render types and transfer control over which ones are used to it instead of ItemBlockRenderTypes (fallback)
             - (additional) Add concatenated list view. A wrapper for multiple lists that iterates through them in order without the cost of merging them. Useful for merging lists of baked quads
             * General event refactors
             - Several renames to either match vanilla or improve clarity
             - Relocate client chat event dispatching out of common code
-            * Forge model type refactors
+            * Forge model operationType refactors
             - Rename SeparatePerspectiveModel to SeparateTransformsModel
             - Rename ItemModelMesherForge to ForgeItemModelShaper
             - Rename DynamicBucketModel to DynamicFluidContainerModel
@@ -765,7 +765,7 @@
             * Improve generics in ConcatenatedListView and add missing fallbacks
             * Fix fluid render types being bound to the fluid and not its holder
             * Remove non-contractual nullability in ChunkRenderTypeSet and add isEmpty
-            Additionally, introduce chunk render type checks in ItemBlockRenderTypes
+            Additionally, introduce chunk render operationType checks in ItemBlockRenderTypes
             Co-authored-by: Dennis C <xfacthd@gmx.de>
  - 41.0.63  Implement full support for IPv6 (#8742)
  - 41.0.62  Fix certain user-configured options being overwritten incorrectly due to validators. (#8780)

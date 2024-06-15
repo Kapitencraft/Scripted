@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 /**
  *
  */
-public class VarAnalyser extends Leveled<String, VarType<?>> {
+public class VarAnalyser extends Leveled<String, VarType<?>> implements IVarAnalyser {
     private static final Pattern NAME_PATTERN = Pattern.compile("[\\w_]+");
     private boolean canceled;
     private int methodId = 0;
@@ -25,8 +25,8 @@ public class VarAnalyser extends Leveled<String, VarType<?>> {
         this.addValue(name, varType);
     }
 
-    public <T> VarType<T> getVar(String name) {
-        return (VarType<T>) this.getType(name);
+    public <T> VarType<T> getType(String name) {
+        return (VarType<T>) this.getValue(name);
     }
 
     public void next() {
@@ -35,15 +35,15 @@ public class VarAnalyser extends Leveled<String, VarType<?>> {
     }
 
     public void assertVarExistence(String name, Supplier<? extends VarType<?>> type) {
-        if (this.getType(name) != type.get()) errors.add(Component.translatable("error.missing_var", name));
+        if (this.getValue(name) != type.get()) errors.add(Component.translatable("error.missing_var", name));
     }
 
     public void assertVarExistence(String name) {
-        if (this.getType(name) != null) errors.add(Component.translatable("error.missing_var", name));
+        if (this.getValue(name) != null) errors.add(Component.translatable("error.missing_var", name));
     }
 
     public void assertOptionVarExistence(String name, Supplier<? extends VarType<?>> type) {
-        if (this.getType(name) != null && this.getType(name) != type.get()) errors.add(Component.translatable("error.wrong_var_type", name, this.getType(name), type.get()));
+        if (this.getValue(name) != null && this.getValue(name) != type.get()) errors.add(Component.translatable("error.wrong_var_type", name, this.getValue(name), type.get()));
     }
 
     public void setCanceled() {

@@ -5,9 +5,9 @@ import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.Constructor;
-import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModVarTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -31,8 +31,13 @@ public class DataStorageType extends VarType<CompoundTag> {
         }
 
         @Override
-        public Method<CompoundTag>.Instance construct(ParamData data) {
-            return new Instance();
+        protected Method<CompoundTag>.Instance create(ParamData data, Method<?>.Instance parent) {
+            return null;
+        }
+
+        @Override
+        public Method<CompoundTag>.Instance construct(JsonObject object, VarAnalyser analyser) {
+            return null;
         }
 
         public class Instance extends Method<CompoundTag>.Instance {
@@ -42,13 +47,13 @@ public class DataStorageType extends VarType<CompoundTag> {
             }
 
             @Override
-            public VarType<CompoundTag> getType(VarAnalyser analyser) {
+            public VarType<CompoundTag> getType(IVarAnalyser analyser) {
                 return ModVarTypes.DATA_STORAGE.get();
             }
 
             @Override
-            public Var<CompoundTag> call(VarMap params) {
-                return new Var<>(ModVarTypes.DATA_STORAGE.get(), new CompoundTag());
+            public CompoundTag call(VarMap params) {
+                return new CompoundTag();
             }
         }
     }

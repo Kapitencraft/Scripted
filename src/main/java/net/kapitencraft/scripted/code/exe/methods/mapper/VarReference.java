@@ -3,13 +3,13 @@ package net.kapitencraft.scripted.code.exe.methods.mapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.oop.InstanceMethod;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.var.Var;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
+import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.minecraft.util.GsonHelper;
 
@@ -25,6 +25,11 @@ public final class VarReference<T> extends Method<T> {
     @Override
     public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
         throw new JsonSyntaxException("do not load Var References directly");
+    }
+
+    @Override
+    protected Method<T>.Instance create(ParamData data, Method<?>.Instance parent) {
+        return new Instance();
     }
 
     public Method<?>.Instance create(String s) {
@@ -50,7 +55,7 @@ public final class VarReference<T> extends Method<T> {
         }
 
         @Override
-        public InstanceMethod<?, ?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
+        public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
             if (!then.has("params")) { //load field reference
                 String fieldName = GsonHelper.getAsString(then, "name");
                 return ModMethods.FIELD_REFERENCE.get().load(this.getType(analyser).getFieldForName(fieldName), this);
@@ -61,8 +66,8 @@ public final class VarReference<T> extends Method<T> {
         }
 
         @Override
-        public VarType<T> getType(VarAnalyser analyser) {
-            return analyser.getVar(methodName);
+        public VarType<T> getType(IVarAnalyser analyser) {
+            return analyser.getType(methodName);
         }
     }
 }

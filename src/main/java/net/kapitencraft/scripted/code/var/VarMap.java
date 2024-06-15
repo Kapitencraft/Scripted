@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.code.var;
 
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.util.Leveled;
 
 import java.util.Optional;
@@ -9,7 +10,7 @@ import java.util.function.Supplier;
  * the variables defined within a MethodPipeline
  * <br> mutable (you can add and modify them using the corresponding methods)
  */
-public class VarMap extends Leveled<String, Var<?>> {
+public class VarMap extends Leveled<String, Var<?>> implements IVarAnalyser {
 
     public void addVarType(String name, VarType<?> varType, boolean isFinal) {
         this.addValue(name, new Var<>(varType, isFinal));
@@ -20,15 +21,15 @@ public class VarMap extends Leveled<String, Var<?>> {
     }
 
     public <T> Var<T> getVar(String varName) {
-        return (Var<T>) getType(varName);
+        return (Var<T>) getValue(varName);
     }
 
     public boolean hasVar(String name) {
-        return getType(name) != null;
+        return getValue(name) != null;
     }
 
     public <T> boolean hasVar(String name, Supplier<? extends VarType<T>> type) {
-        return hasVar(name) && getType(name).getType() == type.get();
+        return hasVar(name) && getValue(name).getType() == type.get();
     }
 
     /**
@@ -48,5 +49,10 @@ public class VarMap extends Leveled<String, Var<?>> {
     public <T>Optional<T> getOptionalVarValue(String name, Supplier<? extends VarType<T>> type) {
         if (hasVar(name, type)) return Optional.of(getVarValue(name, type));
         else return Optional.empty();
+    }
+
+    @Override
+    public <T> VarType<T> getType(String name) {
+        return (VarType<T>) this.getVar(name).getType();
     }
 }

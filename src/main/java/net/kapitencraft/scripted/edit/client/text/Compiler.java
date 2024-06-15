@@ -4,9 +4,10 @@ import net.kapitencraft.scripted.code.exe.IExecutable;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.mapper.PrimitiveReference;
-import net.kapitencraft.scripted.code.oop.Field;
+import net.kapitencraft.scripted.code.exe.methods.mapper.VarReference;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.primitive.PrimitiveType;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.io.IOHelper;
@@ -25,7 +26,6 @@ public class Compiler {
 
     public static void compileText(String in, VarAnalyser analyser) {
         in = in.replaceAll("[\t\n]+", ""); //remove any whitespace besides space (cuz we don't need it)
-        String[]
     }
 
     public static void compilePipeline(String in) {
@@ -59,15 +59,18 @@ public class Compiler {
                 return ModFunctions.CREATE_AND_SET_VAR.get().create(varName, inst, (VarType<T>) type, isFinal);
             }
         } else {
+            string = string.replaceAll(" ", ""); //remove space since we don't need it anymore
             Method<?>.Instance method = compileMethodChain(string, false, analyser);
             if (method != null) return method;
-            Function.Instance func = com
+            IExecutable executable = compileFunctionChain(string, analyser);
+            if (executable != null) return executable;
         }
+        return null;
     }
 
-    public static @Nullable <P, T> Method<?>.Instance compileMethodChain(String in, boolean allowPrimitive, VarAnalyser analyser) {
-        if (allowPrimitive) {
-            Method<?>.Instance instance = PrimitiveReference.loadFromString(in);
+    public static <T> Method<T>.@Nullable Instance compileMethodChain(String in, boolean allowPrimitive, VarAnalyser analyser, VarType<T> type) {
+        if (allowPrimitive && type instanceof PrimitiveType<T> primitiveType) {
+            Method<T>.Instance instance = PrimitiveReference.loadFromString(in, primitiveType);
             if (instance != null) return instance;
         }
         String[] chain = in.split("\\.");
@@ -78,29 +81,40 @@ public class Compiler {
                 String name = matcher.group(1);
                 if (inst != null) {
                     VarType<?> type = inst.getType(analyser);
-                    inst = type.getMethodForName(name).readFromCode(matcher.group(2), analyser);
+                    inst = type.getMethodForName(name).readFromCode(matcher.group(2), analyser, inst);
                 }
             }
             if (inst == null) {
                 inst = ModMethods.VAR_REFERENCE.get().create(s);
                 continue;
             }
-            if (!s.contains("(")) {
+            if (!s.contains("(") && inst instanceof VarReference<?>.Instance varInstance) {
                 VarType<?> type = inst.getType(analyser);
-                return ModMethods.FIELD_REFERENCE.get().create((Field<P, T>) type.getFieldForName(s), (Method<P>.Instance) inst);
+                return (Method<T>.Instance) ModMethods.FIELD_REFERENCE.get().create(type.getFieldForName(s), varInstance);
             }
         }
-        return inst;
+        return (Method<T>.Instance) inst;
     }
 
     public static @Nullable IExecutable compileFunctionChain(String in, VarAnalyser analyser) {
         if (in.contains(".")) {
             Matcher matcher = CLEAR_LAST_MATCH.matcher(in);
             if (matcher.matches()) {
-                Method<?>.Instance inst = compileMethodChain(in.substring(0, matcher.start()), true, analyser);
-                return inst.getType(analyser).loadFunction();
+                Method<?>.Instance inst = compileMethodChain(in.substring(0, matcher.start() - 1), true, analyser);
+                if (inst == null) return null;
+                Matcher matcher1 = METHOD_MATCH.matcher(matcher.group(1));
+                if (matcher1.matches()) {
+                    return inst.getType(analyser).loadFunction(matcher1.group(1), matcher1.group(2), analyser);
+                }
+            }
+        } else {
+            Matcher matcher = METHOD_MATCH.matcher(in);
+            if (matcher.matches()) {
+                String id = matcher.group(1);
+                Function function = IOHelper.readFunction(id);
+                return function != null ? function.createFromCode(matcher.group(2), analyser) : null;
             }
         }
-
+        return null;
     }
 }

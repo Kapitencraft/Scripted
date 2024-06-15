@@ -49,7 +49,7 @@ public class MathOperationMethod<T> extends Method<T> {
 
         @Override
         public VarType<T> getType(VarAnalyser analyser) {
-            return (VarType<T>) analyser.getType("left");
+            return (VarType<T>) analyser.getValue("left");
         }
     }
 

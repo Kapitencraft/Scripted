@@ -1,11 +1,11 @@
 package net.kapitencraft.scripted.io;
 
+import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import org.spongepowered.asm.mixin.injection.struct.InjectorGroupInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -46,6 +46,15 @@ public interface IOHelper {
 
     static @Nullable VarType<?> readFromCode(String codeReference) {
         for (Map.Entry<ResourceKey<VarType<?>>, VarType<?>> entry : ModRegistries.VAR_TYPES.getEntries()) {
+            if (Objects.equals(entry.getKey().location().getPath(), codeReference)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    static @Nullable Function readFunction(String codeReference) {
+        for (Map.Entry<ResourceKey<Function>, Function> entry : ModRegistries.FUNCTIONS.getEntries()) {
             if (Objects.equals(entry.getKey().location().getPath(), codeReference)) {
                 return entry.getValue();
             }

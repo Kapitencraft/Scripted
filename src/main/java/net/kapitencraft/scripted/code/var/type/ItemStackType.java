@@ -2,16 +2,15 @@ package net.kapitencraft.scripted.code.var.type;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.functions.abstracts.InstanceFunction;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.Constructor;
-import net.kapitencraft.scripted.code.oop.Field;
-import net.kapitencraft.scripted.code.oop.InstanceMethod;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModVarTypes;
 import net.minecraft.world.item.Item;
@@ -23,7 +22,7 @@ public class ItemStackType extends VarType<ItemStack> {
         super(null, null, null, null, null, null);
         this.setConstructor(new InstConstructor()); //constructor
         //fields
-        this.addField("count", new Field<>(ItemStack::getCount, ItemStack::setCount, ModVarTypes.INTEGER));
+        this.addField("count", ItemStack::getCount, ItemStack::setCount, ModVarTypes.INTEGER);
         //methods
         this.addMethod("getItem", new GetItem());
         this.addMethod("split", new Split());
@@ -35,7 +34,12 @@ public class ItemStackType extends VarType<ItemStack> {
     private static class InstConstructor extends Constructor<ItemStack> {
 
         protected InstConstructor() {
-            super(ParamSet.single(ParamSet.builder().addParam("item", ModVarTypes.ITEM).addOptionalParam("amount", ModVarTypes.INTEGER).addOptionalParam("data", ModVarTypes.DATA_STORAGE)), "newItemStack");
+            super(set ->
+                    set.addEntry(entry ->
+                            entry.addParam("item", ModVarTypes.ITEM)
+                                    .addOptionalParam("amount", ModVarTypes.INTEGER)
+                                    .addOptionalParam("data", ModVarTypes.DATA_STORAGE)),
+                    "newItemStack");
         }
 
         @Override
@@ -44,8 +48,13 @@ public class ItemStackType extends VarType<ItemStack> {
         }
 
         @Override
-        public Method<ItemStack>.Instance construct(ParamData data) {
+        protected Method<ItemStack>.Instance create(ParamData data, Method<?>.Instance parent) {
             return new Instance(data);
+        }
+
+        @Override
+        public Method<ItemStack>.Instance construct(JsonObject object, VarAnalyser analyser) {
+            return new Instance(); //TODO complete
         }
 
         public class Instance extends Method<ItemStack>.Instance {
@@ -54,16 +63,16 @@ public class ItemStackType extends VarType<ItemStack> {
             }
 
             @Override
-            public VarType<ItemStack> getType(VarAnalyser analyser){
+            public VarType<ItemStack> getType(IVarAnalyser analyser){
                 return ModVarTypes.ITEM_STACK.get();
             }
 
             @Override
-            public Var<ItemStack> call(VarMap params){
+            public ItemStack call(VarMap params){
                 ItemStack stack = new ItemStack(params.getVarValue("item", ModVarTypes.ITEM));
                 params.getOptionalVarValue("count", ModVarTypes.INTEGER).ifPresent(stack::setCount);
                 params.getOptionalVarValue("data", ModVarTypes.DATA_STORAGE).ifPresent(stack::setTag);
-                return new Var<>(ModVarTypes.ITEM_STACK.get(), stack);
+                return stack;
             }
 
             @Override
@@ -75,15 +84,15 @@ public class ItemStackType extends VarType<ItemStack> {
         }
     }
 
-    private static class GetItem extends InstanceMethod<ItemStack, Item> {
+    private class GetItem extends InstanceMethod<Item> {
 
         protected GetItem() {
             super(ParamSet.empty(), "getItem");
         }
 
         @Override
-        public InstanceMethod<ItemStack, Item>.Instance load(ParamData set, Method<ItemStack>.Instance inst, JsonObject object) {
-            return new Instance(set, inst);
+        public InstanceMethod<Item>.Instance load(ParamData data, Method<ItemStack>.Instance inst, JsonObject object) {
+            return new Instance(data, inst);
         }
 
         @Override
@@ -91,47 +100,60 @@ public class ItemStackType extends VarType<ItemStack> {
             return null;
         }
 
-        public class Instance extends InstanceMethod<ItemStack, Item>.Instance {
+        @Override
+        protected Method<Item>.Instance create(ParamData data, Method<?>.Instance parent) {
+            return new Instance(data, (Method<ItemStack>.Instance) parent);
+        }
+
+        public class Instance extends InstanceMethod<Item>.Instance {
 
             protected Instance(ParamData paramData, Method<ItemStack>.Instance parent) {
                 super(paramData, parent);
             }
 
             @Override
-            public Var<Item> call(VarMap map, Var<ItemStack> inst) {
-                return new Var<>(ModVarTypes.ITEM.get(), inst.getValue().getItem());
+            public Item call(VarMap map, ItemStack inst) {
+                return inst.getItem();
             }
 
             @Override
-            public VarType<Item> getType(VarAnalyser analyser) {
+            public VarType<Item> getType(IVarAnalyser analyser) {
                 return ModVarTypes.ITEM.get();
             }
         }
     }
-    private static class Split extends InstanceMethod<ItemStack, ItemStack> {
+    private class Split extends InstanceMethod<ItemStack> {
 
         protected Split() {
-            super(ParamSet.single(ParamSet.builder().addParam("amount", ModVarTypes.INTEGER)), "split");
+            super(set ->
+                    set.addEntry(entry ->
+                            entry.addParam("amount", ModVarTypes.INTEGER)),
+                    "split");
         }
 
         @Override
-        public InstanceMethod<ItemStack, ItemStack>.Instance load(ParamData set, Method<ItemStack>.Instance inst, JsonObject object) {
-            return new Instance(set, inst);
+        public InstanceMethod<ItemStack>.Instance load(ParamData data, Method<ItemStack>.Instance inst, JsonObject object) {
+            return new Instance(data, inst);
         }
 
-        public class Instance extends InstanceMethod<ItemStack, ItemStack>.Instance {
+        @Override
+        protected Method<ItemStack>.Instance create(ParamData data, Method<?>.Instance parent) {
+            return new Instance(data, (Method<ItemStack>.Instance) parent);
+        }
+
+        public class Instance extends InstanceMethod<ItemStack>.Instance {
 
             protected Instance(ParamData paramData, Method<ItemStack>.Instance parent) {
                 super(paramData, parent);
             }
 
             @Override
-            public Var<ItemStack> call(VarMap map, Var<ItemStack> inst) {
-                return new Var<>(ModVarTypes.ITEM_STACK.get(), inst.getValue().split(map.getVarValue("amount", ModVarTypes.INTEGER)));
+            public ItemStack call(VarMap map, ItemStack inst) {
+                return inst.split(map.getVarValue("amount", ModVarTypes.INTEGER));
             }
 
             @Override
-            public VarType<ItemStack> getType(VarAnalyser analyser) {
+            public VarType<ItemStack> getType(IVarAnalyser analyser) {
                 return ModVarTypes.ITEM_STACK.get();
             }
 
@@ -142,15 +164,20 @@ public class ItemStackType extends VarType<ItemStack> {
         }
     }
 
-    private static class Damage extends InstanceFunction<ItemStack> {
+    private class Damage extends InstanceFunction {
 
         @Override
-        public InstanceFunction<ItemStack>.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<ItemStack>.Instance inst) {
+        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<ItemStack>.Instance inst) {
             Method<Integer>.Instance amount = Method.loadFromSubObject(object, "amount", analyser);
             return new Instance(inst, amount);
         }
 
-        public class Instance extends InstanceFunction<ItemStack>.Instance {
+        @Override
+        public Function.Instance createFromCode(String params, VarAnalyser analyser) {
+            return null;
+        }
+
+        public class Instance extends InstanceFunction.Instance {
             private final Method<Integer>.Instance amount;
 
             protected Instance(Method<ItemStack>.Instance supplier, Method<Integer>.Instance amount) {

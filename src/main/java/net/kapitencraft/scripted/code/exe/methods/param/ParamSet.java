@@ -8,38 +8,55 @@ import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ParamSet {
-    private final List<Entry> possibles;
+    /**
+     * if this set should allow extensions and MethodBodies
+     */
+    private final boolean isFunction;
+    private final List<Entry> params = new ArrayList<>();
+    private final List<Extension> extensions = new ArrayList<>();
 
-    public ParamSet(List<Entry> possibles) {
-        this.possibles = possibles;
+    public ParamSet(boolean isFunction) {
+        this.isFunction = isFunction;
     }
 
-    public static ParamSet single(Entry entry) {
-        return new ParamSet(List.of(entry));
+    public static ParamSet method() {
+        return new ParamSet(false);
     }
 
-    public static ParamSet multiple(Entry... entries) {
-        return new ParamSet(List.of(entries));
+    public static ParamSet function() {
+        return new ParamSet(true);
     }
 
-    public static ParamSet empty() {
-        return new ParamSet(List.of());
+    public static Consumer<ParamSet> empty() {
+        return set -> {};
     }
 
-    public static ParamSet.Entry builder() {
-        return new Entry();
+    public ParamSet addEntry(Consumer<Entry> entryBuilder) {
+        Entry entry = new Entry(this.isFunction);
+        entryBuilder.accept(entry);
+        this.params.add(entry);
+        return this;
+    }
+
+    public ParamSet addExtension(Consumer<Extension> extensionBuilder) {
+        if (!this.isFunction) throw new IllegalAccessError("can not add extension on method; use optional params instead");
+        Extension extension = new Extension();
+        extensionBuilder.accept(extension);
+        this.extensions.add(extension);
+        return this;
     }
 
     public Entry getEntryForData(ParamData paramData, VarAnalyser analyser) {
-        return getEntryForArgs(paramData.getParams().stream().map(instance -> instance.getType(analyser)).toList());
+        return getEntryForArgMethods(paramData.getParams(), analyser);
     }
 
     public void analyse(VarAnalyser analyser, ParamData data) {
-        if (this.possibles.size() == 1) {
-            Entry entry = this.possibles.get(0);
+        if (this.params.size() == 1) {
+            Entry entry = this.params.get(0);
             entry.check(data, analyser);
         }
     }
@@ -49,7 +66,7 @@ public class ParamSet {
      * @return the applied entry that matches the arguments (nullable)
      */
     public Entry getEntryForArgs(List<? extends VarType<?>> list) {
-        List<Entry> entries = new ArrayList<>(possibles);
+        List<Entry> entries = new ArrayList<>(params);
         Iterator<? extends VarType<?>> iterator = list.iterator();
 
         final int[] i = new int[]{0};
@@ -60,18 +77,26 @@ public class ParamSet {
         return entries.isEmpty() ? null : entries.get(0);
     }
 
+    public Entry getEntryForArgMethods(List<Method<?>.Instance> list, VarAnalyser analyser) {
+        return getEntryForArgs(list.stream().map(instance -> instance.getType(analyser)).toList());
+    }
+
     public boolean isEmpty() {
-        return this.possibles.isEmpty();
+        return this.params.isEmpty();
     }
 
     public static class Entry {
+        private final boolean isFunction;
         private final HashMap<String, Supplier<? extends VarType<?>>> params = new HashMap<>();
 
         private final List<String> mandatoryParamsNameMap = new ArrayList<>();
+        private final List<String> methodBodies = new ArrayList<>();
         private final List<String> optionalParamsNameMap = new ArrayList<>();
         private final HashMap<String, List<String>> typeMatch = new HashMap<>();
 
-        Entry() {}
+        Entry(boolean isFunction) {
+            this.isFunction = isFunction;
+        }
 
         public Entry addParam(String paramName, Supplier<? extends VarType<?>> type) {
             params.put(paramName, type);
@@ -104,6 +129,20 @@ public class ParamSet {
                     optionalParamsNameMap.get(id - mandatoryParamsNameMap.size())).get();
         }
 
+        public Entry addMethodBody(String name) {
+            if (!this.isFunction) throw new IllegalAccessError("can not add Method Body to simple method");
+            this.methodBodies.add(name);
+            this.mandatoryParamsNameMap.add(name);
+            return this;
+        }
+
+        public Entry addOptionalMethodBody(String name) {
+            if (!this.isFunction) throw new IllegalAccessError("can not add Method Body to simple method");
+            this.methodBodies.add(name);
+            this.optionalParamsNameMap.add(name);
+            return this;
+        }
+
         public VarMap apply(ParamData paramData, VarMap parent) {
             List<Method<?>.Instance> methods = paramData.getParams();
             VarMap map = new VarMap();
@@ -112,7 +151,7 @@ public class ParamSet {
             for (; i < mandatorySize; i++) {//adding mandatory
                 Method<?>.Instance method = methods.get(i);
                 String name = mandatoryParamsNameMap.get(i);
-                Var<?> value = method.callInit(parent);
+                Var<?> value = method.buildVar(parent);
                 if (typeMatch.containsKey(name)) {
                     typeMatch.get(name).forEach(s -> {
                         if (!map.hasVar(s) || !value.matchesType(map.getVar(s))) {
@@ -125,7 +164,7 @@ public class ParamSet {
             for (; i < mandatorySize + optionalParamsNameMap.size(); i++) {
                 if (i >= methods.size()) break; //optional param; not necessary to continue
                 Method<?>.Instance method = methods.get(i);
-                map.addValue(optionalParamsNameMap.get(i - mandatorySize), method.callInit(parent));
+                map.addValue(optionalParamsNameMap.get(i - mandatorySize), method.buildVar(parent));
             }
             return map;
         }
@@ -147,6 +186,10 @@ public class ParamSet {
                 mapper.put(optionalParamsNameMap.get(i - mandatorySize), methods.get(i));
             }
         }
+
+    }
+
+    public static class Extension {
 
     }
 }

@@ -2,13 +2,13 @@ package net.kapitencraft.scripted.code.exe.functions.abstracts;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.IExecutable;
-import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-import net.kapitencraft.scripted.code.var.VarMap;
 
 public abstract class Function {
 
     public abstract Instance load(JsonObject object, VarAnalyser analyser);
+
+    public abstract Instance createFromCode(String params, VarAnalyser analyser);
 
     public abstract class Instance implements IExecutable {
 

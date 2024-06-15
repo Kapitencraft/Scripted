@@ -6,10 +6,10 @@ import net.kapitencraft.scripted.code.exe.IExecutable;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
-import net.kapitencraft.scripted.code.oop.InstanceMethod;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.edit.client.IRenderable;
 import net.kapitencraft.scripted.edit.client.RenderMap;
@@ -22,32 +22,33 @@ import net.minecraft.util.GsonHelper;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Method<T> {
     protected final ParamSet set;
     private final String name;
 
-    protected Method(ParamSet set, String name) {
-        this.set = set;
+    protected Method(Consumer<ParamSet> setBuilder, String name) {
+        this.set = ParamSet.method();
+        setBuilder.accept(this.set);
         this.name = name;
     }
 
-
     public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
 
-    protected abstract Instance create(ParamData data);
+    protected abstract Instance create(ParamData data, Method<?>.Instance parent);
 
-    public Method<?>.Instance readFromCode(String args, VarAnalyser analyser) {
+    public Method<?>.Instance readFromCode(String args, VarAnalyser analyser, Method<?>.Instance parent) {
         if (args == null) {
             if (this.set.isEmpty()) {
-                return create(ParamData.empty());
+                return create(ParamData.empty(), parent);
             }
             return null;
         } else {
             String[] split = args.split(",");
             List<? extends Method<?>.Instance> list = Arrays.stream(split).map(s -> Compiler.compileMethodChain(s, true, analyser)).toList();
-            return create(ParamData.create(list));
+            return create(ParamData.create(list, analyser, set), parent);
         }
     }
 
@@ -68,8 +69,12 @@ public abstract class Method<T> {
             set.analyse(analyser, paramData);
         }
 
-        public Var<T> callInit(VarMap parent) {
+        public T callInit(VarMap parent) {
             return callInit(this::call, parent);
+        }
+
+        public Var<T> buildVar(VarMap parent) {
+            return new Var<>(this.getType(parent), callInit(parent), true);
         }
 
         @Override
@@ -77,12 +82,12 @@ public abstract class Method<T> {
             callInit(map);
         }
 
-        protected Var<T> callInit(Function<VarMap, Var<T>> callFunc, VarMap parent) {
-            VarMap map = set.getEntryForData(paramData).apply(paramData, parent);
+        protected T callInit(Function<VarMap, T> callFunc, VarMap parent) {
+            VarMap map = paramData.apply(parent);
             return callFunc.apply(map);
         }
 
-        protected abstract Var<T> call(VarMap params);
+        protected abstract T call(VarMap params);
 
         public JsonObject toJson() {
             JsonObject object = new JsonObject();
@@ -91,11 +96,11 @@ public abstract class Method<T> {
             return object;
         }
 
-        public InstanceMethod<?, ?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
+        public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
             return this.getType(analyser).buildMethod(then, analyser, this);
         }
 
-        public abstract VarType<T> getType(VarAnalyser analyser);
+        public abstract VarType<T> getType(IVarAnalyser analyser);
 
         public boolean matchesType(VarAnalyser analyser, Method<?>.Instance other) {
             VarType<T> type = this.getType(analyser);
@@ -128,10 +133,10 @@ public abstract class Method<T> {
         String name = GsonHelper.getAsString(object, "name");
         Method<?>.Instance method;
         if (name.contains(".")) { //reading constructors
-            String[] id = name.split(".");
+            String[] id = name.split("\\.");
             VarType<?> type = ModRegistries.VAR_TYPES.getValue(new ResourceLocation(id[0]));
             if (type == null) throw new JsonSyntaxException("unknown constructor key: '" + id[0] + "'");
-            method = type.buildConstructor(ParamData.of(object, analyser));
+            method = type.buildConstructor(object, analyser);
         } else {
             method = ModMethods.VAR_REFERENCE.get().load(GsonHelper.getAsString(object, "name"));
         }

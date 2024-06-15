@@ -2,22 +2,40 @@ package net.kapitencraft.scripted.code.exe.methods.builtin;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.SpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
-import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.edit.client.text.Compiler;
 import net.kapitencraft.scripted.init.ModVarTypes;
+import org.jetbrains.annotations.Nullable;
 
-public class WhenMethod<T> extends Method<T> {
+import java.util.List;
+
+public class WhenMethod<T> extends SpecialMethod<T> {
     public WhenMethod() {
-        super(ParamSet.single(ParamSet.builder().addParam("condition", ModVarTypes.BOOL).addWildCardParam("ifTrue", "ifFalse").addOptionalWildCardParam("ifFalse", "ifTrue")), "when");
+        super(set -> set.addEntry(entry -> entry.addParam("condition", ModVarTypes.BOOL)
+                .addWildCardParam("ifTrue", "ifFalse")
+                .addWildCardParam("ifFalse", "ifTrue")
+        ));
     }
 
     @Override
     public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
         return new Instance(data);
+    }
+
+    @Override
+    public Method<T>.@Nullable Instance create(String in, VarAnalyser analyser, VarType<T> type) { //can remove space before
+        int trueStart = in.indexOf('?');
+        int falseStart = in.indexOf(':');
+        Method<Boolean>.Instance condition = Compiler.compileMethodChain(in.substring(0, trueStart), true, analyser, ModVarTypes.BOOL.get());
+        Method<T>.Instance ifTrue = Compiler.compileMethodChain(in.substring(trueStart, falseStart), true, analyser, type);
+        Method<T>.Instance ifFalse = Compiler.compileMethodChain(in.substring(falseStart), true, analyser, type);
+        if (condition == null || ifTrue == null || ifFalse == null) return null;
+        return new Instance(ParamData.create(this.set, List.of(condition, ifTrue, ifFalse), analyser));
     }
 
     public class Instance extends Method<T>.Instance {
@@ -27,17 +45,17 @@ public class WhenMethod<T> extends Method<T> {
         }
 
         @Override
-        protected Var<T> call(VarMap params) {
+        protected T call(VarMap params) {
             if (params.getVarValue("condition", ModVarTypes.BOOL)) {
-                return params.getVar("ifTrue");
+                return (T) params.getVar("ifTrue").getValue();
             } else {
-                return params.hasVar("ifFalse") ? params.getVar("ifFalse") : (Var<T>) new Var<>(params.getVar("ifTrue").getType());
+                return params.hasVar("ifFalse") ? (T) params.getVar("ifFalse").getValue() : null;
             }
         }
 
         @Override
-        public VarType<T> getType(VarAnalyser analyser) {
-            return (VarType<T>) analyser.getType("ifTrue");
+        public VarType<T> getType(IVarAnalyser analyser) {
+            return analyser.getType("ifTrue");
         }
     }
 }

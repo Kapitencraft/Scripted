@@ -19,7 +19,6 @@ public class TextElement extends BlockElement {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY, int textX, int textY) {
         int width = font.width(text);
-        int missing
         for (int i = 0; i < width; i+=2) {
             Renderables.BLOCK_MIDDLE.render(graphics, renderX + i, renderY);
         }

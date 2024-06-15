@@ -23,7 +23,7 @@ public class Leveled<K, V> {
         }
     }
 
-    public V getType(K name) {
+    public V getValue(K name) {
         return content.get(name);
     }
 

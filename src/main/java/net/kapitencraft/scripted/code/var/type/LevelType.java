@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.code.var.type;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.functions.abstracts.InstanceFunction;
+import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
@@ -22,15 +22,20 @@ public class LevelType extends VarType<Level> {
         addFunction("setBlock", new SetBlock());
     }
 
-    private static class SpawnEntity extends InstanceFunction<Level> {
+    private class SpawnEntity extends InstanceFunction {
 
         @Override
-        public InstanceFunction<Level>.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<Level>.Instance inst) {
+        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<Level>.Instance inst) {
             Method<Entity>.Instance method = Method.loadFromSubObject(object, "entity", analyser);
             return new Instance(inst, method);
         }
 
-        public class Instance extends InstanceFunction<Level>.Instance {
+        @Override
+        public Function.Instance createFromCode(String params, VarAnalyser analyser) {
+            return null;
+        }
+
+        public class Instance extends InstanceFunction.Instance {
             private final Method<Entity>.Instance entity;
 
             protected Instance(Method<Level>.Instance supplier, Method<Entity>.Instance entity) {
@@ -40,20 +45,25 @@ public class LevelType extends VarType<Level> {
 
             @Override
             public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<Level> instance) {
-                instance.getValue().addFreshEntity(entity.callInit(map).getValue());
+                instance.getValue().addFreshEntity(entity.callInit(map));
             }
         }
     }
-    private static class SetBlock extends InstanceFunction<Level> {
+    private class SetBlock extends InstanceFunction {
 
         @Override
-        public InstanceFunction<Level>.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<Level>.Instance inst) {
+        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<Level>.Instance inst) {
             Method<BlockState>.Instance method = Method.loadFromSubObject(object, "stateProvider", analyser);
             Method<BlockPos>.Instance instance = Method.loadFromSubObject(object, "posProvider", analyser);
             return new Instance(inst, method, instance);
         }
 
-        public class Instance extends InstanceFunction<Level>.Instance {
+        @Override
+        public Function.Instance createFromCode(String params, VarAnalyser analyser) {
+            return new Instance();
+        }
+
+        public class Instance extends InstanceFunction.Instance {
             private final Method<BlockState>.Instance stateProvider;
             private final Method<BlockPos>.Instance posProvider;
 
@@ -65,7 +75,7 @@ public class LevelType extends VarType<Level> {
 
             @Override
             public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<Level> instance) {
-                instance.getValue().setBlock(posProvider.callInit(map).getValue(), stateProvider.callInit(map).getValue(), 3);
+                instance.getValue().setBlock(posProvider.callInit(map), stateProvider.callInit(map), 3);
             }
         }
     }
