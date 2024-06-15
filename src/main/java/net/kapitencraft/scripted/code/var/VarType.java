@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.code.exe.IExecutable;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.mapper.VarReference;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.Constructor;
@@ -223,7 +224,9 @@ public class VarType<T> {
         private class IndexOfElement extends InstanceMethod<Integer> {
 
             protected IndexOfElement() {
-                super(set -> set.addEntry(entry -> entry.addWildCardParam("element")), "indexOf");
+                super(set -> set.addEntry(entry -> entry
+                        .addWildCardParam("main", "element")
+                ), "indexOf");
             }
 
             @Override
@@ -289,7 +292,7 @@ public class VarType<T> {
     }
 
     //Fields
-    protected class Field<C> {
+    public class Field<C> {
         private final java.util.function.Function<T, C> getter;
         private final BiConsumer<T, C> setter;
         private final Supplier<VarType<C>> type;
@@ -313,6 +316,50 @@ public class VarType<T> {
         public void setValue(T in, C value) {
             if (setter == null) throw new IllegalAccessError("can not set value of final field");
             setter.accept(in, value);
+        }
+    }
+
+    public final class FieldReference<R> extends InstanceMethod<T> {
+
+        public FieldReference() {
+            super(ParamSet.empty(), "field");
+        }
+
+        @Override
+        public InstanceMethod<T>.Instance load(ParamData data, Method<T>.Instance inst, JsonObject object) {
+            throw new IllegalStateException("do not load a Field Reference directly; use 'References.FIELD.load()' instead");
+        }
+
+        public <J> InstanceMethod<?>.Instance load(VarType<J>.Field<?> fieldForName, VarReference<J>.Instance instance) {
+            return new Instance((VarType<T>.Field<R>) fieldForName, (VarReference<T>.Instance) instance);
+        }
+
+        public Method<T>.@NotNull Instance create(VarType<?>.Field<?> field, VarReference<?>.Instance parent) {
+            return new Instance((VarType<T>.Field<R>) field, (VarReference<T>.Instance) parent);
+        }
+
+        @Override
+        protected Method<T>.Instance create(ParamData data, Method<?>.Instance parent) {
+            return null;
+        }
+
+        public class Instance extends InstanceMethod<R>.Instance {
+            private final Field<R> field;
+
+            protected Instance(Field<R> field, VarReference<T>.Instance parent) {
+                super(null, parent);
+                this.field = field;
+            }
+
+            @Override
+            public R call(VarMap map, T inst) {
+                return field.getValue(inst);
+            }
+
+            @Override
+            public VarType<R> getType(IVarAnalyser analyser) {
+                return field.getType();
+            }
         }
     }
 

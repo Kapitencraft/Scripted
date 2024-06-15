@@ -5,14 +5,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.VarMap;
+import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.edit.client.RenderMap;
 import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ParamData extends RenderMap {
+    private final WildCardData wildCardData = new WildCardData();
     private final List<Method<?>.Instance> params = new ArrayList<>();
     private final ParamSet.Entry entry;
 
@@ -20,7 +23,11 @@ public class ParamData extends RenderMap {
         this.entry = entry;
     }
 
-    public static ParamData create(ParamSet set, List<Method<?>.Instance> methods, VarAnalyser analyser) {
+    public static ParamData empty() {
+        return new ParamData(new ParamSet.Entry(true)); //bool can be ignored
+    }
+
+    public static ParamData create(ParamSet set, @NotNull List<Method<?>.Instance> methods, VarAnalyser analyser) {
         ParamData data = new ParamData(set.getEntryForArgMethods(methods, analyser));
         methods.forEach(data::addParam);
         return data;
@@ -35,10 +42,6 @@ public class ParamData extends RenderMap {
                 .map(object -> Method.loadInstance(object, analyser))
                 .forEach(list::add);
         return create(set, list, analyser);
-    }
-
-    public static ParamData empty() {
-        return new ParamData(ParamSet.builder());
     }
 
     public static ParamData create(List<? extends Method<?>.Instance> list, VarAnalyser analyser, ParamSet set) {
@@ -70,5 +73,17 @@ public class ParamData extends RenderMap {
 
     public VarMap apply(VarMap parent) {
         return entry.apply(this, parent);
+    }
+
+    void applyWildCardType(String name, VarType<?> type) {
+        this.wildCardData.applyType(name, type);
+    }
+
+    public boolean hasWildCard(String wildCardName) {
+        return this.wildCardData.getType(wildCardName) != null;
+    }
+
+    public <T> VarType<T> getWildCardType(String wildCardName) {
+        return this.wildCardData.getType(wildCardName);
     }
 }

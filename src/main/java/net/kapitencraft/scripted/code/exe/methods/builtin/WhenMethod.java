@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.SpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.WildCardData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -17,8 +18,8 @@ import java.util.List;
 public class WhenMethod<T> extends SpecialMethod<T> {
     public WhenMethod() {
         super(set -> set.addEntry(entry -> entry.addParam("condition", ModVarTypes.BOOL)
-                .addWildCardParam("ifTrue", "ifFalse")
-                .addWildCardParam("ifFalse", "ifTrue")
+                .addWildCardParam("main", "ifFalse")
+                .addWildCardParam("main", "ifTrue")
         ));
     }
 
@@ -28,12 +29,12 @@ public class WhenMethod<T> extends SpecialMethod<T> {
     }
 
     @Override
-    public Method<T>.@Nullable Instance create(String in, VarAnalyser analyser, VarType<T> type) { //can remove space before
+    public Method<T>.@Nullable Instance create(String in, VarAnalyser analyser, WildCardData data) { //can remove space before
         int trueStart = in.indexOf('?');
         int falseStart = in.indexOf(':');
         Method<Boolean>.Instance condition = Compiler.compileMethodChain(in.substring(0, trueStart), true, analyser, ModVarTypes.BOOL.get());
-        Method<T>.Instance ifTrue = Compiler.compileMethodChain(in.substring(trueStart, falseStart), true, analyser, type);
-        Method<T>.Instance ifFalse = Compiler.compileMethodChain(in.substring(falseStart), true, analyser, type);
+        Method<T>.Instance ifTrue = Compiler.compileMethodChain(in.substring(trueStart, falseStart), true, analyser, data.getType("main"));
+        Method<T>.Instance ifFalse = Compiler.compileMethodChain(in.substring(falseStart), true, analyser, data.getType("main"));
         if (condition == null || ifTrue == null || ifFalse == null) return null;
         return new Instance(ParamData.create(this.set, List.of(condition, ifTrue, ifFalse), analyser));
     }

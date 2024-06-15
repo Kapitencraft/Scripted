@@ -1,6 +1,5 @@
 package net.kapitencraft.scripted.code.exe.methods.param;
 
-import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
@@ -87,12 +86,12 @@ public class ParamSet {
 
     public static class Entry {
         private final boolean isFunction;
+        private final WildCardSet wildCardSet = new WildCardSet();
         private final HashMap<String, Supplier<? extends VarType<?>>> params = new HashMap<>();
 
         private final List<String> mandatoryParamsNameMap = new ArrayList<>();
         private final List<String> methodBodies = new ArrayList<>();
         private final List<String> optionalParamsNameMap = new ArrayList<>();
-        private final HashMap<String, List<String>> typeMatch = new HashMap<>();
 
         Entry(boolean isFunction) {
             this.isFunction = isFunction;
@@ -104,16 +103,16 @@ public class ParamSet {
             return this;
         }
 
-        public Entry addWildCardParam(String paramName, String... typeMatch) {
+        public Entry addWildCardParam(String wildCardId, String paramName) {
+            wildCardSet.addWildcard(wildCardId, paramName);
             params.put(paramName, null);
-            if (typeMatch.length > 0) this.typeMatch.put(paramName, List.of(typeMatch));
             mandatoryParamsNameMap.add(paramName);
             return this;
         }
 
-        public Entry addOptionalWildCardParam(String paramName, String... typeMatch) {
+        public Entry addOptionalWildCardParam(String wildCardId, String paramName) {
+            wildCardSet.addWildcard(wildCardId, paramName);
             params.put(paramName, null);
-            if (typeMatch.length > 0) this.typeMatch.put(paramName, List.of(typeMatch));
             optionalParamsNameMap.add(paramName);
             return this;
         }
@@ -152,12 +151,15 @@ public class ParamSet {
                 Method<?>.Instance method = methods.get(i);
                 String name = mandatoryParamsNameMap.get(i);
                 Var<?> value = method.buildVar(parent);
-                if (typeMatch.containsKey(name)) {
-                    typeMatch.get(name).forEach(s -> {
-                        if (!map.hasVar(s) || !value.matchesType(map.getVar(s))) {
-                            throw new JsonSyntaxException("data match failed");
+                if (params.get(name) == null) { //it's a wildcard
+                    String wildCardName = wildCardSet.getWildCardId(name);
+                    if (!paramData.hasWildCard(wildCardName)) {
+                        paramData.applyWildCardType(wildCardName, value.getType());
+                    } else {
+                        if (paramData.getWildCardType(wildCardName) != value.getType()) {
+                            throw new IllegalArgumentException("match error: '" + name + "' does not match type; expected: '" + paramData.getWildCardType(wildCardName) + "'; got: " + value.getType());
                         }
-                    });
+                    }
                 }
                 map.addValue(name, value);
             }

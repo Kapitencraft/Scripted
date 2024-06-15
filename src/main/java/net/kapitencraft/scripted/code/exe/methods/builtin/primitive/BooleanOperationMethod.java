@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.SpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.WildCardData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -35,11 +36,11 @@ public class BooleanOperationMethod extends SpecialMethod<Boolean> {
     }
 
     @Override
-    public Method<Boolean>.@Nullable Instance create(String in, VarAnalyser analyser, VarType<Boolean> type) { //type is ModVarTypes.BOOL
+    public Method<Boolean>.@Nullable Instance create(String in, VarAnalyser analyser, WildCardData data) { //type is ModVarTypes.BOOL
         Matcher matcher = OPERATION.matcher(in);
         if (matcher.find()) {
-            Method<Boolean>.Instance leftCondition = Compiler.compileMethodChain(in.substring(0, matcher.start()), true, analyser, type);
-            Method<Boolean>.Instance rightCondition = Compiler.compileMethodChain(in.substring(matcher.end()), true, analyser, type);
+            Method<Boolean>.Instance leftCondition = Compiler.compileMethodChain(in.substring(0, matcher.start()), true, analyser, ModVarTypes.BOOL.get());
+            Method<Boolean>.Instance rightCondition = Compiler.compileMethodChain(in.substring(matcher.end()), true, analyser, ModVarTypes.BOOL.get());
             OperationType operationType = OperationType.CODEC.byName(matcher.group(1));
             if (leftCondition == null || rightCondition == null || operationType == null) return null; //if either is null we return null
             return new Instance(ParamData.create(this.set, List.of(leftCondition, rightCondition), analyser), operationType);
@@ -86,7 +87,7 @@ public class BooleanOperationMethod extends SpecialMethod<Boolean> {
 
         public static final EnumCodec<OperationType> CODEC = StringRepresentable.fromEnum(OperationType::values);
 
-        private final String name; //best name I could think of...
+        private final String name;
 
         OperationType(String name) {
             this.name = name;

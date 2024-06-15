@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.SpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.param.WildCardData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -26,7 +27,7 @@ public class NotMethod extends SpecialMethod<Boolean> {
     }
 
     @Override
-    public Method<Boolean>.@Nullable Instance create(String in, VarAnalyser analyser, VarType<Boolean> type) {
+    public Method<Boolean>.@Nullable Instance create(String in, VarAnalyser analyser, WildCardData data) {
         Method<Boolean>.Instance condition = Compiler.compileMethodChain(in.substring(1), true, analyser, ModVarTypes.BOOL.get());
         if (condition == null) return null;
         return new Instance(ParamData.create(this.set, List.of(condition), analyser));

@@ -3,7 +3,6 @@ package net.kapitencraft.scripted.code.var.type;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.VarType;
@@ -26,7 +25,10 @@ public class BlockStateType extends VarType<BlockState> {
     public class SetProperty extends InstanceMethod<BlockState> {
 
         protected SetProperty() {
-            super(ParamSet.single(ParamSet.builder().addParam("property", ModVarTypes.BLOCK_STATE_PROPERTY).addWildCardParam("value")), "setProperty");
+            super(set -> set.addEntry(entry -> entry
+                    .addParam("property", ModVarTypes.BLOCK_STATE_PROPERTY)
+                    .addWildCardParam("main", "value")
+            ), "setProperty");
         }
 
         @Override
