@@ -39,6 +39,11 @@ public class WhenMethod<T> extends SpecialMethod<T> {
         return new Instance(ParamData.create(this.set, List.of(condition, ifTrue, ifFalse), analyser));
     }
 
+    @Override
+    public boolean isInstance(String string) {
+        return string.contains("?") && string.contains(":");
+    }
+
     public class Instance extends Method<T>.Instance {
 
         protected Instance(ParamData paramData) {

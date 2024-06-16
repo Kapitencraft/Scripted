@@ -48,6 +48,11 @@ public class BooleanOperationMethod extends SpecialMethod<Boolean> {
         return null;
     }
 
+    @Override
+    public boolean isInstance(String string) {
+        return OPERATION.matcher(string).find();
+    }
+
     public class Instance extends Method<Boolean>.Instance {
         private final OperationType operationType;
 

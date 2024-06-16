@@ -17,15 +17,20 @@ import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.init.ModVarTypes;
+import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.*;
 
 public class VarType<T> {
+    public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.Types.NAME_MAP, Map.class);
+
+    private final String name;
     private final MethodMap<T> methods;
     Constructor<T> constructor;
     private final FieldMap<T> fields;
@@ -43,7 +48,8 @@ public class VarType<T> {
      * @param mod similar for modulus
      * @param comp method to map a var with this type to double to use comparators like >=, ==, <=
      */
-    public VarType(BiFunction<T, T, T> add, BiFunction<T, T, T> mult, BiFunction<T, T, T> div, BiFunction<T, T, T> sub, BiFunction<T, T, T> mod, ToDoubleFunction<T> comp) {
+    public VarType(String name, BiFunction<T, T, T> add, BiFunction<T, T, T> mult, BiFunction<T, T, T> div, BiFunction<T, T, T> sub, BiFunction<T, T, T> mod, ToDoubleFunction<T> comp) {
+        this.name = name;
         this.add = add;
         this.mult = mult;
         this.div = div;
@@ -147,10 +153,14 @@ public class VarType<T> {
         return new ListType();
     }
 
+    public String getName() {
+        return this.name;
+    }
+
     private class ListType extends VarType<List<T>> {
 
         public ListType() {
-            super(null, null, null, null, null, null);
+            super("List<" + VarType.this.getName() + ">", null, null, null, null, null, null);
             this.addMethod("get", new GetElement());
             this.addMethod("indexOf", new IndexOfElement());
             this.addFunction("add", new AddElement());
@@ -319,14 +329,14 @@ public class VarType<T> {
         }
     }
 
-    public final class FieldReference<R> extends InstanceMethod<T> {
+    public final class FieldReference<R> extends InstanceMethod<R> {
 
         public FieldReference() {
             super(ParamSet.empty(), "field");
         }
 
         @Override
-        public InstanceMethod<T>.Instance load(ParamData data, Method<T>.Instance inst, JsonObject object) {
+        public InstanceMethod<R>.Instance load(ParamData data, Method<T>.Instance inst, JsonObject object) {
             throw new IllegalStateException("do not load a Field Reference directly; use 'References.FIELD.load()' instead");
         }
 
@@ -334,13 +344,13 @@ public class VarType<T> {
             return new Instance((VarType<T>.Field<R>) fieldForName, (VarReference<T>.Instance) instance);
         }
 
-        public Method<T>.@NotNull Instance create(VarType<?>.Field<?> field, VarReference<?>.Instance parent) {
-            return new Instance((VarType<T>.Field<R>) field, (VarReference<T>.Instance) parent);
+        public Method<R>.@NotNull Instance create(VarType<?>.Field<?> field, VarReference<?>.Instance parent) {
+            return new Instance((Field<R>) field, (VarReference<T>.Instance) parent);
         }
 
         @Override
-        protected Method<T>.Instance create(ParamData data, Method<?>.Instance parent) {
-            return null;
+        protected Method<R>.Instance create(ParamData data, Method<?>.Instance parent) {
+            throw new IllegalStateException("do not load a Field Reference directly; use 'References.FIELD.load()' instead");
         }
 
         public class Instance extends InstanceMethod<R>.Instance {

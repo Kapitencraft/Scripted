@@ -13,6 +13,11 @@ public class BreakFunction extends Function {
         return new Instance();
     }
 
+    @Override
+    public Function.Instance createFromCode(String params, VarAnalyser analyser) {
+        return new Instance();
+    }
+
     public class Instance extends Function.Instance {
 
         @Override

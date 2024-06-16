@@ -38,6 +38,7 @@ public class Compiler {
         Matcher matcher = VAR_INITIALIZER.matcher(string);
         if (matcher.matches()) {
             //var type & final
+
             String definition = matcher.group(1);
             boolean isFinal = definition != null && definition.startsWith("final");
             String varTypeId = definition != null ? definition.split(" ")[1] : null;
@@ -80,8 +81,8 @@ public class Compiler {
             if (matcher.matches()) {
                 String name = matcher.group(1);
                 if (inst != null) {
-                    VarType<?> type = inst.getType(analyser);
-                    inst = type.getMethodForName(name).readFromCode(matcher.group(2), analyser, inst);
+                    VarType<?> varType = inst.getType(analyser);
+                    inst = varType.getMethodForName(name).readFromCode(matcher.group(2), analyser, inst);
                 }
             }
             if (inst == null) {
@@ -116,5 +117,16 @@ public class Compiler {
             }
         }
         return null;
+    }
+
+    private static final Pattern LIST_MATCHER = Pattern.compile("^List<([\\w<>]+)>$");
+
+    public static <T> VarType<T> readType(String name) {
+        Matcher matcher = LIST_MATCHER.matcher(name);
+        if (matcher.matches()) {
+            VarType<?> type = readType(matcher.group(1));
+            return type == null ? null : (VarType<T>) type.listOf();
+        }
+        return (VarType<T>) VarType.NAME_MAP.get(name);
     }
 }

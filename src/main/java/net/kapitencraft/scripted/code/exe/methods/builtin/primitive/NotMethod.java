@@ -33,6 +33,11 @@ public class NotMethod extends SpecialMethod<Boolean> {
         return new Instance(ParamData.create(this.set, List.of(condition), analyser));
     }
 
+    @Override
+    public boolean isInstance(String string) {
+        return string.startsWith("!");
+    }
+
     public class Instance extends Method<Boolean>.Instance {
 
         protected Instance(ParamData paramData) {

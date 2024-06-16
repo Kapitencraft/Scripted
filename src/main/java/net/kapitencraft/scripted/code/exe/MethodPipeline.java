@@ -82,11 +82,11 @@ public class MethodPipeline<T> {
                 if ((broken || continued) && !isLoop) {
                     throw new IllegalStateException("can not break nor continue not-loop pipeline");
                 } else {
-                    return new Var<>(returnType, this.ret);
+                    return new Var<>(returnType, this.ret, true);
                 }
             }
         }
-        return new Var<>(returnType);
+        return new Var<>(returnType, true);
     }
 
     public void setCanceled() {

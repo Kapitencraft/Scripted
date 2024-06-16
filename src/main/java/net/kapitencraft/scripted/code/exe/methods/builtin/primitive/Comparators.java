@@ -23,9 +23,10 @@ import java.util.regex.Pattern;
 
 public class Comparators<T> extends SpecialMethod<Boolean> {
     /**
-     * <i>don't look</i>
+     * a simple pattern to compile any possible comparator.<br>
+     * one of ==, !=, <=, >=, <, >
      */
-    private static final Pattern COMPARATORS = Pattern.compile("([<>=!]?[=<>])");
+    public static final Pattern COMPARATORS = Pattern.compile("^(([<>=!]=)|<|>)$");
 
     public Comparators() {
         super(set -> set.addEntry(entry -> entry
@@ -50,6 +51,11 @@ public class Comparators<T> extends SpecialMethod<Boolean> {
             return new Instance(ParamData.create(this.set, List.of(left, right), analyser), mode);
         }
         return null;
+    }
+
+    @Override
+    public boolean isInstance(String string) {
+        return COMPARATORS.matcher(string).find();
     }
 
     private class Instance extends Method<Boolean>.Instance {

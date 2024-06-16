@@ -1,7 +1,6 @@
 package net.kapitencraft.scripted;
 
 import com.mojang.logging.LogUtils;
-import net.kapitencraft.scripted.code.var.VarManager;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.ModScriptTypes;
@@ -39,8 +38,6 @@ public class Scripted {
         ModVarTypes.REGISTRY.register(modEventBus);
         ModScriptTypes.REGISTRY.register(modEventBus);
         ModMethods.REGISTRY.register(modEventBus);
-
-        VarManager.bootstrap();
     }
 
     public static ResourceLocation res(String id) {

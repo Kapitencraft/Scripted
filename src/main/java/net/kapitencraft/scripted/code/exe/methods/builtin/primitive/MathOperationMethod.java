@@ -45,8 +45,13 @@ public class MathOperationMethod<T> extends SpecialMethod<T> {
         return null;
     }
 
+    @Override
+    public boolean isInstance(String string) {
+        return OPERATION.matcher(string).find();
+    }
+
     public class Instance extends Method<T>.Instance {
-        private Operation operation;
+        private final Operation operation;
 
         private Instance(ParamData paramData, Operation operation) {
             super(paramData);
