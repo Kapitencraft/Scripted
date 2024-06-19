@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.event.custom;
 
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraftforge.eventbus.api.Event;
 import net.minecraftforge.fml.event.IModBusEvent;
 import org.jetbrains.annotations.ApiStatus;

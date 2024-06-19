@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.code.oop;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.util.GsonHelper;
 
 import java.util.HashMap;

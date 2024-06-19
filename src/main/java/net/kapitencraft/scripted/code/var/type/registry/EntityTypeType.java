@@ -6,6 +6,6 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 public class EntityTypeType extends RegistryType<EntityType<?>> {
     public EntityTypeType() {
-        super(ForgeRegistries.ENTITY_TYPES);
+        super("EntityType", ForgeRegistries.ENTITY_TYPES);
     }
 }

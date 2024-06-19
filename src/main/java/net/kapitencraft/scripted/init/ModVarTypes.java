@@ -1,17 +1,25 @@
 package net.kapitencraft.scripted.init;
 
 import net.kapitencraft.scripted.Scripted;
-import net.kapitencraft.scripted.code.var.VarType;
-import net.kapitencraft.scripted.code.var.type.*;
+import net.kapitencraft.scripted.code.var.type.BlockStatePropertyType;
+import net.kapitencraft.scripted.code.var.type.BlockStateType;
+import net.kapitencraft.scripted.code.var.type.ItemStackType;
+import net.kapitencraft.scripted.code.var.type.LevelType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.code.var.type.data.DataStorageType;
+import net.kapitencraft.scripted.code.var.type.entity.EntityType;
+import net.kapitencraft.scripted.code.var.type.entity.LivingEntityType;
 import net.kapitencraft.scripted.code.var.type.math.BlockPosType;
 import net.kapitencraft.scripted.code.var.type.math.Vec2Type;
 import net.kapitencraft.scripted.code.var.type.math.Vec3Type;
 import net.kapitencraft.scripted.code.var.type.primitive.*;
+import net.kapitencraft.scripted.code.var.type.registry.AttributeType;
 import net.kapitencraft.scripted.code.var.type.registry.EntityTypeType;
 import net.kapitencraft.scripted.code.var.type.registry.ItemType;
 import net.kapitencraft.scripted.code.var.type.registry.VarTypeType;
 import net.kapitencraft.scripted.init.custom.ModRegistryKeys;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -40,9 +48,13 @@ public interface ModVarTypes {
     RegistryObject<ItemStackType> ITEM_STACK = REGISTRY.register("item_stack", ItemStackType::new);
     RegistryObject<VarTypeType> VAR_TYPE = REGISTRY.register("var_type", VarTypeType::new);
     RegistryObject<EntityTypeType> ENTITY_TYPE = REGISTRY.register("entity_type", EntityTypeType::new);
+    RegistryObject<AttributeType> ATTRIBUTE = REGISTRY.register("attribute", AttributeType::new);
+
+    //entity
+    RegistryObject<EntityType<Entity>> ENTITY = REGISTRY.register("entity", ()-> new EntityType<>("Entity"));
+    RegistryObject<LivingEntityType<LivingEntity>> LIVING_ENTITY = REGISTRY.register("living_entity", ()-> new LivingEntityType<>("LivingEntity"));
 
     //other
-    RegistryObject<EntityType> ENTITY = REGISTRY.register("entity", EntityType::new);
     RegistryObject<LevelType> LEVEL = REGISTRY.register("level", LevelType::new);
     RegistryObject<BlockStateType> BLOCK_STATE = REGISTRY.register("block_state", BlockStateType::new);
     RegistryObject<BlockStatePropertyType> BLOCK_STATE_PROPERTY = REGISTRY.register("block_state_property", BlockStatePropertyType::new);

@@ -4,9 +4,10 @@ import com.google.common.collect.Maps;
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.SpecialFunction;
+import net.kapitencraft.scripted.code.exe.methods.ISpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.SpecialMethod;
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistry;
@@ -21,12 +22,18 @@ import java.util.Map;
 public class ModCallbacks {
     public static class Types implements IForgeRegistry.AddCallback<VarType<?>>, IForgeRegistry.CreateCallback<VarType<?>> {
         public static final ResourceLocation NAME_MAP = Scripted.res("name_map");
+        public static final ResourceLocation PRIMITIVES = Scripted.res("primitives");
 
         @Override
         public void onAdd(IForgeRegistryInternal<VarType<?>> owner, RegistryManager stage, int id, ResourceKey<VarType<?>> key, VarType<?> obj, @Nullable VarType<?> oldObj) {
             Map<String, VarType<?>> nameMap = owner.getSlaveMap(NAME_MAP, Map.class);
             if (oldObj != null) removeOld(oldObj, nameMap);
             nameMap.put(obj.getName(), obj);
+            List<PrimitiveType<?>> primitives = owner.getSlaveMap(PRIMITIVES, List.class);
+            if (oldObj instanceof PrimitiveType<?>) primitives.remove(oldObj);
+            if (obj instanceof PrimitiveType<?> prim) {
+                primitives.add(prim);
+            }
         }
 
         private static void removeOld(VarType<?> type, Map<String, VarType<?>> nameMap) {
@@ -36,6 +43,7 @@ public class ModCallbacks {
         @Override
         public void onCreate(IForgeRegistryInternal<VarType<?>> owner, RegistryManager stage) {
             owner.setSlaveMap(NAME_MAP, Maps.newHashMap());
+            owner.setSlaveMap(PRIMITIVES, Lists.newArrayList());
         }
     }
 
@@ -44,8 +52,8 @@ public class ModCallbacks {
 
         @Override
         public void onAdd(IForgeRegistryInternal<Method<?>> owner, RegistryManager stage, int id, ResourceKey<Method<?>> key, Method<?> obj, @Nullable Method<?> oldObj) {
-            if (oldObj instanceof SpecialMethod<?> oldSpecial && obj instanceof SpecialMethod<?> newSpecial) {
-                List<SpecialMethod<?>> specials = owner.getSlaveMap(SPECIAL_MAP, List.class);
+            if (oldObj instanceof ISpecialMethod<?> oldSpecial && obj instanceof ISpecialMethod<?> newSpecial) {
+                List<ISpecialMethod<?>> specials = owner.getSlaveMap(SPECIAL_MAP, List.class);
                 specials.remove(oldSpecial);
                 specials.add(newSpecial);
             }

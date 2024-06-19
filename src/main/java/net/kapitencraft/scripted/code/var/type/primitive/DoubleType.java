@@ -1,13 +1,14 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
 import net.minecraft.util.GsonHelper;
 
 import java.util.regex.Pattern;
 
 public class DoubleType extends PrimitiveType<Double> {
     public DoubleType() {
-        super(Double::sum, (d, d1) -> d * d1, (d, d1) -> d / d1, (d, d1) -> d - d1, (d, d1) -> d % d1, d -> d);
+        super("double", Double::sum, (d, d1) -> d * d1, (d, d1) -> d / d1, (d, d1) -> d - d1, (d, d1) -> d % d1, Double::compareTo);
     }
 
     @Override

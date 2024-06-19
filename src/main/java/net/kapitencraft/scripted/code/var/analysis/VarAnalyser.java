@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.code.var.analysis;
 
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Leveled;
 import net.minecraft.network.chat.Component;
 

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.var;
 
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Leveled;
 
 import java.util.Optional;

@@ -3,8 +3,8 @@ package net.kapitencraft.scripted.code.exe.methods.param;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.*;
 import java.util.function.Consumer;

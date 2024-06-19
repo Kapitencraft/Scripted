@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
+import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
@@ -20,8 +21,8 @@ public class BreakFunction extends Function {
 
     public class Instance extends Function.Instance {
 
-        @Override
-        public void save(JsonObject object) {
+        protected Instance() {
+            super(ParamData.empty());
         }
 
         @Override

@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.code.var;
 
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import org.jetbrains.annotations.NotNull;
 
 public class Var<T> {

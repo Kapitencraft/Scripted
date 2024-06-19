@@ -8,9 +8,9 @@ import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.client.IRenderable;
 import net.kapitencraft.scripted.edit.client.RenderMap;
 import net.kapitencraft.scripted.edit.client.text.Compiler;
@@ -26,13 +26,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public abstract class Method<T> {
-    protected final ParamSet set;
+    protected final ParamSet paramSet;
     private final String name;
 
     protected Method(Consumer<ParamSet> setBuilder, String name) {
-        this.set = ParamSet.method();
-        setBuilder.accept(this.set);
+        this.paramSet = ParamSet.method();
+        setBuilder.accept(this.paramSet);
         this.name = name;
+    }
+
+    public Instance load(JsonObject object, VarAnalyser analyser) {
+        return load(object, analyser, ParamData.of(object, analyser, this.paramSet));
     }
 
     public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
@@ -41,14 +45,14 @@ public abstract class Method<T> {
 
     public Method<?>.Instance readFromCode(String args, VarAnalyser analyser, Method<?>.Instance parent) {
         if (args == null) {
-            if (this.set.isEmpty()) {
+            if (this.paramSet.isEmpty()) {
                 return create(ParamData.empty(), parent);
             }
             return null;
         } else {
             String[] split = args.split(",");
             List<? extends Method<?>.Instance> list = Arrays.stream(split).map(s -> Compiler.compileMethodChain(s, true, analyser)).toList();
-            return create(ParamData.create(list, analyser, set), parent);
+            return create(ParamData.create(list, analyser, paramSet), parent);
         }
     }
 
@@ -66,7 +70,7 @@ public abstract class Method<T> {
         }
 
         public void analyse(VarAnalyser analyser) {
-            set.analyse(analyser, paramData);
+            paramSet.analyse(analyser, paramData);
         }
 
         public T callInit(VarMap parent) {

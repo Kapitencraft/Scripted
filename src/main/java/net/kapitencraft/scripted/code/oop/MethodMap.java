@@ -3,8 +3,8 @@ package net.kapitencraft.scripted.code.oop;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.util.GsonHelper;
 
 import java.util.HashMap;
@@ -14,9 +14,8 @@ public class MethodMap<T> {
     private final HashMap<String, VarType<T>.InstanceMethod<?>> builders = new HashMap<>();
 
     public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, Method<T>.Instance parent) {
-        String name = GsonHelper.getAsString(object, "name");
         ParamData set = ParamData.of(object, analyser);
-        VarType<T>.InstanceMethod<?>.Instance method = builders.get(name).load(set, parent, object);
+        VarType<T>.InstanceMethod<?>.Instance method = builders.get(GsonHelper.getAsString(object, "name")).load(set, parent, object);
         if (object.has("then")) return method.loadChild(object.getAsJsonObject("then"), analyser);
         return method;
     }

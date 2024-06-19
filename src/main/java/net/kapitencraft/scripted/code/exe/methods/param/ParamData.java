@@ -5,13 +5,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.client.RenderMap;
+import net.kapitencraft.scripted.edit.client.text.Compiler;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ParamData extends RenderMap {
@@ -51,6 +53,11 @@ public class ParamData extends RenderMap {
         return data;
     }
 
+    public static ParamData create(String args, VarAnalyser analyser, ParamSet paramSet) {
+        String[] split = args.split(",");
+        List<? extends Method<?>.Instance> list = Arrays.stream(split).map(s -> Compiler.compileMethodChain(s, true, analyser)).toList(); //TODO
+        return ParamData.create(list, analyser, paramSet);
+    }
 
     public void addParam(Method<?>.Instance method) {
         params.add(method);

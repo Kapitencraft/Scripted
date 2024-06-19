@@ -4,7 +4,7 @@ import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.script.type.ScriptType;
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 

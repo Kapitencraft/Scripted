@@ -5,11 +5,10 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.IForgeRegistry;
 
 public class ItemType extends RegistryType<Item> {
     public ItemType() {
-        super(ForgeRegistries.ITEMS);
+        super("Item", ForgeRegistries.ITEMS);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
 import net.minecraft.util.GsonHelper;
 
 import java.util.regex.Pattern;
@@ -8,12 +9,22 @@ import java.util.regex.Pattern;
 public class StringType extends PrimitiveType<String> {
     public static final Pattern STRING = Pattern.compile("^(\"(.+)\")$");
     public StringType() {
-        super((s, s1) -> s + s1, null, null, null, null, null);
+        super("String", (s, s1) -> s + s1, null, null, null, null, String::compareTo);
     }
 
     @Override
     public Pattern matcher() {
         return STRING;
+    }
+
+    @Override
+    public String openRegex() {
+        return "\"";
+    }
+
+    @Override
+    public String closeRegex() {
+        return "\"";
     }
 
     @Override

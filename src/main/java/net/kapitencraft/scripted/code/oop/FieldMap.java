@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.code.oop;
 
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.util.HashMap;

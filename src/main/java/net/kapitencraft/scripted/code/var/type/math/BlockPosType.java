@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.code.var.type.math;
 
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.core.BlockPos;
 
 public class BlockPosType extends VarType<BlockPos> {

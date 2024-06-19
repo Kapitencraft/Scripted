@@ -1,21 +1,26 @@
 package net.kapitencraft.scripted.edit.client.text;
 
 import net.kapitencraft.scripted.code.exe.IExecutable;
+import net.kapitencraft.scripted.code.exe.Runnable;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.mapper.PrimitiveReference;
 import net.kapitencraft.scripted.code.exe.methods.mapper.VarReference;
-import net.kapitencraft.scripted.code.var.VarType;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-import net.kapitencraft.scripted.code.var.type.primitive.PrimitiveType;
+import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.io.IOHelper;
+import net.kapitencraft.scripted.io.StringSegment;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Compiler {
     private static final Pattern PIPELINE_MATCH = Pattern.compile("\\{([\\w,_();{} ]+)}");
@@ -34,7 +39,7 @@ public class Compiler {
         }
     }
 
-    public static <T> IExecutable compileFunction(String string, VarAnalyser analyser) {
+    public static <T> Runnable compileFunction(String string, VarAnalyser analyser) {
         Matcher matcher = VAR_INITIALIZER.matcher(string);
         if (matcher.matches()) {
             //var type & final
@@ -71,7 +76,7 @@ public class Compiler {
 
     public static <T> Method<T>.@Nullable Instance compileMethodChain(String in, boolean allowPrimitive, VarAnalyser analyser, VarType<T> type) {
         if (allowPrimitive && type instanceof PrimitiveType<T> primitiveType) {
-            Method<T>.Instance instance = PrimitiveReference.loadFromString(in, primitiveType);
+            Method<T>.Instance instance = PrimitiveType.loadReferenceFromString(in, primitiveType);
             if (instance != null) return instance;
         }
         String[] chain = in.split("\\.");
@@ -90,8 +95,8 @@ public class Compiler {
                 continue;
             }
             if (!s.contains("(") && inst instanceof VarReference<?>.Instance varInstance) {
-                VarType<?> type = inst.getType(analyser);
-                return (Method<T>.Instance) ModMethods.FIELD_REFERENCE.get().create(type.getFieldForName(s), varInstance);
+                VarType<?> varType = inst.getType(analyser);
+                return varType.createFieldReference(s, varInstance);
             }
         }
         return (Method<T>.Instance) inst;
@@ -128,5 +133,16 @@ public class Compiler {
             return type == null ? null : (VarType<T>) type.listOf();
         }
         return (VarType<T>) VarType.NAME_MAP.get(name);
+    }
+
+    //Instance
+    private final List<PrimitiveType<?>.Reference> primitivesList = new ArrayList<>();
+
+    public Compiler(String toCompile) {
+        Map<PrimitiveType<?>, List<StringSegment>> primitivesToPossiblesMap = PrimitiveType.PRIMITIVES.stream().collect(Collectors.toMap(java.util.function.Function.identity(),
+                primitiveType -> IOHelper.collectBracketContent(toCompile, primitiveType.openRegex(), primitiveType.closeRegex())));
+        primitivesToPossiblesMap.forEach((primitiveType, stringSegments) -> stringSegments.forEach(stringSegment -> {
+            primitivesList.add(primitiveType.)
+        }));
     }
 }

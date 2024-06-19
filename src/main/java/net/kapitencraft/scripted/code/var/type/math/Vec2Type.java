@@ -1,10 +1,7 @@
 package net.kapitencraft.scripted.code.var.type.math;
 
-import net.kapitencraft.scripted.code.var.VarType;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.world.phys.Vec2;
-
-import java.util.function.BiFunction;
-import java.util.function.ToDoubleFunction;
 
 public class Vec2Type extends VarType<Vec2> {
 

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
 import net.minecraft.util.GsonHelper;
 
 import java.util.regex.Pattern;
@@ -8,7 +9,7 @@ import java.util.regex.Pattern;
 public class IntegerType extends PrimitiveType<Integer> {
 
     public IntegerType() {
-        super(Integer::sum, (i, i1) -> i * i1, (i, i1) -> i / i1, (i, i1) -> i - i1, (i, i1) -> i % i1, Integer::intValue);
+        super("int", Integer::sum, (i, i1) -> i * i1, (i, i1) -> i / i1, (i, i1) -> i - i1, (i, i1) -> i % i1, Integer::compareTo);
     }
 
     @Override
