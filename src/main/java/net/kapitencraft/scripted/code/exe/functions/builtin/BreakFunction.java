@@ -3,11 +3,17 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
 public class BreakFunction extends Function {
+
+    public BreakFunction() {
+        super(ParamSet.empty(), "break");
+    }
 
     @Override
     public Function.Instance load(JsonObject object, VarAnalyser analyser) {
@@ -15,7 +21,7 @@ public class BreakFunction extends Function {
     }
 
     @Override
-    public Function.Instance createFromCode(String params, VarAnalyser analyser) {
+    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
         return new Instance();
     }
 

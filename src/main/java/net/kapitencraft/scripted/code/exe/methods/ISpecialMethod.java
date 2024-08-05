@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.code.exe.methods;
 
-import net.kapitencraft.scripted.code.exe.methods.param.WildCardData;
+import net.kapitencraft.scripted.code.exe.param.WildCardData;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import org.jetbrains.annotations.Nullable;
 

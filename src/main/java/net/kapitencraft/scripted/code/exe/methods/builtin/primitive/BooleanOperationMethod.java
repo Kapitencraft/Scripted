@@ -1,32 +1,25 @@
 package net.kapitencraft.scripted.code.exe.methods.builtin.primitive;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.ISpecialMethod;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.WildCardData;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.edit.client.text.Compiler;
-import net.kapitencraft.scripted.init.ModVarTypes;
+import net.kapitencraft.scripted.init.VarTypes;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class BooleanOperationMethod extends Method<Boolean> implements ISpecialMethod<Boolean> {
-    private static final Pattern OPERATION = Pattern.compile("((\\|\\|)|(&&)|(\\^))");
+public class BooleanOperationMethod extends Method<Boolean>{
 
     public BooleanOperationMethod() {
         super(set -> set.addEntry(entry -> entry
-                .addParam("left", ModVarTypes.BOOL)
-                .addParam("right", ModVarTypes.BOOL)
+                .addParam("left", VarTypes.BOOL)
+                .addParam("right", VarTypes.BOOL)
         ), null);
     }
 
@@ -35,27 +28,8 @@ public class BooleanOperationMethod extends Method<Boolean> implements ISpecialM
         return new Instance(data, OperationType.CODEC.byName(GsonHelper.getAsString(object, "operation_type")));
     }
 
-    @Override
-    protected Method<Boolean>.Instance create(ParamData data, Method<?>.Instance parent) {
-        return null;
-    }
-
-    @Override
-    public Method<Boolean>.@Nullable Instance create(String in, VarAnalyser analyser, WildCardData data) { //type is ModVarTypes.BOOL
-        Matcher matcher = OPERATION.matcher(in);
-        if (matcher.find()) {
-            Method<Boolean>.Instance leftCondition = Compiler.compileMethodChain(in.substring(0, matcher.start()), true, analyser, ModVarTypes.BOOL.get());
-            Method<Boolean>.Instance rightCondition = Compiler.compileMethodChain(in.substring(matcher.end()), true, analyser, ModVarTypes.BOOL.get());
-            OperationType operationType = OperationType.CODEC.byName(matcher.group(1));
-            if (leftCondition == null || rightCondition == null || operationType == null) return null; //if either is null we return null
-            return new Instance(ParamData.create(this.paramSet, List.of(leftCondition, rightCondition), analyser), operationType);
-        }
-        return null;
-    }
-
-    @Override
-    public boolean isInstance(String string) {
-        return OPERATION.matcher(string).find();
+    public Method<?>.Instance create(Method<?>.Instance left, String type, Method<?>.Instance right, VarAnalyser analyser) {
+        return new Instance(ParamData.create(set(), analyser, List.of(left, right)), OperationType.CODEC.byName(type));
     }
 
     public class Instance extends Method<Boolean>.Instance {
@@ -67,9 +41,9 @@ public class BooleanOperationMethod extends Method<Boolean> implements ISpecialM
         }
 
         @Override
-        protected Boolean call(VarMap params) {
-            boolean left = params.getVarValue("left", ModVarTypes.BOOL);
-            boolean right = params.getVarValue("right", ModVarTypes.BOOL);
+        protected Boolean call(VarMap params, VarMap origin) {
+            boolean left = params.getVarValue("left", VarTypes.BOOL);
+            boolean right = params.getVarValue("right", VarTypes.BOOL);
             return switch (operationType) {
                 case OR -> left || right;
                 case AND -> left && right;
@@ -79,14 +53,12 @@ public class BooleanOperationMethod extends Method<Boolean> implements ISpecialM
 
         @Override
         public VarType<Boolean> getType(IVarAnalyser analyser) {
-            return ModVarTypes.BOOL.get();
+            return VarTypes.BOOL.get();
         }
 
         @Override
-        public JsonObject toJson() {
-            JsonObject object = super.toJson();
+        protected void saveAdditional(JsonObject object) {
             object.addProperty("operation_type", operationType.getSerializedName());
-            return object;
         }
     }
 

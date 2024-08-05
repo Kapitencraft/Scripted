@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Leveled<K, V> {
-    private final HashMap<K, V> content = new HashMap<>();
+    protected final HashMap<K, V> content = new HashMap<>();
     private final List<Integer> levels = new ArrayList<>();
 
     public void push() {

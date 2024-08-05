@@ -1,39 +1,34 @@
 package net.kapitencraft.scripted.code.exe.functions.abstracts;
 
-import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.Runnable;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
-import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
+import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.param.ParamSet;
+import net.kapitencraft.scripted.code.var.VarMap;
+import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
+import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
+import net.kapitencraft.scripted.init.VarTypes;
 
 import java.util.function.Consumer;
 
-public abstract class Function extends Runnable {
+public abstract class Function extends Method<Void> {
 
-    protected Function(Consumer<ParamSet> paramBuilder) {
-        super(builder(paramBuilder));
+    protected Function(Consumer<ParamSet> setBuilder, String name) {
+        super(setBuilder, name);
     }
 
-    private static ParamSet builder(Consumer<ParamSet> paramBuilder) {
-        ParamSet set = ParamSet.function();
-        paramBuilder.accept(set);
-        return set;
-    }
-
-    public abstract Instance load(JsonObject object, VarAnalyser analyser);
-
-    public abstract Instance createFromCode(String params, VarAnalyser analyser);
-
-    public abstract class Instance extends Runnable.Instance {
-
+    public abstract class Instance extends Method<Void>.Instance {
         protected Instance(ParamData paramData) {
             super(paramData);
         }
 
-        public void analyse(VarAnalyser analyser) {}
+        @Override
+        protected Void call(VarMap params, VarMap origin) {
+            return null; //always return null
+        }
 
-        public Function getFunction() {
-            return Function.this;
+        @Override
+        public final VarType<Void> getType(IVarAnalyser analyser) {
+            return VarTypes.VOID.get();
         }
     }
 }

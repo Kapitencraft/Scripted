@@ -2,7 +2,6 @@ package net.kapitencraft.scripted.init;
 
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.builtin.WhenMethod;
 import net.kapitencraft.scripted.code.exe.methods.builtin.primitive.BooleanOperationMethod;
 import net.kapitencraft.scripted.code.exe.methods.builtin.primitive.NotMethod;
 import net.kapitencraft.scripted.code.exe.methods.mapper.VarReference;
@@ -18,7 +17,4 @@ public interface ModMethods {
     //boolean operations
     RegistryObject<BooleanOperationMethod> BOOL_OPERATION = REGISTRY.register("bool_operation", BooleanOperationMethod::new);
     RegistryObject<NotMethod> NOT = REGISTRY.register("not", NotMethod::new);
-    //other
-    RegistryObject<WhenMethod<?>> WHEN = REGISTRY.register("when", WhenMethod::new);
-
 }

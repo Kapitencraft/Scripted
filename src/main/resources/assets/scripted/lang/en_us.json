@@ -11,5 +11,6 @@
   "var_types.scripted.data_storage": "DataStorage",
   "var_types.scripted.item_stack": "ItemStack",
   "var_types.scripted.var_type": "VarType",
-  "error.malformed_var_name": "Var '%1$s' contains non [a-zA-z0-9_] letter"
+  "error.malformed_var_name": "Var '%1$s' contains non [a-zA-z0-9_] letter",
+  "scripted.edit": "Save..."
 }

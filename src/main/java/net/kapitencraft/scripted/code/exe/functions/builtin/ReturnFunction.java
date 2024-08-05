@@ -4,41 +4,44 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-
-import javax.annotation.Nullable;
+import net.kapitencraft.scripted.util.JsonHelper;
+import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.Nullable;
 
 public class ReturnFunction extends Function {
 
-    @Override
-    public Function.Instance load(JsonObject object, VarAnalyser analyser) {
-        if (object.has("value")) return new Instance(Method.loadFromSubObject(object, "value", analyser));
-        else return new Instance(null);
+    public ReturnFunction() {
+        super(ParamSet.empty(), "return");
     }
 
-    public class Instance extends Function.Instance {
-        private final @Nullable Method<?>.Instance value;
+    @Override
+    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
+        return new Instance<>(object.has("ret") ?
+                JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ret"), analyser) :
+                null
+        );
+    }
 
-        public Instance(@Nullable Method<?>.Instance value) {
-            this.value = value;
-        }
+    public class Instance<T> extends Function.Instance {
+        private final @Nullable Method<T>.Instance ret;
 
-        @Override
-        public void save(JsonObject object) {
-            if (value != null) {
-                object.add("value", value.toJson());
-            }
+        public Instance(@Nullable Method<T>.Instance ret) {
+            super(ParamData.empty());
+            this.ret = ret;
         }
 
         @Override
         public void execute(VarMap map, MethodPipeline<?> source) {
-            cancelPipeline(map, source);
+            cancelPipeline(map, (MethodPipeline<T>) source);
         }
 
-        private <T> void cancelPipeline(VarMap map, MethodPipeline<T> pipeline) {
-            if (this.value == null) pipeline.setCanceled();
-            else pipeline.cancel((T) this.value.callInit(map).getValue());
+        private void cancelPipeline(VarMap map, MethodPipeline<T> pipeline) {
+            if (this.ret == null) pipeline.setCanceled();
+            else pipeline.cancel(this.ret.callInit(map));
         }
 
         @Override

@@ -6,6 +6,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 public class BlockStatePropertyType extends VarType<Property<?>> {
 
     public BlockStatePropertyType() {
-        super(null, null, null, null, null, null);
+        super("Property", null, null, null, null, null, null);
     }
 }

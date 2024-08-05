@@ -3,17 +3,14 @@ package net.kapitencraft.scripted.code.exe.methods.mapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
-import net.kapitencraft.scripted.code.var.Var;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.init.ModMethods;
-import net.minecraft.util.GsonHelper;
 
-public final class VarReference<T> extends Method<T> {
+public class VarReference<T> extends Method<T> {
     public VarReference() {
         super(ParamSet.empty(), "var");
     }
@@ -27,16 +24,11 @@ public final class VarReference<T> extends Method<T> {
         throw new JsonSyntaxException("do not load Var References directly");
     }
 
-    @Override
-    protected Method<T>.Instance create(ParamData data, Method<?>.Instance parent) {
-        return new Instance();
-    }
-
     public Method<?>.Instance create(String s) {
         return new Instance(s);
     }
 
-    public class Instance extends Method<T>.Instance {
+    public class Instance extends Method<T>.Instance implements IVarReference {
         private final String methodName;
 
         protected Instance(String methodName) {
@@ -45,24 +37,13 @@ public final class VarReference<T> extends Method<T> {
         }
 
         @Override
-        public Var<T> call(VarMap params) {
-            return params.getVar(methodName);
+        public T call(VarMap params, VarMap origin) {
+            return params.getVarValue(methodName, () -> getType(params));
         }
 
         @Override
         public void analyse(VarAnalyser analyser) {
             analyser.assertVarExistence(methodName);
-        }
-
-        @Override
-        public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
-            if (!then.has("params")) { //load field reference
-                String fieldName = GsonHelper.getAsString(then, "name");
-                return ModMethods.FIELD_REFERENCE.get().load(this.getType(analyser).getFieldForName(fieldName), this);
-            } else {
-                return super.loadChild(then, analyser);
-            }
-
         }
 
         @Override

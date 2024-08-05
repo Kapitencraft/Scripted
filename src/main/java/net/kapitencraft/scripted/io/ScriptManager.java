@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.io;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
+import net.kapitencraft.kap_lib.helpers.IOHelper;
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.script.Script;
 import net.kapitencraft.scripted.code.script.type.ScriptType;

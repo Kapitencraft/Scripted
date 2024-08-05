@@ -2,37 +2,43 @@ package net.kapitencraft.scripted.code.exe.methods;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
-import net.kapitencraft.scripted.code.exe.IExecutable;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamData;
-import net.kapitencraft.scripted.code.exe.methods.param.ParamSet;
+import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.edit.client.IRenderable;
-import net.kapitencraft.scripted.edit.client.RenderMap;
-import net.kapitencraft.scripted.edit.client.text.Compiler;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
-import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public abstract class Method<T> {
+    protected final String name;
     protected final ParamSet paramSet;
-    private final String name;
 
     protected Method(Consumer<ParamSet> setBuilder, String name) {
-        this.paramSet = ParamSet.method();
-        setBuilder.accept(this.paramSet);
         this.name = name;
+        this.paramSet = build(setBuilder);
+    }
+
+    public ParamSet set() {
+        return paramSet;
+    }
+
+    private static ParamSet build(Consumer<ParamSet> builder) {
+        ParamSet set = new ParamSet();
+        builder.accept(set);
+        return set;
+    }
+
+    public String name() {
+        return name;
     }
 
     public Instance load(JsonObject object, VarAnalyser analyser) {
@@ -41,22 +47,7 @@ public abstract class Method<T> {
 
     public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
 
-    protected abstract Instance create(ParamData data, Method<?>.Instance parent);
-
-    public Method<?>.Instance readFromCode(String args, VarAnalyser analyser, Method<?>.Instance parent) {
-        if (args == null) {
-            if (this.paramSet.isEmpty()) {
-                return create(ParamData.empty(), parent);
-            }
-            return null;
-        } else {
-            String[] split = args.split(",");
-            List<? extends Method<?>.Instance> list = Arrays.stream(split).map(s -> Compiler.compileMethodChain(s, true, analyser)).toList();
-            return create(ParamData.create(list, analyser, paramSet), parent);
-        }
-    }
-
-    public abstract class Instance implements IExecutable {
+    public abstract class Instance {
         protected final ParamData paramData;
 
         protected Instance(ParamData paramData) {
@@ -65,8 +56,8 @@ public abstract class Method<T> {
 
         @Override
         public String toString() {
-            if (this.paramData.isEmpty()) return name;
-            return name + "(" + paramData + ")";
+            if (this.paramData.isEmpty()) return name();
+            return name() + "(" + paramData + ")";
         }
 
         public void analyse(VarAnalyser analyser) {
@@ -81,24 +72,16 @@ public abstract class Method<T> {
             return new Var<>(this.getType(parent), callInit(parent), true);
         }
 
-        @Override
         public void execute(VarMap map, MethodPipeline<?> pipeline) {
             callInit(map);
         }
 
-        protected T callInit(Function<VarMap, T> callFunc, VarMap parent) {
+        protected T callInit(BiFunction<VarMap, VarMap, T> callFunc, VarMap parent) {
             VarMap map = paramData.apply(parent);
-            return callFunc.apply(map);
+            return callFunc.apply(map, parent);
         }
 
-        protected abstract T call(VarMap params);
-
-        public JsonObject toJson() {
-            JsonObject object = new JsonObject();
-            object.addProperty("name", name);
-            if (!this.paramData.isEmpty()) object.add("params", this.paramData.toJson());
-            return object;
-        }
+        protected abstract T call(VarMap params, VarMap origin);
 
         public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
             return this.getType(analyser).buildMethod(then, analyser, this);
@@ -111,26 +94,35 @@ public abstract class Method<T> {
             VarType<?> otherType = other.getType(analyser);
             return type.matches(otherType);
         }
-    }
 
-    public abstract class Builder implements IRenderable {
-
-        @Override
-        public boolean allowMethodRendering() {
-            return false;
+        public void invoke(VarMap parent, MethodPipeline<?> pipeline) {
+            this.execute(this.apply(parent), pipeline);
         }
 
-        @Override
-        public String translationKey() {
-            return Util.makeDescriptionId("method", ModRegistries.METHODS.getKey(Method.this));
+        private VarMap apply(VarMap parent) {
+            return paramData.apply(parent);
         }
 
-        @Override
-        public RenderMap getParamData() {
-            return null;
-        }
+        //save
+        /**
+         * use to add more information to the save. <br>
+         * do not use
+         * <blockquote><pre>
+         *     "params", "type"
+         * </pre></blockquote>
+         * because they've already been used
+         *
+         * @param object the data storage
+         */
+        protected void saveAdditional(JsonObject object) {}
 
-        public abstract Method<T>.Instance build();
+        public final JsonObject toJson() {
+            JsonObject object = new JsonObject();
+            object.add("params", this.paramData.toJson());
+            saveAdditional(object);
+            return object;
+
+        }
     }
 
     public static <T> Method<T>.Instance loadInstance(JsonObject object, VarAnalyser analyser) {

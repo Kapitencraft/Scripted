@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.code.script.type;
 
+import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.init.ModVarTypes;
-import net.kapitencraft.scripted.io.IOHelper;
+import net.kapitencraft.scripted.init.VarTypes;
 import net.minecraft.commands.CommandSourceStack;
 
 import java.io.File;
@@ -10,9 +10,9 @@ import java.io.File;
 public class SimpleScript extends ScriptType<CommandSourceStack, Void> {
 
     public SimpleScript() {
-        super("sct", new File(IOHelper.SCRIPTED_DIRECTORY, "scripts"), null);
-        this.addPossibleParam("pos", ModVarTypes.VEC3);
-        this.addPossibleParam("permissionLevel", ModVarTypes.INTEGER);
+        super("sct", new File(Scripted.SCRIPTED_DIRECTORY, "scripts"), null);
+        this.addPossibleParam("pos", VarTypes.VEC3);
+        this.addPossibleParam("permissionLevel", VarTypes.INTEGER);
     }
 
     @Override

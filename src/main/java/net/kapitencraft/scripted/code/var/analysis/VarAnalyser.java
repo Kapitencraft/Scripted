@@ -1,22 +1,28 @@
 package net.kapitencraft.scripted.code.var.analysis;
 
+import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Leveled;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
-/**
- *
- */
+//TODO make Analyser split to check different branches
 public class VarAnalyser extends Leveled<String, VarType<?>> implements IVarAnalyser {
     private static final Pattern NAME_PATTERN = Pattern.compile("[\\w_]+");
     private boolean canceled;
     private int methodId = 0;
     private final List<Component> errors = new ArrayList<>();
+
+    public static VarAnalyser of(List<Pair<VarType<?>, String>> params) {
+        VarAnalyser analyser = new VarAnalyser();
+        params.forEach(pair -> analyser.addValue(pair.getSecond(), pair.getFirst()));
+        return analyser;
+    }
 
     public void registerVar(String name, VarType<?> varType) {
         if (!NAME_PATTERN.matcher(name).matches()) {
@@ -52,5 +58,11 @@ public class VarAnalyser extends Leveled<String, VarType<?>> implements IVarAnal
 
     public void addError(Component component) {
         errors.add(component);
+    }
+
+    public VarAnalyser createClone() {
+        VarAnalyser analyser = new VarAnalyser();
+        analyser.content.putAll(this.content);
+        return analyser;
     }
 }

@@ -1,7 +1,9 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
+import net.kapitencraft.scripted.init.VarTypes;
 import net.minecraft.util.GsonHelper;
 
 import java.util.regex.Pattern;
@@ -12,19 +14,23 @@ public class StringType extends PrimitiveType<String> {
         super("String", (s, s1) -> s + s1, null, null, null, null, String::compareTo);
     }
 
+    public static Method<?>.Instance readInstance(String string) {
+        return ((StringType) VarTypes.STRING.get()).loadPrimitiveInstance(string);
+    }
+
     @Override
     public Pattern matcher() {
         return STRING;
     }
 
     @Override
-    public String openRegex() {
-        return "\"";
+    public String one() {
+        return " ";
     }
 
     @Override
-    public String closeRegex() {
-        return "\"";
+    public String negOne() {
+        return "\n";
     }
 
     @Override

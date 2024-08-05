@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
 public class BlockType extends RegistryType<Block> {
-    protected BlockType() {
+    public BlockType() {
         super("Block", ForgeRegistries.BLOCKS);
     }
 

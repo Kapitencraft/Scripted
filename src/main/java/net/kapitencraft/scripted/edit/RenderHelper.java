@@ -1,9 +1,9 @@
 package net.kapitencraft.scripted.edit;
 
-import net.kapitencraft.scripted.edit.client.IRenderable;
-import net.kapitencraft.scripted.edit.client.RenderMap;
-import net.kapitencraft.scripted.edit.client.block_element.BlockElement;
-import net.kapitencraft.scripted.edit.client.block_element.TextElement;
+import net.kapitencraft.scripted.edit.graphical.IRenderable;
+import net.kapitencraft.scripted.edit.graphical.RenderMap;
+import net.kapitencraft.scripted.edit.graphical.block_element.BlockElement;
+import net.kapitencraft.scripted.edit.graphical.block_element.TextElement;
 import net.minecraft.locale.Language;
 
 import java.util.ArrayList;
