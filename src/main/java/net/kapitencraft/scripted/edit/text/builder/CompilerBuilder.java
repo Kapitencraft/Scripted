@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.function.Function;
 
+//TODO load code dynamically
 public abstract class CompilerBuilder<S, T extends CompilerBuilder<S, T>> {
     private final RootNode<S> arguments = new RootNode<>();
     private CompilerNode<S> target;
