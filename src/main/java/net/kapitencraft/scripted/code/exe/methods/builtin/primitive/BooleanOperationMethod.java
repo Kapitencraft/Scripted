@@ -1,49 +1,41 @@
 package net.kapitencraft.scripted.code.exe.methods.builtin.primitive;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.init.VarTypes;
+import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 public class BooleanOperationMethod extends Method<Boolean>{
 
-    public BooleanOperationMethod() {
-        super(set -> set.addEntry(entry -> entry
-                .addParam("left", VarTypes.BOOL)
-                .addParam("right", VarTypes.BOOL)
-        ), null);
-    }
-
     @Override
-    public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return new Instance(data, OperationType.CODEC.byName(GsonHelper.getAsString(object, "operation_type")));
-    }
-
-    public Method<?>.Instance create(Method<?>.Instance left, String type, Method<?>.Instance right, VarAnalyser analyser) {
-        return new Instance(ParamData.create(set(), analyser, List.of(left, right)), OperationType.CODEC.byName(type));
+    public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser) {
+        Method<Boolean>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
+        Method<Boolean>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+        return new Instance(OperationType.CODEC.byName(GsonHelper.getAsString(object, "operation_type")), left, right);
     }
 
     public class Instance extends Method<Boolean>.Instance {
         private final OperationType operationType;
+        private final Method<Boolean>.Instance left, right;
 
-        private Instance(ParamData paramData, OperationType operationType) {
-            super(paramData);
+        private Instance(OperationType operationType, Method<Boolean>.Instance left, Method<Boolean>.Instance right) {
             this.operationType = operationType;
+            this.left = left;
+            this.right = right;
         }
 
         @Override
-        protected Boolean call(VarMap params, VarMap origin) {
-            boolean left = params.getVarValue("left", VarTypes.BOOL);
-            boolean right = params.getVarValue("right", VarTypes.BOOL);
+        public Boolean call(VarMap origin, MethodPipeline<?> pipeline) {
+            boolean left = this.left.call(origin, pipeline);
+            boolean right = this.right.call(origin, pipeline);
             return switch (operationType) {
                 case OR -> left || right;
                 case AND -> left && right;

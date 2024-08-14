@@ -6,10 +6,8 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-import net.kapitencraft.scripted.init.VarTypes;
 import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
@@ -19,64 +17,57 @@ import java.util.List;
 
 public class IfFunction extends Function {
 
-    public IfFunction() {
-        super(set -> set.addEntry(entry -> entry.addParam("condition", VarTypes.BOOL)), "if");
-    }
-
     @Override
     public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser) {
-        return loadInst(object, analyser, ParamData.of(object, analyser, this.set()));
+        return loadInst(object, analyser);
     }
 
-    @Override
-    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return loadInst(object, analyser, data);
-    }
-
-    private <T> Instance<T> loadInst(JsonObject main, VarAnalyser analyser, ParamData data) {
+    private <T> Instance<T> loadInst(JsonObject main, VarAnalyser analyser) {
         MethodPipeline<T> pipeline = MethodPipeline.load(GsonHelper.getAsJsonObject(main, "body"), analyser, false);
+        Method<Boolean>.Instance condition = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(main, "condition"), analyser);
         List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs = new ArrayList<>();
         if (main.has("elifs")) JsonHelper
                 .castToObjects(GsonHelper.getAsJsonArray(main, "elifs"))
                 .map(object -> {
-                    Method<Boolean>.Instance condition = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "method"), analyser);
+                    Method<Boolean>.Instance conditionInst = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "method"), analyser);
                     MethodPipeline<T> body = MethodPipeline.load(GsonHelper.getAsJsonObject(object, "body"), analyser, false);
-                    return Pair.of(condition, body);
+                    return Pair.of(conditionInst, body);
                 })
                 .forEach(elifs::add);
         MethodPipeline<T> elsePipeline = main.has("else") ? MethodPipeline.load(GsonHelper.getAsJsonObject(main, "else"), analyser, false) : null;
-        return new Instance<>(data, pipeline, elifs, elsePipeline);
+        return new Instance<>(condition, pipeline, elifs, elsePipeline);
     }
 
     public <T> Instance<T> createInst(Pair<Method<Boolean>.Instance, MethodPipeline<T>> main, List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs, MethodPipeline<T> elseBody, VarAnalyser analyser) {
-        return new Instance<>(ParamData.create(set(), analyser, List.of(main.getFirst())), main.getSecond(), elifs, elseBody);
+        return new Instance<>(main.getFirst(), main.getSecond(), elifs, elseBody);
     }
 
     public class Instance<T> extends Function.Instance {
         private final MethodPipeline<T> body;
+        private final Method<Boolean>.Instance condition;
         private final List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs;
         private final @Nullable MethodPipeline<T> elseBody;
 
-        public Instance(ParamData data, MethodPipeline<T> body, List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs, @Nullable MethodPipeline<T> elseBody) {
-            super(data);
+        public Instance(Method<Boolean>.Instance condition, MethodPipeline<T> body, List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs, @Nullable MethodPipeline<T> elseBody) {
+            this.condition = condition;
             this.body = body;
             this.elifs = elifs;
             this.elseBody = elseBody;
         }
 
         @Override
-        public void execute(VarMap map, MethodPipeline<?> source) {
-            if (map.getVarValue("condition", VarTypes.BOOL)) {
+        public void execute(VarMap origin, MethodPipeline<?> source) {
+            if (condition.call(origin, source)) {
                 this.body.execute(source.getMap(), (MethodPipeline<T>) source);
                 return;
             }
             for (Pair<Method<Boolean>.Instance, MethodPipeline<T>> pair : elifs) {
-                if (pair.getFirst().callInit(source.getMap())) {
-                    pair.getSecond().execute(source.getMap(), (MethodPipeline<T>) source);
+                if (pair.getFirst().call(origin, source)) {
+                    pair.getSecond().execute(origin, (MethodPipeline<T>) source);
                     return;
                 }
             }
-            if (elseBody != null) elseBody.execute(source.getMap(), (MethodPipeline<T>) source);
+            if (elseBody != null) elseBody.execute(origin, (MethodPipeline<T>) source);
         }
 
         @Override

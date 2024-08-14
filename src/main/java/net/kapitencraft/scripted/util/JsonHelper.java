@@ -23,6 +23,7 @@ public interface JsonHelper {
     }
 
     static <T> Method<T>.Instance readMethodChain(JsonObject object, VarAnalyser analyser) {
+        //TODO move to Codec?
         String type = GsonHelper.getAsString(object, "type");
         Method<?>.Instance inst;
         if (type.startsWith("new")) {
@@ -31,7 +32,7 @@ public interface JsonHelper {
         } else {
             Method<?> method = ModRegistries.METHODS.getValue(new ResourceLocation(type)); //1.21 update; i'm a cry
             if (method == null) throw new IllegalStateException("couldn't find method called '" + type + "'");
-            inst = (Method<?>.Instance) method.load(object, analyser);
+            inst = method.load(object, analyser);
         }
         if (object.has("then")) {
             return (Method<T>.Instance) inst.loadChild(GsonHelper.getAsJsonObject(object, "then"), analyser);

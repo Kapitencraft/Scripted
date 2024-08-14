@@ -12,7 +12,7 @@ public class LevelType extends VarType<Level> {
     public LevelType() {
         super("Level", null, null, null, null, null, null);
 
-        addMethod(SpawnEntity::new);
+        addMethod("spawn", this.context.consumer().withParam("entity", VarTypes.ENTITY).executes());
         addMethod(SetBlock::new);
     }
 

@@ -3,34 +3,16 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 
-import java.util.function.Consumer;
-
 public class CreateVarFunction extends Function {
-
-    protected CreateVarFunction(Consumer<ParamSet> paramBuilder) {
-        super(paramBuilder, "%ignored");
-    }
-
-    public CreateVarFunction() {
-        this(ParamSet.empty());
-    }
 
     @Override
     public Instance load(JsonObject object, VarAnalyser analyser) {
-        return load(object);
-    }
-
-    @Override
-    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
         return load(object);
     }
 
@@ -51,7 +33,6 @@ public class CreateVarFunction extends Function {
         private final boolean isFinal;
 
         public Instance(String name, VarType<?> type, boolean isFinal) {
-            super(ParamData.empty());
             this.name = name;
             this.type = type;
             this.isFinal = isFinal;
@@ -65,7 +46,7 @@ public class CreateVarFunction extends Function {
         }
 
         @Override
-        public void execute(VarMap map, MethodPipeline<?> source) {
+        protected void execute(VarMap map, MethodPipeline<?> pipeline) {
             map.addVarType(name, type, isFinal);
         }
     }

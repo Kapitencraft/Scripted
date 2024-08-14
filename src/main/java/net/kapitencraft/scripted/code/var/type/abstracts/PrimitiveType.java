@@ -19,7 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class PrimitiveType<I> extends VarType<I> {
-    public static final List<PrimitiveType<?>> PRIMITIVES = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.Types.PRIMITIVES, List.class);
+    public static final List<PrimitiveType<?>> PRIMITIVES = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.PRIMITIVES, List.class);
 
     public PrimitiveType(String name, BiFunction<I, I, I> add, BiFunction<I, I, I> mult, BiFunction<I, I, I> div, BiFunction<I, I, I> sub, BiFunction<I, I, I> mod, Comparator<I> comp) {
         super(name, add, mult, div, sub, mod, comp);

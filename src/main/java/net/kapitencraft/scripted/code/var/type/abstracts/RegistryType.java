@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 
 public abstract class RegistryType<V> extends PrimitiveType<V> {
-    public static final Map<String, RegistryType<?>> TYPES_FOR_NAME = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.Types.REGISTRIES, Map.class);
+    public static final Map<String, RegistryType<?>> TYPES_FOR_NAME = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.REGISTRIES, Map.class);
 
     private final IForgeRegistry<V> registry;
 

@@ -15,6 +15,7 @@ import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.event.AddReloadListenerEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -43,6 +44,8 @@ public class Scripted {
         VarTypes.REGISTRY.register(modEventBus);
         ModScriptTypes.REGISTRY.register(modEventBus);
         ModMethods.REGISTRY.register(modEventBus);
+
+        StartupMessageManager.addModMessage("Scripted Mod loaded");
     }
 
     public static ResourceLocation res(String id) {

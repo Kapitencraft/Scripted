@@ -31,7 +31,7 @@ public class FieldData {
      * @param selfMap a {@link VarMap} only containing <i>this</i> with a self reference
      */
     @ApiStatus.Internal
-    public void checkConstructor(VarMap selfMap) {
+    public void checkConstructor(VarMap selfMap) { //TODO implement Pipeline
         this.appliers.forEach((field, instance) -> applyValue(field, instance, selfMap));
         this.fields.values().stream().filter(Field::isFinal).filter(Field::notApplied).forEach(field -> {
             throw new IllegalStateException("variable has not been initialized");
@@ -40,7 +40,7 @@ public class FieldData {
 
     @ApiStatus.Internal
     private <T> void applyValue(Field<?> field, Method<?>.Instance inst, VarMap map) {
-        ((Field<T>) field).setValue(((Method<T>.Instance) inst).callInit(map));
+        ((Field<T>) field).setValue(((Method<T>.Instance) inst).call(map));
     }
 
 

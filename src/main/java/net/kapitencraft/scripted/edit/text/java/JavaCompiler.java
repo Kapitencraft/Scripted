@@ -8,8 +8,6 @@ import net.kapitencraft.scripted.code.exe.functions.builtin.IfFunction;
 import net.kapitencraft.scripted.code.exe.functions.builtin.WhileLoopFunction;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.code.Object;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
@@ -187,6 +185,7 @@ public class JavaCompiler extends Compiler {
             return Pair.of(type, name);
         }
 
+        //TODO rework
         private ParamData castParamData(ParamSet set, VarAnalyser analyser) {
             assertType(Token.Type.BRACKET_OPEN);
             List<Method<?>.Instance> params = new ArrayList<>();

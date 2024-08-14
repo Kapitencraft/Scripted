@@ -5,12 +5,12 @@ import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.kap_lib.helpers.TextHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
+import net.kapitencraft.scripted.code.exe.methods.builder.ReturningInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.method.MethodBuilder;
 import net.kapitencraft.scripted.code.exe.methods.mapper.IVarReference;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.oop.FieldMap;
-import net.kapitencraft.scripted.code.oop.MethodMap;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -19,17 +19,21 @@ import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.code.var.type.collection.ListType;
 import net.kapitencraft.scripted.code.var.type.collection.MapType;
 import net.kapitencraft.scripted.code.var.type.collection.MultimapType;
-import net.kapitencraft.scripted.init.VarTypes;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
+import net.minecraftforge.fml.StartupMessageManager;
+import net.minecraftforge.fml.loading.progress.ProgressMeter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.*;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 public class VarType<T> {
@@ -38,7 +42,7 @@ public class VarType<T> {
      */
     private static final Pattern NAME_BLOCKED = Pattern.compile("(^\\d)|([\\W&&[^<>]])");
 
-    public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.Types.NAME_MAP, Map.class);
+    public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.NAME_MAP, Map.class);
 
     public static <T> VarType<T> read(String string) {
         string = string.replaceAll(" ", "");
@@ -58,6 +62,7 @@ public class VarType<T> {
     }
 
 
+    protected final BuilderContext<T> context = new BuilderContext<>(this);
     /**
      * the name of the Type (how it's referred to in code)
      */
@@ -65,7 +70,7 @@ public class VarType<T> {
     /**
      * method storage; to add methods see constructor
      */
-    private final MethodMap<T> methods;
+    private final MethodMap methods;
     /**
      * whether this Type is extendable and other types depend on it
      * <br>(like PlayerType on EntityType)
@@ -76,7 +81,7 @@ public class VarType<T> {
     /**
      * the constructor; there can only be one
      */
-    protected Constructor constructor;
+    protected Function<BuilderContext<T>, MethodBuilder<T>> constructor;
     /**
      * fields...
      */
@@ -92,7 +97,7 @@ public class VarType<T> {
     private final Comparator<T> comp;
 
     /**
-     * override in your own type to add {@link VarType#addMethod(Supplier) methods}, {@link VarType#addField fields} and a {@link VarType#setConstructor(Constructor) constructor}
+     * override in your own type to add {@link VarType#addMethod(String, Function) methods}, {@link VarType#addField fields} and a {@link VarType#setConstructor(Function) constructor}
      * @param name the code name of this type, following java conventions
      * @param add a method to compute two values using addition
      * @param mult similar for multiplication
@@ -100,7 +105,7 @@ public class VarType<T> {
      * @param sub similar for subtraction
      * @param mod similar for modulus
      * @param comp method to map a var with this type to double to use comparators like >=, ==, <=
-     * @see ItemStackType#ItemStackType() Itemstack#init()
+     * @see ItemStackType#ItemStackType() ItemstackType#init()
      */
     public VarType(String name, BiFunction<T, T, T> add, BiFunction<T, T, T> mult, BiFunction<T, T, T> div, BiFunction<T, T, T> sub, BiFunction<T, T, T> mod, Comparator<T> comp) {
         if (NAME_BLOCKED.matcher(name).find()) {
@@ -113,7 +118,7 @@ public class VarType<T> {
         this.sub = sub;
         this.mod = mod;
         this.comp = comp;
-        this.methods = new MethodMap<>();
+        this.methods = new MethodMap();
         this.fields = new FieldMap<>();
     }
 
@@ -121,12 +126,49 @@ public class VarType<T> {
         return !object.has("params") ? createFieldReference(GsonHelper.getAsString(object, "name"), parent) : methods.buildMethod(object, map, parent);
     }
 
-    public Method<?>.Instance buildConstructor(JsonObject object, VarAnalyser analyser) {
-        return this.constructor.construct(object, analyser);
-    }
-
     public Field<?> getFieldForName(String name) {
         return fields.getOrThrow(name);
+    }
+
+
+
+    //adding methods
+
+    public void bakeMethods() {
+        this.methods.bakeMethods(StartupMessageManager.addProgressBar("Baking " + this.getName(), this.methods.unbakedMethods.size()));
+    }
+
+    private class MethodMap {
+        private final HashMap<String, VarType<T>.InstanceMethod<?>> builders = new HashMap<>();
+        private final HashMap<String, Function<BuilderContext<T>, ReturningInst<T, ?>>> unbakedMethods = new HashMap<>();
+
+        public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, Method<T>.Instance parent) {
+            VarType<T>.InstanceMethod<?> method = getOrThrow(GsonHelper.getAsString(object, "type"));
+            VarType<T>.InstanceMethod<?>.Instance instance = method.load(analyser, parent, object);
+            if (object.has("then")) return instance.loadChild(object.getAsJsonObject("then"), analyser);
+            return instance;
+        }
+
+        public void bakeMethods(ProgressMeter progressMeter) {
+            progressMeter.setAbsolute(0);
+            int i = 0;
+            int max = unbakedMethods.size();
+            for (Map.Entry<String, Function<BuilderContext<T>, ReturningInst<T, ?>>> entry : unbakedMethods.entrySet()) {
+
+
+                i++;
+                progressMeter.setAbsolute(i / max);
+            }
+            progressMeter.complete();
+        }
+
+        public void registerMethod(String name, Function<BuilderContext<T>, ReturningInst<T, ?>> method) {
+            this.unbakedMethods.put(name, method);
+        }
+
+        public VarType<T>.InstanceMethod<?> getOrThrow(String name) {
+            return Objects.requireNonNull(builders.get(name), "unknown method " + TextHelper.wrapInNameMarkers(name));
+        }
     }
 
     public InstanceMethod<?> getMethodForName(String name) {
@@ -137,22 +179,22 @@ public class VarType<T> {
      * adds a new Method to be registered
      * @param builder the builder
      */
-    protected void addMethod(Supplier<InstanceMethod<?>> builder) {
-        this.methods.registerMethod(builder);
+    protected void addMethod(String in, Function<BuilderContext<T>, ReturningInst<T, ?>> builder) {
+        this.methods.registerMethod(in, builder);
     }
 
-    protected <J> void addField(String name, java.util.function.Function<T, J> getter, BiConsumer<T, J> setter, Supplier<VarType<J>> typeSupplier) {
+    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, Supplier<VarType<J>> typeSupplier) {
         this.fields.addField(name, new Field<>(getter, setter, typeSupplier));
     }
 
-    protected void setConstructor(Constructor constructor) {
+    protected void setConstructor(Function<BuilderContext<T>, MethodBuilder<T>> constructor) {
         if (this.constructor != null && !extendable) throw new IllegalStateException("can not set constructor twice");
         this.constructor = constructor;
     }
 
     @Override
     public String toString() {
-        return Objects.requireNonNull(ModRegistries.VAR_TYPES.getKey(this)).toString();
+        return name;
     }
 
 
@@ -204,85 +246,34 @@ public class VarType<T> {
         return this.name;
     }
 
-    public void generate() {
-        this.methods.generate();
-    }
-
     //Instance Methods/Functions/Constructors/Fields
 
     //Methods
     public abstract class InstanceMethod<R> extends Method<R> {
 
-        protected InstanceMethod(Consumer<ParamSet> builder, String name) {
-            super(builder, name);
-        }
-
         @Override
-        public final InstanceMethod<R>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
+        public final InstanceMethod<R>.Instance load(JsonObject object, VarAnalyser analyser) {
             throw new JsonSyntaxException("do not load an Instance Method directly");
         }
 
         /**
          * generate an Instance of this method from data (json)
          */
-        public abstract InstanceMethod<R>.Instance load(ParamData data, VarAnalyser analyser, Method<?>.Instance parent, JsonObject other);
-
-        /**
-         * generate an Instance of this method from code (text)
-         */
-        public abstract InstanceMethod<R>.Instance create(ParamData paramData, VarAnalyser analyser, Method<?>.Instance inst);
+        public abstract InstanceMethod<R>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other);
 
         public abstract class Instance extends Method<R>.Instance {
             protected final @NotNull Method<T>.Instance parent;
 
-            protected Instance(ParamData paramData, @NotNull Method<T>.Instance parent) {
-                super(paramData);
+            protected Instance(@NotNull Method<T>.Instance parent) {
                 this.parent = parent;
             }
 
             @Override
-            public R call(VarMap params, VarMap origin) {
-                return this.callInit((params1, origin1) -> this.call(params1, parent.callInit(params)), params);
+            public final R call(VarMap origin, MethodPipeline<?> pipeline) {
+                return this.call(origin, pipeline, parent.call(origin, pipeline));
             }
 
-            public abstract R call(VarMap map, T inst);
-        }
-    }
-
-    protected abstract class SimpleInstanceMethod<R> extends InstanceMethod<R> {
-
-        protected SimpleInstanceMethod(Consumer<ParamSet> builder, String name) {
-            super(builder, name);
-        }
-
-        protected abstract R call(VarMap map, T inst);
-        protected abstract VarType<R> getType(IVarAnalyser analyser);
-
-        @Override
-        public InstanceMethod<R>.Instance create(ParamData paramData, VarAnalyser analyser, Method<?>.Instance inst) {
-            return new Instance(paramData, (Method<T>.Instance) inst);
-        }
-
-        @Override
-        public InstanceMethod<R>.Instance load(ParamData data, VarAnalyser analyser, Method<?>.Instance parent, JsonObject other) {
-            return new Instance(data, (Method<T>.Instance) parent);
-        }
-
-        private class Instance extends InstanceMethod<R>.Instance {
-
-            protected Instance(ParamData paramData, Method<T>.@NotNull Instance parent) {
-                super(paramData, parent);
-            }
-
-            @Override
-            public R call(VarMap map, T inst) {
-                return SimpleInstanceMethod.this.call(map, inst);
-            }
-
-            @Override
-            public VarType<R> getType(IVarAnalyser analyser) {
-                return SimpleInstanceMethod.this.getType(analyser);
-            }
+            public abstract R call(VarMap map, MethodPipeline<?> pipeline, T inst);
         }
     }
 
@@ -340,40 +331,31 @@ public class VarType<T> {
 
     private final class FieldReference<R> extends InstanceMethod<R> {
 
-        public FieldReference() {
-            super(ParamSet.empty(), "field");
-        }
-
-        @Override
-        public InstanceMethod<R>.Instance load(ParamData data, VarAnalyser analyser, Method<?>.Instance parent, JsonObject other) {
-            return null;
-        }
-
-        @Override
-        public InstanceMethod<R>.Instance create(ParamData paramData, VarAnalyser analyser, Method<?>.Instance inst) {
-            throw new IllegalStateException("do not load a Field Reference directly");
-        }
-
         public Method<R>.@NotNull Instance create(VarType<?>.Field<?> field, Method<?>.Instance parent) {
             return new Instance((Field<R>) field, (Method<T>.Instance) parent);
+        }
+
+        @Override
+        public InstanceMethod<R>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+            return null;
         }
 
         public class Instance extends InstanceMethod<R>.Instance implements IVarReference {
             private final Field<R> field;
 
             protected Instance(Field<R> field, Method<T>.Instance parent) {
-                super(null, parent);
+                super(parent);
                 this.field = field;
             }
 
             @Override
-            public R call(VarMap map, T inst) {
+            public R call(VarMap map, MethodPipeline<?> pipeline, T inst) {
                 return field.getValue(inst);
             }
 
             @Override
-            public Var<R> buildVar(VarMap parent) {
-                return field.crtInst(this.parent.callInit(parent));
+            public Var<R> buildVar(VarMap parent, MethodPipeline<?> pipeline) {
+                return field.crtInst(this.parent.call(parent, pipeline));
             }
 
             @Override
@@ -391,77 +373,51 @@ public class VarType<T> {
     //Functions
     public abstract class InstanceFunction extends InstanceMethod<Void> {
 
-        /**
-         * @param paramSet the set that contains entries for params
-         */
-        protected InstanceFunction(String name, Consumer<ParamSet> paramSet) {
-            super(paramSet, name);
-        }
-
         @Override
-        public InstanceMethod<Void>.Instance load(ParamData data, VarAnalyser analyser, Method<?>.Instance parent, JsonObject other) {
-            return loadInstance(other, analyser, (Method<T>.Instance) parent);
-        }
-
-        public final Instance load(JsonObject object, VarAnalyser analyser) {
-            Method<T>.Instance method = Method.loadFromSubObject(object, "supplier", analyser);
-            return loadInstance(object, analyser, method);
+        public InstanceMethod<Void>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+            return loadInstance(other, analyser, parent);
         }
 
         public abstract Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<T>.Instance inst);
 
         public abstract class Instance extends InstanceMethod<Void>.Instance {
 
-            protected Instance(ParamData paramData, Method<T>.Instance parent) {
-                super(paramData, parent);
-            }
-
-            @Override
-            public Void call(VarMap map, T inst) {
-                return null;
+            protected Instance(Method<T>.Instance parent) {
+                super(parent);
             }
 
             @Override
             public VarType<Void> getType(IVarAnalyser analyser) {
-                return VarTypes.VOID.get();
+                return net.kapitencraft.scripted.init.VarTypes.VOID.get();
             }
 
             @Override
-            public final void execute(VarMap map, MethodPipeline<?> source) {
-                executeInstanced(map, source, parent.buildVar(map));
+            public final Void call(VarMap map, MethodPipeline<?> pipeline, T inst) {
+                executeInstanced(map, pipeline, inst);
+                return null; //always return null
             }
 
-            public abstract void executeInstanced(VarMap map, MethodPipeline<?> source, Var<T> instance);
+            protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, T instance);
         }
     }
 
     protected abstract class SimpleInstanceFunction extends InstanceFunction {
 
-        protected SimpleInstanceFunction(String name, Consumer<ParamSet> paramSet) {
-            super(name, paramSet);
-        }
-
-        protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, Var<T> instance);
+        protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, T instance);
 
         @Override
         public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<T>.Instance inst) {
-            return new Instance(ParamData.of(object, analyser, this.paramSet), inst);
-        }
-
-        @Override
-        public VarType<T>.InstanceMethod<Void>.Instance create(ParamData paramData, VarAnalyser analyser, Method<?>.Instance inst) {
-            return new Instance(paramData, (Method<T>.Instance) inst);
+            return new Instance(inst);
         }
 
         private class Instance extends InstanceFunction.Instance {
 
-            protected Instance(ParamData paramData, Method<T>.Instance parent) {
-                super(paramData, parent);
+            protected Instance(Method<T>.Instance parent) {
+                super(parent);
             }
 
-
             @Override
-            public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<T> instance) {
+            protected void executeInstanced(VarMap map, MethodPipeline<?> source, T instance) {
                 SimpleInstanceFunction.this.executeInstanced(map, source, instance);
             }
         }
@@ -470,18 +426,10 @@ public class VarType<T> {
     //Constructor
     public abstract class Constructor extends Method<T> {
 
-        protected Constructor(Consumer<ParamSet> params) {
-            super(params, "new" + VarType.this.name);
-        }
-
         public abstract Method<T>.Instance construct(JsonObject object, VarAnalyser analyser);
     }
 
     protected abstract class SimpleConstructor extends Constructor {
-
-        protected SimpleConstructor(Consumer<ParamSet> params) {
-            super(params);
-        }
 
         protected abstract T call(VarMap params);
 
@@ -489,23 +437,14 @@ public class VarType<T> {
 
         @Override
         public Method<T>.Instance construct(JsonObject object, VarAnalyser analyser) {
-            return new Instance(ParamData.of(object, analyser, this.paramSet));
-        }
-
-        @Override
-        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-            return new Instance(data);
+            return new Instance();
         }
 
         private class Instance extends Method<T>.Instance {
 
-            protected Instance(ParamData paramData) {
-                super(paramData);
-            }
-
             @Override
-            protected T call(VarMap params, VarMap origin) {
-                return SimpleConstructor.this.call(params);
+            public T call(VarMap origin, MethodPipeline<?> pipeline) {
+                return SimpleConstructor.this.call(origin);
             }
 
             @Override
@@ -520,30 +459,27 @@ public class VarType<T> {
     //Comparators
     public class Comparators extends Method<Boolean> {
 
-        public Comparators() {
-            super(set -> set.addEntry(entry -> entry
-                    .addParam("right", ()-> VarType.this)
-                    .addParam("left", ()-> VarType.this)
-            ), null);
-        }
-
         @Override
-        public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-            return new Instance(data, CompareMode.CODEC.byName(GsonHelper.getAsString(object, "mode")));
+        public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser) {
+            Method<T>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
+            Method<T>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+            return new Instance(left, right, CompareMode.CODEC.byName(GsonHelper.getAsString(object, "mode")));
         }
 
         private class Instance extends Method<Boolean>.Instance {
+            private final Method<T>.Instance left, right;
             private final CompareMode compareMode;
 
-            private Instance(ParamData paramData, CompareMode compareMode) {
-                super(paramData);
+            private Instance(Method<T>.Instance left, Method<T>.Instance right, CompareMode compareMode) {
+                this.left = left;
+                this.right = right;
                 this.compareMode = compareMode;
             }
 
             @Override
-            protected Boolean call(VarMap params, VarMap origin) {
-                T left = params.getVarValue("left", ()-> VarType.this);
-                T right = params.getVarValue("right", ()-> VarType.this);
+            public Boolean call(VarMap origin, MethodPipeline<?> pipeline) {
+                T left = this.left.call(origin, pipeline);
+                T right = this.right.call(origin, pipeline);
                 if (!VarType.this.allowsComparing()) {
                     return (this.compareMode == CompareMode.EQUAL) == (left == right);
                 }
@@ -560,11 +496,10 @@ public class VarType<T> {
 
             @Override
             public VarType<Boolean> getType(IVarAnalyser analyser) {
-                return VarTypes.BOOL.get();
+                return net.kapitencraft.scripted.init.VarTypes.BOOL.get();
             }
         }
 
-        //TODO compile Comparators
         private enum CompareMode implements StringRepresentable {
             EQUAL("=="),
             NEQUAL("!="),
@@ -591,41 +526,46 @@ public class VarType<T> {
     //Math Operations
     public class MathOperationMethod extends Method<T> {
 
-        public MathOperationMethod() {
-            super(set -> set.addEntry(entry -> entry
-                    .addParam("right", ()-> VarType.this)
-                    .addParam("left", ()-> VarType.this)
-            ), null);
+        Method<T>.Instance create(String operation, Method<T>.Instance left, Method<T>.Instance right, VarAnalyser analyser) {
+            return new Instance(left, right, Operation.CODEC.byName(operation));
         }
 
-        Method<T>.Instance create(String operation, Method<T>.Instance left, Method<T>.Instance right, VarAnalyser analyser) {
-            return new Instance(ParamData.create(this.paramSet, analyser, List.of(left, right)), Operation.CODEC.byName(operation));
+        @Override
+        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser) {
+            Method<T>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
+            Method<T>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+            Operation operation = Operation.CODEC.byName(GsonHelper.getAsString(object, "operation"));
+            return new Instance(left, right, operation);
         }
 
         public class Instance extends Method<T>.Instance {
+            private final Method<T>.Instance left, right;
             private final Operation operation;
 
-            private Instance(ParamData paramData, Operation operation) {
-                super(paramData);
+            private Instance(Method<T>.Instance left, Method<T>.Instance right, Operation operation) {
+                this.left = left;
+                this.right = right;
                 this.operation = operation;
             }
 
             @Override
-            protected T call(VarMap params, VarMap origin) {
-                T a = params.getVarValue("left", ()-> VarType.this);
-                T b = params.getVarValue("right", ()-> VarType.this);
+            public T call(VarMap origin, MethodPipeline<?> pipeline) {
+                T left = this.left.call(origin, pipeline);
+                T b = this.right.call(origin, pipeline);
                 VarType<T> type = VarType.this;
                 return switch (this.operation) {
-                    case ADDITION -> type.add(a, b);
-                    case DIVISION -> type.divide(a, b);
-                    case SUBTRACTION -> type.sub(a, b);
-                    case MULTIPLICATION -> type.multiply(a, b);
-                    case MODULUS -> type.mod(a, b);
+                    case ADDITION -> type.add(left, b);
+                    case DIVISION -> type.divide(left, b);
+                    case SUBTRACTION -> type.sub(left, b);
+                    case MULTIPLICATION -> type.multiply(left, b);
+                    case MODULUS -> type.mod(left, b);
                 };
             }
 
             @Override
             protected void saveAdditional(JsonObject object) {
+                object.add("left", left.toJson());
+                object.add("right", right.toJson());
                 object.addProperty("operation_type", operation.getSerializedName());
             }
 
@@ -633,11 +573,6 @@ public class VarType<T> {
             public VarType<T> getType(IVarAnalyser analyser) {
                 return analyser.getType("left");
             }
-        }
-
-        @Override
-        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-            return new Instance(data, Operation.CODEC.byName(GsonHelper.getAsString(object, "operation_type")));
         }
 
         public enum Operation implements StringRepresentable {
@@ -671,34 +606,32 @@ public class VarType<T> {
 
     //when
     public class WhenMethod extends Method<T> {
-        public WhenMethod() {
-            super(set -> set.addEntry(entry -> entry.addParam("condition", VarTypes.BOOL)
-                    .addParam("ifTrue", ()-> VarType.this)
-                    .addParam("ifFalse", ()-> VarType.this)
-            ), null);
-        }
 
         @Override
-        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-            return new Instance(data);
+        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser) {
+            Method<Boolean>.Instance condition = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "condition"), analyser);
+            Method<T>.Instance ifTrue = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ifTrue"), analyser);
+            Method<T>.Instance ifFalse = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ifFalse"), analyser);
+            return new Instance(condition, ifTrue, ifFalse);
         }
 
         public Method<T>.Instance createInst(Method<Boolean>.Instance condition, Method<T>.Instance ifTrue, Method<T>.Instance ifFalse, VarAnalyser analyser) {
-            return new Instance(ParamData.create(this.paramSet, analyser, List.of(condition, ifTrue, ifFalse)));
+            return new Instance(condition, ifTrue, ifFalse);
         }
 
         public class Instance extends Method<T>.Instance {
+            private final Method<Boolean>.Instance condition;
+            private final Method<T>.Instance ifTrue, ifFalse;
 
-            protected Instance(ParamData paramData) {
-                super(paramData);
+            public Instance(Method<Boolean>.Instance condition, Method<T>.Instance ifTrue, Method<T>.Instance ifFalse) {
+                this.condition = condition;
+                this.ifTrue = ifTrue;
+                this.ifFalse = ifFalse;
             }
 
             @Override
-            protected T call(VarMap params, VarMap origin) {
-                String bool = params.getVarValue("condition", VarTypes.BOOL).toString();
-                bool = bool.substring(0, 1).toUpperCase() + bool.substring(1);
-                String valueKey = "if" + bool;
-                return params.getVarValue(valueKey, ()-> VarType.this);
+            public T call(VarMap origin, MethodPipeline<?> pipeline) {
+                return condition.call(origin, pipeline) ? ifTrue.call(origin, pipeline) : ifFalse.call(origin, pipeline);
             }
 
             @Override
@@ -718,21 +651,6 @@ public class VarType<T> {
 
     private class SetVarMethod extends InstanceMethod<T> {
 
-
-        protected SetVarMethod() {
-            super(ParamSet.empty(), "%ignored");
-        }
-
-        @Override
-        public InstanceMethod<T>.Instance load(ParamData data, VarAnalyser analyser, Method<?>.Instance parent, JsonObject other) {
-            return create(other, analyser, parent);
-        }
-
-        @Override
-        public InstanceMethod<T>.Instance create(ParamData paramData, VarAnalyser analyser, Method<?>.Instance inst) {
-            throw new IllegalStateException("don't load a Set Var directly");
-        }
-
         private InstanceMethod<T>.Instance create(JsonObject object, VarAnalyser analyser, Method<?>.Instance inst) {
             Method<T>.Instance setter = object.has("setter") ? JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "setter"), analyser) : null;
             return new Instance((Method<T>.Instance) inst, setter, Setter.Type.CODEC.byName(GsonHelper.getAsString(object, "setterType")));
@@ -742,11 +660,16 @@ public class VarType<T> {
             return new Instance(in, inst, operation);
         }
 
+        @Override
+        public InstanceMethod<T>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+            return null;
+        }
+
         private class Instance extends InstanceMethod<T>.Instance {
             private final Setter<T> setter;
 
             protected Instance(Method<T>.Instance parent, Method<T>.Instance setter, Setter.Type type) {
-                super(ParamData.empty(), parent);
+                super(parent);
                 if (!(parent instanceof IVarReference)) {
                     throw new IllegalStateException("variable expected");
                 }
@@ -761,15 +684,10 @@ public class VarType<T> {
             }
 
             @Override
-            public T call(VarMap map, T inst) {
+            public T call(VarMap map, MethodPipeline<?> pipeline, T inst) {
                 T val = this.setter.createVal(inst, map);
-                this.parent.buildVar(map).setValue(val);
+                this.parent.buildVar(map, pipeline).setValue(val);
                 return val;
-            }
-
-            @Override
-            protected T callInit(java.util.function.BiFunction<VarMap, VarMap, T> callFunc, VarMap parent) {
-                return this.call(parent, this.parent.callInit(parent));
             }
 
             @Override

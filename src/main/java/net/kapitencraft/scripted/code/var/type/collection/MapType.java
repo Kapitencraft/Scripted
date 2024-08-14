@@ -4,10 +4,9 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.kap_lib.collection.DoubleMap;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.init.VarTypes;
@@ -30,9 +29,15 @@ public class MapType<K, V> extends VarType<Map<K, V>> {
         this.key = key;
         this.value = value;
 
-        this.addMethod(Put::new);
-        this.addMethod(Get::new);
-        this.addMethod(ContainsValue::new);
+        this.addMethod("put", context -> context.consumer());
+        this.addMethod("get", context -> context.returning(value)
+                .withParam(ParamInst.of("key", key))
+                .executes(Map::get)
+        );
+        this.addMethod("containsValue", context -> context.returning(VarTypes.BOOL)
+                .withParam(ParamInst.of("value", value))
+                .executes(Map::containsValue)
+        );
     }
 
     public VarType<K> getKey() {
@@ -71,38 +76,6 @@ public class MapType<K, V> extends VarType<Map<K, V>> {
             public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<Map<K, V>> instance) {
 
             }
-        }
-    }
-
-    private class Get extends SimpleInstanceMethod<V> {
-
-        protected Get() {
-            super(set -> set.addEntry(entry -> entry.addParam("key", MapType.this::getKey)), "get");
-        }
-
-        @Override
-        public V call(VarMap map, Map<K, V> inst) {
-            return inst.get(map.getVarValue("key", MapType.this::getKey));
-        }
-
-        @Override
-        public VarType<V> getType(IVarAnalyser analyser) {
-            return getValue();
-        }
-    }
-    private class ContainsValue extends SimpleInstanceMethod<Boolean> {
-        protected ContainsValue() {
-            super(set -> set.addEntry(entry -> entry.addParam("value", MapType.this::getValue)), "containsValue");
-        }
-
-        @Override
-        public Boolean call(VarMap map, Map<K, V> inst) {
-            return inst.containsValue(map.getVarValue("value", MapType.this::getValue));
-        }
-
-        @Override
-        public VarType<Boolean> getType(IVarAnalyser analyser) {
-            return VarTypes.BOOL.get();
         }
     }
 }

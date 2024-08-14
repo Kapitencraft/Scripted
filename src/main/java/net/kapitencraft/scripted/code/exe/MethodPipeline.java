@@ -43,7 +43,7 @@ public class MethodPipeline<T> {
         List<Method<?>.Instance> list = readInstances(object, analyser);
         list.forEach(instance -> {
             analyser.next();
-            instance.analyse(analyser);
+            //instance.analyse(analyser);
         }); //analyse
         return new MethodPipeline<>(type, list, isLoop);
     }
@@ -71,7 +71,7 @@ public class MethodPipeline<T> {
         map.push();
         Iterator<Method<?>.Instance> iterator = this.functions.iterator();
         while (iterator.hasNext() && !stopped) {
-            iterator.next().execute(map, this);
+            iterator.next().call(map, this);
         }
         map.pop();
         if (stopped) {
@@ -137,7 +137,7 @@ public class MethodPipeline<T> {
         analyser.push();
         this.functions.forEach(instance -> {
             analyser.next();
-            instance.analyse(analyser);
+            //instance.analyse(analyser);
         });
         analyser.pop();
     }

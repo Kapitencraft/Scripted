@@ -3,8 +3,6 @@ package net.kapitencraft.scripted.code.exe.methods;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -15,73 +13,13 @@ import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-
 public abstract class Method<T> {
-    protected final String name;
-    protected final ParamSet paramSet;
 
-    protected Method(Consumer<ParamSet> setBuilder, String name) {
-        this.name = name;
-        this.paramSet = build(setBuilder);
-    }
-
-    public ParamSet set() {
-        return paramSet;
-    }
-
-    private static ParamSet build(Consumer<ParamSet> builder) {
-        ParamSet set = new ParamSet();
-        builder.accept(set);
-        return set;
-    }
-
-    public String name() {
-        return name;
-    }
-
-    public Instance load(JsonObject object, VarAnalyser analyser) {
-        return load(object, analyser, ParamData.of(object, analyser, this.paramSet));
-    }
-
-    public abstract Instance load(JsonObject object, VarAnalyser analyser, ParamData data);
+    public abstract Instance load(JsonObject object, VarAnalyser analyser);
 
     public abstract class Instance {
-        protected final ParamData paramData;
 
-        protected Instance(ParamData paramData) {
-            this.paramData = paramData;
-        }
-
-        @Override
-        public String toString() {
-            if (this.paramData.isEmpty()) return name();
-            return name() + "(" + paramData + ")";
-        }
-
-        public void analyse(VarAnalyser analyser) {
-            paramSet.analyse(analyser, paramData);
-        }
-
-        public T callInit(VarMap parent) {
-            return callInit(this::call, parent);
-        }
-
-        public Var<T> buildVar(VarMap parent) {
-            return new Var<>(this.getType(parent), callInit(parent), true);
-        }
-
-        public void execute(VarMap map, MethodPipeline<?> pipeline) {
-            callInit(map);
-        }
-
-        protected T callInit(BiFunction<VarMap, VarMap, T> callFunc, VarMap parent) {
-            VarMap map = paramData.apply(parent);
-            return callFunc.apply(map, parent);
-        }
-
-        protected abstract T call(VarMap params, VarMap origin);
+        public abstract T call(VarMap origin, MethodPipeline<?> pipeline);
 
         public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
             return this.getType(analyser).buildMethod(then, analyser, this);
@@ -89,18 +27,14 @@ public abstract class Method<T> {
 
         public abstract VarType<T> getType(IVarAnalyser analyser);
 
+        public Var<T> buildVar(VarMap origin, MethodPipeline<?> pipeline) {
+            return new Var<>(this.getType(origin), this.call(origin, pipeline), true);
+        }
+
         public boolean matchesType(VarAnalyser analyser, Method<?>.Instance other) {
             VarType<T> type = this.getType(analyser);
             VarType<?> otherType = other.getType(analyser);
             return type.matches(otherType);
-        }
-
-        public void invoke(VarMap parent, MethodPipeline<?> pipeline) {
-            this.execute(this.apply(parent), pipeline);
-        }
-
-        private VarMap apply(VarMap parent) {
-            return paramData.apply(parent);
         }
 
         //save
@@ -118,7 +52,6 @@ public abstract class Method<T> {
 
         public final JsonObject toJson() {
             JsonObject object = new JsonObject();
-            object.add("params", this.paramData.toJson());
             saveAdditional(object);
             return object;
 

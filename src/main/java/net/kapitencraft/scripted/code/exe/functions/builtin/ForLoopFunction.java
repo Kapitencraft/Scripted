@@ -4,8 +4,6 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModFunctions;
@@ -13,10 +11,6 @@ import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 
 public class ForLoopFunction extends Function {
-
-    public ForLoopFunction() {
-        super(ParamSet.empty(), "for");
-    }
 
     public static Method<Void>.Instance create(Method<?>.Instance start, Method<Boolean>.Instance condition, Method<?>.Instance iteration, MethodPipeline<?> pipeline) {
         return ModFunctions.FOR_LOOP.get().createInst(start, condition, iteration, pipeline);
@@ -35,11 +29,6 @@ public class ForLoopFunction extends Function {
         return new Instance<>(onInit, condition, onLoop, body);
     }
 
-    @Override
-    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return load(object, analyser);
-    }
-
     public class Instance<T> extends Function.Instance {
         /**
          * normally a {@link net.kapitencraft.scripted.init.ModFunctions#CREATE_AND_SET_VAR ModFunctions.CREATE_AND_SET_VAR} call
@@ -50,7 +39,6 @@ public class ForLoopFunction extends Function {
         private final MethodPipeline<T> body;
 
         public Instance(Method<?>.Instance onInit, Method<Boolean>.Instance condition, Method<?>.Instance onLoop, MethodPipeline<T> body) {
-            super(null);
             this.onInit = onInit;
             this.condition = condition;
             this.onLoop = onLoop;
@@ -66,22 +54,21 @@ public class ForLoopFunction extends Function {
         }
 
         @Override
-        public void execute(VarMap map, MethodPipeline<?> source) {
-            map.push(); //fun fact, for-loops are not only good for iteration
-            for (onInit.invoke(map, source); condition.callInit(map); onLoop.invoke(map, source)) {
-                body.execute(map, (MethodPipeline<T>) source);
+        public void execute(VarMap origin, MethodPipeline<?> pipeline) {
+            origin.push(); //fun fact, for-loops are not only good for iteration
+            for (onInit.call(origin, pipeline); condition.call(origin, pipeline); onLoop.call(origin, pipeline)) {
+                body.execute(origin, (MethodPipeline<T>) pipeline);
             }
-            map.pop();
+            origin.pop();
         }
 
-        @Override
         public void analyse(VarAnalyser analyser) {
             analyser.push(); //you don't want to know what's going on here...
-            onInit.analyse(analyser);
-            condition.analyse(analyser);
-            body.analyse(analyser);
-            onLoop.analyse(analyser);
-            analyser.pop();
+//            onInit.analyse(analyser);
+//            condition.analyse(analyser);
+//            body.analyse(analyser);
+//            onLoop.analyse(analyser);
+//            analyser.pop();
         }
     }
 }

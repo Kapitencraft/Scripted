@@ -1,7 +1,6 @@
 package net.kapitencraft.scripted.init;
 
 import net.kapitencraft.scripted.Scripted;
-import net.kapitencraft.scripted.code.var.type.BlockStatePropertyType;
 import net.kapitencraft.scripted.code.var.type.BlockStateType;
 import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.code.var.type.LevelType;
@@ -53,11 +52,11 @@ public interface VarTypes {
     RegistryObject<AttributeType> ATTRIBUTE = REGISTRY.register("attribute", AttributeType::new);
 
     //entity
-    RegistryObject<EntityType<Entity>> ENTITY = REGISTRY.register("entity", ()-> new EntityType<>("Entity"));
+    RegistryObject<EntityType<Entity>> ENTITY = REGISTRY.register("entity", () -> new EntityType<>("Entity"));
     RegistryObject<LivingEntityType<LivingEntity>> LIVING_ENTITY = REGISTRY.register("living_entity", ()-> new LivingEntityType<>("LivingEntity"));
 
     //other
     RegistryObject<LevelType> LEVEL = REGISTRY.register("level", LevelType::new);
     RegistryObject<BlockStateType> BLOCK_STATE = REGISTRY.register("block_state", BlockStateType::new);
-    RegistryObject<BlockStatePropertyType> BLOCK_STATE_PROPERTY = REGISTRY.register("block_state_property", BlockStatePropertyType::new);
+    //RegistryObject<BlockStatePropertyType<?>> BLOCK_STATE_PROPERTY = REGISTRY.register("block_state_property", BlockStatePropertyType::new); //TODO make generic var types
 }

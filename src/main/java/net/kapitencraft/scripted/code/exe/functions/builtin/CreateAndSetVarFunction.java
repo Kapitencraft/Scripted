@@ -4,8 +4,6 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
@@ -14,17 +12,8 @@ import net.minecraft.util.GsonHelper;
 
 public class CreateAndSetVarFunction extends Function {
 
-    public CreateAndSetVarFunction() {
-        super(ParamSet.empty(), "%ignored");
-    }
-
     @Override
     public Instance<?> load(JsonObject object, VarAnalyser analyser) {
-        return read(object, analyser);
-    }
-
-    @Override
-    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
         return read(object, analyser);
     }
 
@@ -46,7 +35,6 @@ public class CreateAndSetVarFunction extends Function {
         private final Method<T>.Instance setter;
 
         public Instance(String varName, Method<T>.Instance method, VarType<T> type, boolean isFinal) {
-            super(ParamData.empty());
             this.varName = varName;
             this.type = type;
             this.isFinal = isFinal;
@@ -62,15 +50,9 @@ public class CreateAndSetVarFunction extends Function {
         }
 
         @Override
-        public void execute(VarMap map, MethodPipeline<?> source) {
-            VarMap sourceMap = source.getMap();
-            sourceMap.addVarType(varName, type, isFinal);
-            sourceMap.getVar(varName).setValue(setter.callInit(sourceMap));
-        }
-
-        @Override
-        public void analyse(VarAnalyser analyser) {
-            analyser.registerVar(varName, type);
+        public void execute(VarMap origin, MethodPipeline<?> pipeline) {
+            origin.addVarType(varName, type, isFinal);
+            origin.getVar(varName).setValue(setter.call(origin, pipeline));
         }
     }
 }
