@@ -12,10 +12,7 @@ import net.kapitencraft.scripted.code.var.type.math.BlockPosType;
 import net.kapitencraft.scripted.code.var.type.math.Vec2Type;
 import net.kapitencraft.scripted.code.var.type.math.Vec3Type;
 import net.kapitencraft.scripted.code.var.type.primitive.*;
-import net.kapitencraft.scripted.code.var.type.registry.AttributeType;
-import net.kapitencraft.scripted.code.var.type.registry.BlockType;
-import net.kapitencraft.scripted.code.var.type.registry.EntityTypeType;
-import net.kapitencraft.scripted.code.var.type.registry.ItemType;
+import net.kapitencraft.scripted.code.var.type.registry.*;
 import net.kapitencraft.scripted.init.custom.ModRegistryKeys;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -50,6 +47,7 @@ public interface VarTypes {
     RegistryObject<ItemStackType> ITEM_STACK = REGISTRY.register("item_stack", ItemStackType::new);
     RegistryObject<EntityTypeType> ENTITY_TYPE = REGISTRY.register("entity_type", EntityTypeType::new);
     RegistryObject<AttributeType> ATTRIBUTE = REGISTRY.register("attribute", AttributeType::new);
+    RegistryObject<EnchantmentType>  ENCHANTMENT = REGISTRY.register("enchantment", EnchantmentType::new);
 
     //entity
     RegistryObject<EntityType<Entity>> ENTITY = REGISTRY.register("entity", () -> new EntityType<>("Entity"));

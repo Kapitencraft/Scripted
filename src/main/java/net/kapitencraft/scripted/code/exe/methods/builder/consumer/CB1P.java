@@ -2,12 +2,13 @@ package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class CB1P<P1>{
+public class CB1P<P1> implements InstMapper<P1, Void> {
     private final ParamInst<P1> param1;
     private final DoubleMap<VarType<?>, String, CB2P<P1, ?>> children = new DoubleMap<>();
 

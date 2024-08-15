@@ -1,9 +1,10 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.util.Consumers;
 
-public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> {
+public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMapper<P1, Void> {
     private final ParamInst<P1> param1;
     private final ParamInst<P2> param2;
     private final ParamInst<P3> param3;

@@ -6,7 +6,8 @@ import net.kapitencraft.kap_lib.helpers.TextHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
-import net.kapitencraft.scripted.code.exe.methods.builder.ReturningInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.method.MethodBuilder;
 import net.kapitencraft.scripted.code.exe.methods.mapper.IVarReference;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
@@ -62,7 +63,7 @@ public class VarType<T> {
     }
 
 
-    protected final BuilderContext<T> context = new BuilderContext<>(this);
+    private final BuilderContext<T> context = new BuilderContext<>(this);
     /**
      * the name of the Type (how it's referred to in code)
      */
@@ -81,7 +82,7 @@ public class VarType<T> {
     /**
      * the constructor; there can only be one
      */
-    protected Function<BuilderContext<T>, MethodBuilder<T>> constructor;
+    protected List<Function<BuilderContext<T>, Returning<T>>> constructor;
     /**
      * fields...
      */
@@ -140,7 +141,7 @@ public class VarType<T> {
 
     private class MethodMap {
         private final HashMap<String, VarType<T>.InstanceMethod<?>> builders = new HashMap<>();
-        private final HashMap<String, Function<BuilderContext<T>, ReturningInst<T, ?>>> unbakedMethods = new HashMap<>();
+        private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
         public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, Method<T>.Instance parent) {
             VarType<T>.InstanceMethod<?> method = getOrThrow(GsonHelper.getAsString(object, "type"));
@@ -153,7 +154,7 @@ public class VarType<T> {
             progressMeter.setAbsolute(0);
             int i = 0;
             int max = unbakedMethods.size();
-            for (Map.Entry<String, Function<BuilderContext<T>, ReturningInst<T, ?>>> entry : unbakedMethods.entrySet()) {
+            for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entrySet()) {
 
 
                 i++;
@@ -162,7 +163,7 @@ public class VarType<T> {
             progressMeter.complete();
         }
 
-        public void registerMethod(String name, Function<BuilderContext<T>, ReturningInst<T, ?>> method) {
+        public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
             this.unbakedMethods.put(name, method);
         }
 
@@ -179,7 +180,7 @@ public class VarType<T> {
      * adds a new Method to be registered
      * @param builder the builder
      */
-    protected void addMethod(String in, Function<BuilderContext<T>, ReturningInst<T, ?>> builder) {
+    protected void addMethod(String in, Function<BuilderContext<T>, InstMapper<T, ?>> builder) {
         this.methods.registerMethod(in, builder);
     }
 
@@ -187,9 +188,8 @@ public class VarType<T> {
         this.fields.addField(name, new Field<>(getter, setter, typeSupplier));
     }
 
-    protected void setConstructor(Function<BuilderContext<T>, MethodBuilder<T>> constructor) {
-        if (this.constructor != null && !extendable) throw new IllegalStateException("can not set constructor twice");
-        this.constructor = constructor;
+    protected void setConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
+        this.constructor.add(constructor);
     }
 
     @Override

@@ -2,13 +2,14 @@ package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
-import net.kapitencraft.scripted.code.exe.methods.builder.ReturningInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Functions;
 
 import java.util.function.Supplier;
 
-public class MB4P<R, P1, P2, P3, P4> implements ReturningInst<P1, R> {
+public class MB4P<R, P1, P2, P3, P4> implements InstMapper<P1, R>, Returning<R> {
     private final VarType<R> retType;
     private final ParamInst<P1> param1;
     private final ParamInst<P2> param2;

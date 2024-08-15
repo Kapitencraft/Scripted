@@ -2,12 +2,13 @@ package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Consumers;
 
 import java.util.function.Supplier;
 
-public class CB9P<P1, P2, P3, P4, P5, P6, P7, P8, P9> {
+public class CB9P<P1, P2, P3, P4, P5, P6, P7, P8, P9> implements InstMapper<P1, Void> {
     private final ParamInst<P1> param1;
     private final ParamInst<P2> param2;
     private final ParamInst<P3> param3;

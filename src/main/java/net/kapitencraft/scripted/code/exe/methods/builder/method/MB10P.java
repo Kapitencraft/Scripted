@@ -1,11 +1,12 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
-import net.kapitencraft.scripted.code.exe.methods.builder.ReturningInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.util.Functions;
 
-public class MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements ReturningInst<P1, R> {
+public class MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMapper<P1, R>, Returning<R> {
     private final VarType<R> retType;
     private final ParamInst<P1> param1;
     private final ParamInst<P2> param2;
