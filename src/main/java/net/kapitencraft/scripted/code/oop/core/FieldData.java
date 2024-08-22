@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.code.oop.code;
+package net.kapitencraft.scripted.code.oop.core;
 
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.var.Var;

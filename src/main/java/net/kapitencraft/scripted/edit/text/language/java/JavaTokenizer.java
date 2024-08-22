@@ -1,9 +1,9 @@
-package net.kapitencraft.scripted.edit.text.java;
+package net.kapitencraft.scripted.edit.text.language.java;
 
 import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.Token;
-import net.kapitencraft.scripted.edit.text.Tokenizer;
+import net.kapitencraft.scripted.edit.text.language.Tokenizer;
 
 import java.util.ArrayList;
 import java.util.List;

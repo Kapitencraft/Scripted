@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.text.java;
+package net.kapitencraft.scripted.edit.text.language.java;
 
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
@@ -8,7 +8,7 @@ import net.kapitencraft.scripted.code.exe.functions.builtin.IfFunction;
 import net.kapitencraft.scripted.code.exe.functions.builtin.WhileLoopFunction;
 import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
-import net.kapitencraft.scripted.code.oop.code.Object;
+import net.kapitencraft.scripted.code.oop.core.Object;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
@@ -17,7 +17,7 @@ import net.kapitencraft.scripted.code.var.type.primitive.DoubleType;
 import net.kapitencraft.scripted.code.var.type.primitive.IntegerType;
 import net.kapitencraft.scripted.code.var.type.primitive.StringType;
 import net.kapitencraft.scripted.edit.Token;
-import net.kapitencraft.scripted.edit.text.Compiler;
+import net.kapitencraft.scripted.edit.text.language.Compiler;
 import net.kapitencraft.scripted.edit.text.ErrorList;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;

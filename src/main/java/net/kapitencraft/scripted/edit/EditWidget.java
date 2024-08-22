@@ -2,8 +2,8 @@ package net.kapitencraft.scripted.edit;
 
 import net.kapitencraft.kap_lib.client.widget.ScrollableWidget;
 import net.kapitencraft.kap_lib.client.widget.text.MultiLineTextBox;
-import net.kapitencraft.scripted.code.oop.code.Object;
-import net.kapitencraft.scripted.edit.text.java.JavaCompiler;
+import net.kapitencraft.scripted.code.oop.core.Object;
+import net.kapitencraft.scripted.edit.text.language.java.JavaCompiler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;

@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.code.oop.code;
+package net.kapitencraft.scripted.code.oop.core;
 
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;

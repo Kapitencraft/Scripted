@@ -1,7 +1,5 @@
-package net.kapitencraft.scripted.edit.text;
+package net.kapitencraft.scripted.edit.text.language;
 
-import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
-import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.Token;
 
 import java.util.List;

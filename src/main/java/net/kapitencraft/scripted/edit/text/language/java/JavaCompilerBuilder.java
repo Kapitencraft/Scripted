@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.text.java;
+package net.kapitencraft.scripted.edit.text.language.java;
 
 import net.kapitencraft.scripted.edit.text.builder.CompilerBuilder;
 import net.kapitencraft.scripted.edit.text.node.CompilerNode;

@@ -1,6 +1,6 @@
-package net.kapitencraft.scripted.edit.text;
+package net.kapitencraft.scripted.edit.text.language;
 
-import net.kapitencraft.scripted.code.oop.code.Object;
+import net.kapitencraft.scripted.code.oop.core.Object;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.Token;
 import net.kapitencraft.scripted.edit.text.builder.ArgumentCompilerBuilder;
