@@ -1,27 +1,24 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
-import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import com.google.gson.JsonPrimitive;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
 import net.kapitencraft.scripted.init.VarTypes;
-import net.minecraft.util.GsonHelper;
-
-import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 
 public class CharType extends PrimitiveType<Character> {
-    public static final Pattern PATTERN = Pattern.compile("^('(.)')$");
 
     public CharType() {
         super("char", null, null, null, null, null, Character::compareTo);
     }
 
-    public static Method<?>.Instance read(char value) {
-        return ((CharType) VarTypes.CHAR.get()).loadPrimitiveInstance(String.valueOf(value));
+    public static MethodInstance<?> read(char value) {
+        return VarTypes.CHAR.get().readPrimitiveInstance(String.valueOf(value));
     }
 
     @Override
-    public Pattern matcher() {
-        return PATTERN;
+    public @NotNull String toId() {
+        return "C";
     }
 
     @Override
@@ -30,12 +27,12 @@ public class CharType extends PrimitiveType<Character> {
     }
 
     @Override
-    public void saveToJson(JsonObject object, Character value) {
-        object.addProperty("value", value);
+    public JsonPrimitive saveToJson(Character value) {
+        return new JsonPrimitive(value);
     }
 
     @Override
-    public Character loadFromJson(JsonObject object) {
-        return GsonHelper.getAsCharacter(object, "value");
+    public Character loadFromJson(JsonPrimitive prim) {
+        return prim.getAsCharacter();
     }
 }

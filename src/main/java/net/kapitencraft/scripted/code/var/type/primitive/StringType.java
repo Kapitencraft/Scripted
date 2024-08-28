@@ -1,26 +1,23 @@
 package net.kapitencraft.scripted.code.var.type.primitive;
 
-import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import com.google.gson.JsonPrimitive;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.type.abstracts.PrimitiveType;
 import net.kapitencraft.scripted.init.VarTypes;
-import net.minecraft.util.GsonHelper;
-
-import java.util.regex.Pattern;
+import org.jetbrains.annotations.NotNull;
 
 public class StringType extends PrimitiveType<String> {
-    public static final Pattern STRING = Pattern.compile("^(\"(.+)\")$");
     public StringType() {
         super("String", (s, s1) -> s + s1, null, null, null, null, String::compareTo);
     }
 
-    public static Method<?>.Instance readInstance(String string) {
-        return ((StringType) VarTypes.STRING.get()).loadPrimitiveInstance(string);
+    public static MethodInstance<?> readInstance(String string) {
+        return (VarTypes.STRING.get()).readPrimitiveInstance(string);
     }
 
     @Override
-    public Pattern matcher() {
-        return STRING;
+    public @NotNull String toId() {
+        return "S";
     }
 
     @Override
@@ -39,12 +36,12 @@ public class StringType extends PrimitiveType<String> {
     }
 
     @Override
-    public void saveToJson(JsonObject object, String value) {
-        object.addProperty("value", value);
+    public JsonPrimitive saveToJson(String value) {
+        return new JsonPrimitive(value);
     }
 
     @Override
-    public String loadFromJson(JsonObject object) {
-        return GsonHelper.getAsString(object, "value");
+    public String loadFromJson(JsonPrimitive prim) {
+        return prim.getAsString();
     }
 }

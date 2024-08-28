@@ -6,7 +6,7 @@ import net.kapitencraft.scripted.code.exe.functions.builtin.CreateAndSetVarFunct
 import net.kapitencraft.scripted.code.exe.functions.builtin.ForLoopFunction;
 import net.kapitencraft.scripted.code.exe.functions.builtin.IfFunction;
 import net.kapitencraft.scripted.code.exe.functions.builtin.WhileLoopFunction;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
 import net.kapitencraft.scripted.code.oop.core.Object;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
@@ -17,8 +17,8 @@ import net.kapitencraft.scripted.code.var.type.primitive.DoubleType;
 import net.kapitencraft.scripted.code.var.type.primitive.IntegerType;
 import net.kapitencraft.scripted.code.var.type.primitive.StringType;
 import net.kapitencraft.scripted.edit.Token;
-import net.kapitencraft.scripted.edit.text.language.Compiler;
 import net.kapitencraft.scripted.edit.text.ErrorList;
+import net.kapitencraft.scripted.edit.text.language.Compiler;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.VarTypes;
@@ -100,7 +100,7 @@ public class JavaCompiler extends Compiler {
 
         private <T> MethodPipeline<T> castPipeline(VarType<T> ret, VarAnalyser analyser, boolean isLoop) {
             assertType(Token.Type.CURLY_BRACKET_OPEN);
-            List<Method<?>.Instance> methods = new ArrayList<>();
+            List<MethodInstance<?>> methods = new ArrayList<>();
             while (next().type != Token.Type.CURLY_BRACKET_CLOSE) {
                 methods.add(castRunnable(analyser, true, ret));
             }
@@ -108,7 +108,7 @@ public class JavaCompiler extends Compiler {
             return new MethodPipeline<>(ret, methods, isLoop);
         }
 
-        private <T> Method<?>.Instance castRunnable(VarAnalyser analyser, boolean allowLoops, VarType<T> retType) {
+        private <T> MethodInstance<?> castRunnable(VarAnalyser analyser, boolean allowLoops, VarType<T> retType) {
             if (next().type == Token.Type.IF_IDENTIFIER) {
                 return castIf(analyser, retType);
             } else if (next().type == Token.Type.MODIFIER || next().type == Token.Type.VAR_TYPE) {
@@ -119,16 +119,16 @@ public class JavaCompiler extends Compiler {
                 }
                 nextType();
                 assertType(Token.Type.BRACKET_OPEN);
-                Method<?>.Instance start = castRunnable(analyser, false, retType);
-                Method<Boolean>.Instance condition = (Method<Boolean>.Instance) castMethod(analyser);
-                Method<?>.Instance iteration = castRunnable(analyser, false, retType);
+                MethodInstance<?> start = castRunnable(analyser, false, retType);
+                MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
+                MethodInstance<?> iteration = castRunnable(analyser, false, retType);
                 assertType(Token.Type.BRACKET_CLOSE);
                 MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
                 return ForLoopFunction.create(start, condition, iteration, pipeline);
             } else if (next().type == Token.Type.WHILE_IDENTIFIER) {
                 nextType();
                 assertType(Token.Type.BRACKET_OPEN);
-                Method<Boolean>.Instance condition = (Method<Boolean>.Instance) castMethod(analyser);
+                MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
                 assertType(Token.Type.BRACKET_CLOSE);
                 MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
                 return WhileLoopFunction.create(condition, pipeline);
@@ -139,8 +139,8 @@ public class JavaCompiler extends Compiler {
 
         private <T> IfFunction.Instance<T> castIf(VarAnalyser analyser, VarType<T> retType) {
             nextType();
-            Pair<Method<Boolean>.Instance, MethodPipeline<T>> main = castIfPair(analyser, retType);
-            List<Pair<Method<Boolean>.Instance, MethodPipeline<T>>> elifs = new ArrayList<>();
+            Pair<MethodInstance<Boolean>, MethodPipeline<T>> main = castIfPair(analyser, retType);
+            List<Pair<MethodInstance<Boolean>, MethodPipeline<T>>> elifs = new ArrayList<>();
             MethodPipeline<T> elseBody = null;
             while (next().type == Token.Type.ELSE_IDENTIFIER) {
                 nextType();
@@ -158,9 +158,9 @@ public class JavaCompiler extends Compiler {
             return ModFunctions.IF.get().createInst(main, elifs, elseBody, analyser);
         }
 
-        private <T> Pair<Method<Boolean>.Instance, MethodPipeline<T>> castIfPair(VarAnalyser analyser, VarType<T> retType) {
+        private <T> Pair<MethodInstance<Boolean>, MethodPipeline<T>> castIfPair(VarAnalyser analyser, VarType<T> retType) {
             assertType(Token.Type.BRACKET_OPEN);
-            Method<Boolean>.Instance condition = (Method<Boolean>.Instance) castMethod(analyser);
+            MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
             assertType(Token.Type.BRACKET_CLOSE);
             MethodPipeline<T> pipeline = castPipeline(retType, analyser, false);
             return Pair.of(condition, pipeline);
@@ -175,7 +175,7 @@ public class JavaCompiler extends Compiler {
             else type = castType();
             String name = castName();
             assertType(Token.Type.EQUAL);
-            Method<T>.Instance inst = (Method<T>.Instance) castMethod(analyser);
+            MethodInstance<T> inst = (MethodInstance<T>) castMethod(analyser);
             return ModFunctions.CREATE_AND_SET_VAR.get().create(name, inst, type, isFinal);
         }
 
@@ -188,7 +188,7 @@ public class JavaCompiler extends Compiler {
         //TODO rework
         private ParamData castParamData(ParamSet set, VarAnalyser analyser) {
             assertType(Token.Type.BRACKET_OPEN);
-            List<Method<?>.Instance> params = new ArrayList<>();
+            List<MethodInstance<?>> params = new ArrayList<>();
             while (next().type != Token.Type.BRACKET_CLOSE) {
                 params.add(castMethod(analyser));
                 if (next().type == Token.Type.NEXT_PARAM) assertType(Token.Type.NEXT_PARAM); //if not, the params are complete
@@ -197,7 +197,7 @@ public class JavaCompiler extends Compiler {
             return ParamData.create(set, analyser, params);
         }
 
-        private Method<?>.Instance castMethod(VarAnalyser analyser) {
+        private MethodInstance<?> castMethod(VarAnalyser analyser) {
             return switch (nextType()) {
                 case PRIM_CHAR -> CharType.read(current().value.charAt(0));
                 case PRIM_NUM -> {
@@ -207,7 +207,7 @@ public class JavaCompiler extends Compiler {
                 case PRIM_STRING -> StringType.readInstance(current().value);
                 case PRIM_REG_ELEMENT -> RegistryType.readInstance(current().value);
                 default -> {
-                    Method<?>.Instance inst = null;
+                    MethodInstance<?> inst = null;
                     while (next().type != Token.Type.EXPR_END && next().type != Token.Type.NEXT_PARAM) {
                         switch (next().type) {
                             case ASSIGN:
@@ -240,19 +240,19 @@ public class JavaCompiler extends Compiler {
             };
         }
 
-        private <T> Method<T>.Instance castAssign(@Nullable Method<T>.Instance inst, VarAnalyser analyser) {
+        private <T> MethodInstance<T> castAssign(@Nullable MethodInstance<T> inst, VarAnalyser analyser) {
             if (inst == null) throw new IllegalStateException("variable expected");
             VarType<T> type = inst.getType(analyser);
             Setter.Type setterType = Setter.Type.readType(next().value);
-            return type.createSetVar(inst, setterType, setterType.requiresSetter() ? (Method<T>.Instance) castMethod(analyser) : null);
+            return type.createSetVar(inst, setterType, setterType.requiresSetter() ? (MethodInstance<T>) castMethod(analyser) : null);
         }
 
-        private <T> Method<T>.Instance castWhenMethod(Method<?>.Instance inst, VarAnalyser analyser) {
-            Method<Boolean>.Instance condition = (Method<Boolean>.Instance) inst;
+        private <T> MethodInstance<T> castWhenMethod(MethodInstance<?> inst, VarAnalyser analyser) {
+            MethodInstance<Boolean> condition = (MethodInstance<Boolean>) inst;
             nextType();
-            Method<T>.Instance ifTrue = (Method<T>.Instance) castMethod(analyser);
+            MethodInstance<T> ifTrue = (MethodInstance<T>) castMethod(analyser);
             assertType(Token.Type.WHEN_FALSE_SEPARATOR);
-            Method<T>.Instance ifFalse = (Method<T>.Instance) castMethod(analyser);
+            MethodInstance<T> ifFalse = (MethodInstance<T>) castMethod(analyser);
             VarType<T> type = ifTrue.getType(analyser);
             return type.createWhen(condition, ifTrue, ifFalse, analyser);
         }

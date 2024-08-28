@@ -1,13 +1,10 @@
 package net.kapitencraft.scripted.code.var.type.collection;
 
-import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
-import net.kapitencraft.scripted.code.var.Var;
-import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.init.VarTypes;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +32,16 @@ public class ListType<T> extends VarType<List<T>> {
                 .executes(List::indexOf)
         );
         this.addMethod("size", context -> context.returning(VarTypes.INTEGER).executes(List::size));
-        this.addMethod(AddElement::new);
-        this.addMethod(ClearFunction::new);
+        this.addMethod("add", context -> context.consumer()
+                .withParam(ParamInst.of("value", type))
+                .executes(List::add)
+        );
+        this.addMethod("clear", context -> context.consumer().executes(List::clear));
+    }
+
+    @Override
+    public @NotNull String toId() {
+        return String.format("List<%s>", this.type.toId());
     }
 
     public VarType<T> getType() {
@@ -46,30 +51,5 @@ public class ListType<T> extends VarType<List<T>> {
     @Override
     public final VarType<List<List<T>>> listOf() {
         throw new IllegalAccessError("can not create list of list (yet)");
-    }
-
-    private class AddElement extends SimpleInstanceFunction {
-
-        protected AddElement() {
-            super("add", set -> set.addEntry(entry -> entry
-                    .addParam("value", ListType.this::getType)
-            ));
-        }
-
-        @Override
-        public void executeInstanced(VarMap map, MethodPipeline<?> source, Var<List<T>> instance) {
-            instance.getValue().add(map.getVarValue("value", ListType.this::getType));
-        }
-    }
-    private class ClearFunction extends SimpleInstanceFunction {
-
-        protected ClearFunction() {
-            super("clear", ParamSet.empty());
-        }
-
-        @Override
-        protected void executeInstanced(VarMap map, MethodPipeline<?> source, Var<List<T>> instance) {
-            instance.getValue().clear();
-        }
     }
 }

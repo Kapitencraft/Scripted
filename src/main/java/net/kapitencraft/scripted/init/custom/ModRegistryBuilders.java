@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.init.custom;
 
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
 import net.kapitencraft.scripted.code.script.type.ScriptType;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.core.Registry;

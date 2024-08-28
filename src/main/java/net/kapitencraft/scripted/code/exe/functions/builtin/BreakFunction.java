@@ -8,8 +8,6 @@ import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 
 public class BreakFunction extends Function {
 
-    //TODO make a custom loader for break, return and continue (add labels in the future?)
-
     @Override
     public Function.Instance load(JsonObject object, VarAnalyser analyser) {
         return new Instance();

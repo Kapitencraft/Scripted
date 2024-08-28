@@ -19,42 +19,49 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.function.Supplier;
+
 public interface VarTypes {
     DeferredRegister<VarType<?>> REGISTRY = Scripted.createRegistry(ModRegistryKeys.VAR_TYPES);
 
+    private static <I, T extends VarType<I>> RegistryObject<T> register(String name, Supplier<T> register) {
+        return REGISTRY.register(name, register);
+    }
+
     //special
-    RegistryObject<VarType<Void>> VOID = REGISTRY.register("void", VoidType::new);
+    RegistryObject<VarType<Void>> VOID = register("void", VoidType::new);
 
     //primitives
-    RegistryObject<VarType<Integer>> INTEGER = REGISTRY.register("integer", IntegerType::new);
-    RegistryObject<VarType<Double>> DOUBLE = REGISTRY.register("double", DoubleType::new);
-    RegistryObject<VarType<String>> STRING = REGISTRY.register("string", StringType::new);
-    RegistryObject<VarType<Character>> CHAR = REGISTRY.register("char", CharType::new);
-    RegistryObject<VarType<Boolean>> BOOL = REGISTRY.register("bool", BooleanType::new);
+    RegistryObject<IntegerType> INTEGER = register("integer", IntegerType::new);
+    RegistryObject<DoubleType> DOUBLE = register("double", DoubleType::new);
+    RegistryObject<StringType> STRING = register("string", StringType::new);
+    RegistryObject<CharType> CHAR = register("char", CharType::new);
+    RegistryObject<BooleanType> BOOL = register("bool", BooleanType::new);
 
     //math-helper
-    RegistryObject<Vec3Type> VEC3 = REGISTRY.register("vec3", Vec3Type::new);
-    RegistryObject<Vec2Type> VEC2 = REGISTRY.register("vec2", Vec2Type::new);
-    RegistryObject<BlockPosType> BLOCK_POS = REGISTRY.register("block_pos", BlockPosType::new);
+    RegistryObject<Vec3Type> VEC3 = register("vec3", Vec3Type::new);
+    RegistryObject<Vec2Type> VEC2 = register("vec2", Vec2Type::new);
+    RegistryObject<BlockPosType> BLOCK_POS = register("block_pos", BlockPosType::new);
 
     //data
     RegistryObject<DataStorageType> DATA_STORAGE = REGISTRY.register("data_storage", DataStorageType::new);
 
 
     //registry
-    RegistryObject<ItemType> ITEM = REGISTRY.register("item", ItemType::new);
-    RegistryObject<BlockType> BLOCK = REGISTRY.register("block", BlockType::new);
-    RegistryObject<ItemStackType> ITEM_STACK = REGISTRY.register("item_stack", ItemStackType::new);
-    RegistryObject<EntityTypeType> ENTITY_TYPE = REGISTRY.register("entity_type", EntityTypeType::new);
-    RegistryObject<AttributeType> ATTRIBUTE = REGISTRY.register("attribute", AttributeType::new);
-    RegistryObject<EnchantmentType>  ENCHANTMENT = REGISTRY.register("enchantment", EnchantmentType::new);
+    RegistryObject<ItemType> ITEM = register("item", ItemType::new);
+    RegistryObject<BlockType> BLOCK = register("block", BlockType::new);
+    RegistryObject<EntityTypeType> ENTITY_TYPE = register("entity_type", EntityTypeType::new);
+    RegistryObject<AttributeType> ATTRIBUTE = register("attribute", AttributeType::new);
+    RegistryObject<EnchantmentType>  ENCHANTMENT = register("enchantment", EnchantmentType::new);
+    RegistryObject<MobEffectType> MOB_EFFECT = register("mob_effect", MobEffectType::new);
 
     //entity
-    RegistryObject<EntityType<Entity>> ENTITY = REGISTRY.register("entity", () -> new EntityType<>("Entity"));
-    RegistryObject<LivingEntityType<LivingEntity>> LIVING_ENTITY = REGISTRY.register("living_entity", ()-> new LivingEntityType<>("LivingEntity"));
+    RegistryObject<EntityType<Entity>> ENTITY = register("entity", () -> new EntityType<>("Entity"));
+    RegistryObject<LivingEntityType<LivingEntity>> LIVING_ENTITY = register("living_entity", ()-> new LivingEntityType<>("LivingEntity"));
 
     //other
-    RegistryObject<LevelType> LEVEL = REGISTRY.register("level", LevelType::new);
-    RegistryObject<BlockStateType> BLOCK_STATE = REGISTRY.register("block_state", BlockStateType::new);
-    //RegistryObject<BlockStatePropertyType<?>> BLOCK_STATE_PROPERTY = REGISTRY.register("block_state_property", BlockStatePropertyType::new); //TODO make generic var types
+    RegistryObject<LevelType> LEVEL = register("level", LevelType::new);
+    RegistryObject<ItemStackType> ITEM_STACK = register("item_stack", ItemStackType::new);
+    RegistryObject<BlockStateType> BLOCK_STATE = register("block_state", BlockStateType::new);
+    //RegistryObject<BlockStatePropertyType<?>> BLOCK_STATE_PROPERTY = register("block_state_property", BlockStatePropertyType::new); //TODO make generic var types
 }

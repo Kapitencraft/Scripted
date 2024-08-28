@@ -3,27 +3,27 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 
 public class ReturnFunction extends Function {
 
     @Override
-    public Method<Void>.Instance load(JsonObject object, VarAnalyser analyser) {
+    public MethodInstance<Void> load(JsonObject object, VarAnalyser analyser) {
         return new Instance<>(object.has("ret") ?
-                JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ret"), analyser) :
+                Method.loadInstance(GsonHelper.getAsJsonObject(object, "ret"), analyser) :
                 null
         );
     }
 
     public class Instance<T> extends Function.Instance {
-        private final @Nullable Method<T>.Instance ret;
+        private final @Nullable MethodInstance<T> ret;
 
-        public Instance(@Nullable Method<T>.Instance ret) {
+        public Instance(@Nullable MethodInstance<T> ret) {
             this.ret = ret;
         }
 

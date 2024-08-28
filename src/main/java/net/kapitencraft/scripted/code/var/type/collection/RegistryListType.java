@@ -1,7 +1,8 @@
 package net.kapitencraft.scripted.code.var.type.collection;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.exe.param.ParamData;
 import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
@@ -24,7 +25,7 @@ public class RegistryListType<V> extends ListType<V> {
         return (RegistryType<V>) super.getType();
     }
 
-    public Method<?>.Instance createInstance(String value) {
+    public MethodInstance<?> createInstance(String value) {
         return ((Constructor) this.constructor).createInstance(value);
     }
 

@@ -3,7 +3,8 @@ package net.kapitencraft.scripted.code.exe.methods.mapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -17,15 +18,15 @@ public class VarReference<T> extends Method<T> {
     }
 
     @Override
-    public Method<T>.Instance load(JsonObject object, VarAnalyser analyser) {
+    public MethodInstance<T> load(JsonObject object, VarAnalyser analyser) {
         throw new JsonSyntaxException("do not load Var References directly");
     }
 
-    public Method<?>.Instance create(String s) {
+    public MethodInstance<?> create(String s) {
         return new Instance(s);
     }
 
-    public class Instance extends Method<T>.Instance implements IVarReference {
+    public class Instance extends MethodInstance<T> implements IVarReference {
         private final String methodName;
 
         protected Instance(String methodName) {

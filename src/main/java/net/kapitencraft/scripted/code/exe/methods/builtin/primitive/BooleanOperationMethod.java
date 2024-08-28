@@ -2,13 +2,13 @@ package net.kapitencraft.scripted.code.exe.methods.builtin.primitive;
 
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.init.VarTypes;
-import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
@@ -16,17 +16,17 @@ import org.jetbrains.annotations.NotNull;
 public class BooleanOperationMethod extends Method<Boolean>{
 
     @Override
-    public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser) {
-        Method<Boolean>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
-        Method<Boolean>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+    public MethodInstance<Boolean> load(JsonObject object, VarAnalyser analyser) {
+        MethodInstance<Boolean> left = Method.loadInstance(GsonHelper.getAsJsonObject(object, "left"), analyser);
+        MethodInstance<Boolean> right = Method.loadInstance(GsonHelper.getAsJsonObject(object, "right"), analyser);
         return new Instance(OperationType.CODEC.byName(GsonHelper.getAsString(object, "operation_type")), left, right);
     }
 
-    public class Instance extends Method<Boolean>.Instance {
+    private static class Instance extends MethodInstance<Boolean> {
         private final OperationType operationType;
-        private final Method<Boolean>.Instance left, right;
+        private final MethodInstance<Boolean> left, right;
 
-        private Instance(OperationType operationType, Method<Boolean>.Instance left, Method<Boolean>.Instance right) {
+        private Instance(OperationType operationType, MethodInstance<Boolean> left, MethodInstance<Boolean> right) {
             this.operationType = operationType;
             this.left = left;
             this.right = right;
@@ -51,6 +51,8 @@ public class BooleanOperationMethod extends Method<Boolean>{
         @Override
         protected void saveAdditional(JsonObject object) {
             object.addProperty("operation_type", operationType.getSerializedName());
+            object.add("left", left.toJson());
+            object.add("right", right.toJson());
         }
     }
 

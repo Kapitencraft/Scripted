@@ -1,7 +1,5 @@
 package net.kapitencraft.scripted.code.var.type;
 
-import net.kapitencraft.scripted.code.var.VarMap;
-import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.code.var.type.collection.MapType;
 import net.kapitencraft.scripted.init.VarTypes;
@@ -41,6 +39,7 @@ public class ItemStackType extends VarType<ItemStack> {
                 .executes(ItemStack::getEnchantmentLevel)
         );
         this.addMethod("getEnchantments", context -> context.returning(MapType.getOrCache(VarTypes.ENCHANTMENT, VarTypes.INTEGER))
+                .executes(ItemStack::getAllEnchantments)
         );
     }
 }

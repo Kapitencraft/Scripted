@@ -3,28 +3,28 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.init.ModFunctions;
-import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 
 public class ForLoopFunction extends Function {
 
-    public static Method<Void>.Instance create(Method<?>.Instance start, Method<Boolean>.Instance condition, Method<?>.Instance iteration, MethodPipeline<?> pipeline) {
+    public static MethodInstance<Void> create(MethodInstance<?> start, MethodInstance<Boolean> condition, MethodInstance<?> iteration, MethodPipeline<?> pipeline) {
         return ModFunctions.FOR_LOOP.get().createInst(start, condition, iteration, pipeline);
     }
 
-    private Method<Void>.Instance createInst(Method<?>.Instance start, Method<Boolean>.Instance condition, Method<?>.Instance iteration, MethodPipeline<?> pipeline) {
+    private MethodInstance<Void> createInst(MethodInstance<?> start, MethodInstance<Boolean> condition, MethodInstance<?> iteration, MethodPipeline<?> pipeline) {
         return new Instance<>(start, condition, iteration, pipeline);
     }
 
     @Override
     public Instance<?> load(JsonObject object, VarAnalyser analyser) {
-        Method<?>.Instance onInit = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "onInit"), analyser);
-        Method<Boolean>.Instance condition = Method.loadFromSubObject(object, "condition", analyser);
-        Method<?>.Instance onLoop = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "onLoop"), analyser);
+        MethodInstance<?> onInit = Method.loadInstance(object, "onInit", analyser);
+        MethodInstance<Boolean> condition = Method.loadFromSubObject(object, "condition", analyser);
+        MethodInstance<?> onLoop = Method.loadInstance(object, "onLoop", analyser);
         MethodPipeline<?> body = MethodPipeline.load(GsonHelper.getAsJsonObject(object, "body"), analyser, true);
         return new Instance<>(onInit, condition, onLoop, body);
     }
@@ -33,12 +33,12 @@ public class ForLoopFunction extends Function {
         /**
          * normally a {@link net.kapitencraft.scripted.init.ModFunctions#CREATE_AND_SET_VAR ModFunctions.CREATE_AND_SET_VAR} call
          */
-        private final Method<?>.Instance onInit;
-        private final Method<Boolean>.Instance condition;
-        private final Method<?>.Instance onLoop;
+        private final MethodInstance<?> onInit;
+        private final MethodInstance<Boolean> condition;
+        private final MethodInstance<?> onLoop;
         private final MethodPipeline<T> body;
 
-        public Instance(Method<?>.Instance onInit, Method<Boolean>.Instance condition, Method<?>.Instance onLoop, MethodPipeline<T> body) {
+        public Instance(MethodInstance<?> onInit, MethodInstance<Boolean> condition, MethodInstance<?> onLoop, MethodPipeline<T> body) {
             this.onInit = onInit;
             this.condition = condition;
             this.onLoop = onLoop;

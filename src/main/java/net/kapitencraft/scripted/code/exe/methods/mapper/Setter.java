@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.exe.methods.mapper;
 
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.util.StringRepresentable;
@@ -10,25 +11,25 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Objects;
 
 public record Setter<T>(Setter.Type type, VarType<T> varType,
-                        @Nullable Method<T>.Instance setter) {
+                        @Nullable MethodInstance<T> setter) {
 
     //TODO remove FUnctions -> methods
 
-    public T createVal(T in, VarMap map) {
+    public T createVal(T in, VarMap map, MethodPipeline<?> pipeline) {
         return switch (type) {
-            case SET -> getSetterValue(map);
+            case SET -> getSetterValue(map, pipeline);
             case GROW -> varType.add(in, varType.one());
             case SHRINK -> varType.sub(in, varType.negOne());
-            case ADD_EQUAL -> varType.add(in, getSetterValue(map));
-            case DIV_EQUAL -> varType.divide(in, getSetterValue(map));
-            case MUL_EQUAL -> varType.multiply(in, getSetterValue(map));
-            case SUB_EQUAL -> varType.sub(in, getSetterValue(map));
-            case MOD_EQUAL -> varType.mod(in, getSetterValue(map));
+            case ADD_EQUAL -> varType.add(in, getSetterValue(map, pipeline));
+            case DIV_EQUAL -> varType.divide(in, getSetterValue(map, pipeline));
+            case MUL_EQUAL -> varType.multiply(in, getSetterValue(map, pipeline));
+            case SUB_EQUAL -> varType.sub(in, getSetterValue(map, pipeline));
+            case MOD_EQUAL -> varType.mod(in, getSetterValue(map, pipeline));
         };
     }
 
-    private T getSetterValue(VarMap map) {
-        return Objects.requireNonNull(setter, "setter expected").callInit(map);
+    private T getSetterValue(VarMap map, MethodPipeline<?> pipeline) {
+        return Objects.requireNonNull(setter, "setter expected").call(map, pipeline);
     }
 
     public enum Type implements StringRepresentable {

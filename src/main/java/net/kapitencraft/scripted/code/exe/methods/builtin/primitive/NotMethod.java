@@ -1,8 +1,9 @@
 package net.kapitencraft.scripted.code.exe.methods.builtin.primitive;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.Method;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
@@ -11,26 +12,26 @@ import net.kapitencraft.scripted.init.VarTypes;
 
 public class NotMethod extends Method<Boolean> {
 
-    public NotMethod() {
-        super(set -> set.addEntry(entry -> entry
-                .addParam("val", VarTypes.BOOL)
-        ), null);
-    }
-
     @Override
-    public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
-        return new Instance(data);
+    public MethodInstance<Boolean> load(JsonObject object, VarAnalyser analyser) {
+        return new Instance(Method.loadInstance(object, "val", analyser));
     }
 
-    public class Instance extends Method<Boolean>.Instance {
+    public static class Instance extends MethodInstance<Boolean> {
+        private final MethodInstance<Boolean> parent;
 
-        protected Instance(ParamData paramData) {
-            super(paramData);
+        public Instance(MethodInstance<Boolean> parent) {
+            this.parent = parent;
         }
 
         @Override
-        protected Boolean call(VarMap params, VarMap origin) {
-            return !params.getVarValue("val", VarTypes.BOOL);
+        public Boolean call(VarMap origin, MethodPipeline<?> pipeline) {
+            return !parent.call(origin, pipeline);
+        }
+
+        @Override
+        protected void saveAdditional(JsonObject object) {
+            object.add("val", this.parent.toJson());
         }
 
         @Override

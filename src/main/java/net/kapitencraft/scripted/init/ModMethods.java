@@ -1,9 +1,9 @@
 package net.kapitencraft.scripted.init;
 
 import net.kapitencraft.scripted.Scripted;
-import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.builtin.primitive.BooleanOperationMethod;
 import net.kapitencraft.scripted.code.exe.methods.builtin.primitive.NotMethod;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
 import net.kapitencraft.scripted.code.exe.methods.mapper.VarReference;
 import net.kapitencraft.scripted.init.custom.ModRegistryKeys;
 import net.minecraftforge.registries.DeferredRegister;

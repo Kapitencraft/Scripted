@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.code.var.type.abstracts;
 
-import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import com.google.gson.JsonPrimitive;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.type.collection.RegistryListType;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
@@ -11,7 +11,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.tags.ITag;
 import net.minecraftforge.registries.tags.ITagManager;
@@ -20,7 +19,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 public abstract class RegistryType<V> extends PrimitiveType<V> {
     public static final Map<String, RegistryType<?>> TYPES_FOR_NAME = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.REGISTRIES, Map.class);
@@ -32,13 +30,13 @@ public abstract class RegistryType<V> extends PrimitiveType<V> {
         this.registry = registry;
     }
 
-    public static Method<?>.Instance readInstance(String value) {
+    public static MethodInstance<?> readInstance(String value) {
         RegistryType<?> type = TYPES_FOR_NAME.get(value.substring(0, value.indexOf(":")));
         String[] separated = value.split(":");
         for (int i = 1; i < 3; i++) {
             if (separated[i].isEmpty()) return type.listOf().createInstance(value);
         }
-        return type.loadPrimitiveInstance(value);
+        return type.readPrimitiveInstance(value);
     }
 
     public Collection<V> getContent() {
@@ -51,18 +49,13 @@ public abstract class RegistryType<V> extends PrimitiveType<V> {
     }
 
     @Override
-    public Pattern matcher() {
-        return Pattern.compile(this.registry.getRegistryName().getPath() + ":" + PrimitiveType.RESOURCE_LOCATION_MATCHER.pattern());
-    }
-
-    @Override
     public V loadPrimitive(String string) {
         return registry.getValue(new ResourceLocation(string));
     }
 
     @Override
-    public void saveToJson(JsonObject object, V value) {
-        object.addProperty("value", Objects.requireNonNull(registry.getKey(value), "value '" + value + "' is not part of registry '" + registry.getRegistryName() + "'").toString());
+    public JsonPrimitive saveToJson(V value) {
+        return new JsonPrimitive(Objects.requireNonNull(registry.getKey(value), "value '" + value + "' is not part of registry '" + registry.getRegistryName() + "'").toString());
     }
 
     @Override
@@ -76,8 +69,8 @@ public abstract class RegistryType<V> extends PrimitiveType<V> {
 
 
     @Override
-    public V loadFromJson(JsonObject object) {
-        return registry.getValue(new ResourceLocation(GsonHelper.getAsString(object, "value")));
+    public V loadFromJson(JsonPrimitive prim) {
+        return registry.getValue(new ResourceLocation(prim.getAsString()));
     }
 
     public List<V> readListValue(String string) {

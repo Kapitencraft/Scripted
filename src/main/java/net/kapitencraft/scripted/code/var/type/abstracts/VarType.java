@@ -4,11 +4,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import net.kapitencraft.kap_lib.helpers.TextHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
-import net.kapitencraft.scripted.code.exe.methods.Method;
 import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
-import net.kapitencraft.scripted.code.exe.methods.builder.method.MethodBuilder;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.exe.methods.mapper.IVarReference;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
 import net.kapitencraft.scripted.code.oop.FieldMap;
@@ -22,7 +22,7 @@ import net.kapitencraft.scripted.code.var.type.collection.MapType;
 import net.kapitencraft.scripted.code.var.type.collection.MultimapType;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
-import net.kapitencraft.scripted.util.JsonHelper;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraftforge.fml.StartupMessageManager;
@@ -41,7 +41,7 @@ public class VarType<T> {
     /**
      * contains a check for any un-allowed name patterns
      */
-    private static final Pattern NAME_BLOCKED = Pattern.compile("(^\\d)|([\\W&&[^<>]])");
+    private static final Pattern NAME_BLOCKED = Pattern.compile("(^primtive\\$)|(^\\d)|([\\W&&[^<>]])");
 
     public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.NAME_MAP, Map.class);
 
@@ -62,6 +62,11 @@ public class VarType<T> {
         return constructor.apply(read(elements[0]), read(elements[1]));
     }
 
+    public @NotNull String toId() {
+        ResourceLocation location = ModRegistries.VAR_TYPES.getKey(this);
+        if (location == null) throw new NullPointerException("VarType " + this.getName() + " has not been registered!");
+        return location.toString().replaceAll("[.-]", "/");
+    }
 
     private final BuilderContext<T> context = new BuilderContext<>(this);
     /**
@@ -72,13 +77,6 @@ public class VarType<T> {
      * method storage; to add methods see constructor
      */
     private final MethodMap methods;
-    /**
-     * whether this Type is extendable and other types depend on it
-     * <br>(like PlayerType on EntityType)
-     * <br> extendables may not remove their generic type definition
-     * <br> nor their 'name' constructor param
-     */
-    private boolean extendable = false;
     /**
      * the constructor; there can only be one
      */
@@ -123,7 +121,7 @@ public class VarType<T> {
         this.fields = new FieldMap<>();
     }
 
-    public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser map, Method<T>.Instance parent) {
+    public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser map, MethodInstance<T> parent) {
         return !object.has("params") ? createFieldReference(GsonHelper.getAsString(object, "name"), parent) : methods.buildMethod(object, map, parent);
     }
 
@@ -140,10 +138,12 @@ public class VarType<T> {
     }
 
     private class MethodMap {
+        private final HashMap<String, > byId = new HashMap<>();
         private final HashMap<String, VarType<T>.InstanceMethod<?>> builders = new HashMap<>();
         private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
-        public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, Method<T>.Instance parent) {
+        public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, MethodInstance<T> parent) {
+
             VarType<T>.InstanceMethod<?> method = getOrThrow(GsonHelper.getAsString(object, "type"));
             VarType<T>.InstanceMethod<?>.Instance instance = method.load(analyser, parent, object);
             if (object.has("then")) return instance.loadChild(object.getAsJsonObject("then"), analyser);
@@ -155,12 +155,15 @@ public class VarType<T> {
             int i = 0;
             int max = unbakedMethods.size();
             for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entrySet()) {
-
-
+                this.bakeMethod(entry.getValue().apply(VarType.this.context));
                 i++;
                 progressMeter.setAbsolute(i / max);
             }
             progressMeter.complete();
+        }
+
+        private <R> void bakeMethod(InstMapper<T, R> mapper) {
+
         }
 
         public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
@@ -184,7 +187,7 @@ public class VarType<T> {
         this.methods.registerMethod(in, builder);
     }
 
-    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, Supplier<VarType<J>> typeSupplier) {
+    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, Supplier<? extends VarType<J>> typeSupplier) {
         this.fields.addField(name, new Field<>(getter, setter, typeSupplier));
     }
 
@@ -195,11 +198,6 @@ public class VarType<T> {
     @Override
     public String toString() {
         return name;
-    }
-
-
-    public void setExtendable() {
-        this.extendable = true;
     }
 
     //Comparing & math operation
@@ -259,18 +257,24 @@ public class VarType<T> {
         /**
          * generate an Instance of this method from data (json)
          */
-        public abstract InstanceMethod<R>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other);
+        public abstract InstanceMethod<R>.Instance load(VarAnalyser analyser, MethodInstance<T> parent, JsonObject other);
 
-        public abstract class Instance extends Method<R>.Instance {
-            protected final @NotNull Method<T>.Instance parent;
+        public abstract class Instance extends MethodInstance<R> {
+            protected final @NotNull MethodInstance<T> parent;
 
-            protected Instance(@NotNull Method<T>.Instance parent) {
+            protected Instance(@NotNull MethodInstance<T> parent) {
                 this.parent = parent;
             }
 
             @Override
             public final R call(VarMap origin, MethodPipeline<?> pipeline) {
                 return this.call(origin, pipeline, parent.call(origin, pipeline));
+            }
+
+            @Override
+            protected void saveAdditional(JsonObject object) {
+                object.add("instance", parent.toJson());
+                super.saveAdditional(object);
             }
 
             public abstract R call(VarMap map, MethodPipeline<?> pipeline, T inst);
@@ -281,15 +285,15 @@ public class VarType<T> {
     public class Field<J> {
         private final java.util.function.Function<T, J> getter;
         private final @Nullable BiConsumer<T, J> setter;
-        private final Supplier<VarType<J>> type;
+        private final Supplier<? extends VarType<J>> type;
 
-        public Field(java.util.function.Function<T, J> getter, @Nullable BiConsumer<T, J> setter, @NotNull Supplier<VarType<J>> type) {
+        public Field(java.util.function.Function<T, J> getter, @Nullable BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> type) {
             this.type = type;
             this.getter = getter;
             this.setter = setter;
         }
 
-        public Supplier<VarType<J>> getType() {
+        public Supplier<? extends VarType<J>> getType() {
             return type;
         }
 
@@ -331,19 +335,19 @@ public class VarType<T> {
 
     private final class FieldReference<R> extends InstanceMethod<R> {
 
-        public Method<R>.@NotNull Instance create(VarType<?>.Field<?> field, Method<?>.Instance parent) {
-            return new Instance((Field<R>) field, (Method<T>.Instance) parent);
+        public MethodInstance<R> create(VarType<?>.Field<?> field, MethodInstance<?> parent) {
+            return new Instance((Field<R>) field, (MethodInstance<T>) parent);
         }
 
         @Override
-        public InstanceMethod<R>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+        public InstanceMethod<R>.Instance load(VarAnalyser analyser, MethodInstance<T> parent, JsonObject other) {
             return null;
         }
 
         public class Instance extends InstanceMethod<R>.Instance implements IVarReference {
             private final Field<R> field;
 
-            protected Instance(Field<R> field, Method<T>.Instance parent) {
+            protected Instance(Field<R> field, MethodInstance<T> parent) {
                 super(parent);
                 this.field = field;
             }
@@ -365,7 +369,7 @@ public class VarType<T> {
         }
     }
 
-    public final <J> InstanceMethod<J>.Instance createFieldReference(String s, Method<?>.Instance varInstance) {
+    public final <J> InstanceMethod<J>.Instance createFieldReference(String s, MethodInstance<?> varInstance) {
         Field<J> field = (Field<J>) getFieldForName(s);
         return (InstanceMethod<J>.Instance) fieldReferenceInst.create(field, varInstance);
     }
@@ -374,15 +378,15 @@ public class VarType<T> {
     public abstract class InstanceFunction extends InstanceMethod<Void> {
 
         @Override
-        public InstanceMethod<Void>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+        public InstanceMethod<Void>.Instance load(VarAnalyser analyser, MethodInstance<T> parent, JsonObject other) {
             return loadInstance(other, analyser, parent);
         }
 
-        public abstract Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<T>.Instance inst);
+        public abstract Instance loadInstance(JsonObject object, VarAnalyser analyser, MethodInstance<T> inst);
 
         public abstract class Instance extends InstanceMethod<Void>.Instance {
 
-            protected Instance(Method<T>.Instance parent) {
+            protected Instance(MethodInstance<T> parent) {
                 super(parent);
             }
 
@@ -406,13 +410,13 @@ public class VarType<T> {
         protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, T instance);
 
         @Override
-        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, Method<T>.Instance inst) {
+        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, MethodInstance<T> inst) {
             return new Instance(inst);
         }
 
         private class Instance extends InstanceFunction.Instance {
 
-            protected Instance(Method<T>.Instance parent) {
+            protected Instance(MethodInstance<T> parent) {
                 super(parent);
             }
 
@@ -426,7 +430,7 @@ public class VarType<T> {
     //Constructor
     public abstract class Constructor extends Method<T> {
 
-        public abstract Method<T>.Instance construct(JsonObject object, VarAnalyser analyser);
+        public abstract MethodInstance<T> construct(JsonObject object, VarAnalyser analyser);
     }
 
     protected abstract class SimpleConstructor extends Constructor {
@@ -436,11 +440,11 @@ public class VarType<T> {
         protected abstract VarType<T> getType(IVarAnalyser analyser);
 
         @Override
-        public Method<T>.Instance construct(JsonObject object, VarAnalyser analyser) {
+        public MethodInstance<T> construct(JsonObject object, VarAnalyser analyser) {
             return new Instance();
         }
 
-        private class Instance extends Method<T>.Instance {
+        private class Instance extends MethodInstance<T> {
 
             @Override
             public T call(VarMap origin, MethodPipeline<?> pipeline) {
@@ -460,17 +464,17 @@ public class VarType<T> {
     public class Comparators extends Method<Boolean> {
 
         @Override
-        public Method<Boolean>.Instance load(JsonObject object, VarAnalyser analyser) {
-            Method<T>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
-            Method<T>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+        public MethodInstance<Boolean> load(JsonObject object, VarAnalyser analyser) {
+            MethodInstance<T> left = Method.loadInstance(object, "left", analyser);
+            MethodInstance<T> right = Method.loadInstance(object, "right", analyser);
             return new Instance(left, right, CompareMode.CODEC.byName(GsonHelper.getAsString(object, "mode")));
         }
 
-        private class Instance extends Method<Boolean>.Instance {
-            private final Method<T>.Instance left, right;
+        private class Instance extends MethodInstance<Boolean> {
+            private final MethodInstance<T> left, right;
             private final CompareMode compareMode;
 
-            private Instance(Method<T>.Instance left, Method<T>.Instance right, CompareMode compareMode) {
+            private Instance(MethodInstance<T> left, MethodInstance<T> right, CompareMode compareMode) {
                 this.left = left;
                 this.right = right;
                 this.compareMode = compareMode;
@@ -526,23 +530,23 @@ public class VarType<T> {
     //Math Operations
     public class MathOperationMethod extends Method<T> {
 
-        Method<T>.Instance create(String operation, Method<T>.Instance left, Method<T>.Instance right, VarAnalyser analyser) {
+        MethodInstance<T> create(String operation, MethodInstance<T> left, MethodInstance<T> right) {
             return new Instance(left, right, Operation.CODEC.byName(operation));
         }
 
         @Override
-        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser) {
-            Method<T>.Instance left = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "left"), analyser);
-            Method<T>.Instance right = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "right"), analyser);
+        public MethodInstance<T> load(JsonObject object, VarAnalyser analyser) {
+            MethodInstance<T> left = Method.loadInstance(GsonHelper.getAsJsonObject(object, "left"), analyser);
+            MethodInstance<T> right = Method.loadInstance(GsonHelper.getAsJsonObject(object, "right"), analyser);
             Operation operation = Operation.CODEC.byName(GsonHelper.getAsString(object, "operation"));
             return new Instance(left, right, operation);
         }
 
-        public class Instance extends Method<T>.Instance {
-            private final Method<T>.Instance left, right;
+        public class Instance extends MethodInstance<T> {
+            private final MethodInstance<T> left, right;
             private final Operation operation;
 
-            private Instance(Method<T>.Instance left, Method<T>.Instance right, Operation operation) {
+            private Instance(MethodInstance<T> left, MethodInstance<T> right, Operation operation) {
                 this.left = left;
                 this.right = right;
                 this.operation = operation;
@@ -599,8 +603,8 @@ public class VarType<T> {
 
     private final MathOperationMethod mathOperationInst = new MathOperationMethod();
 
-    public Method<T>.Instance createMathOperation(String operation, Method<T>.Instance left, Method<T>.Instance right, VarAnalyser analyser) {
-        return mathOperationInst.create(operation, left, right, analyser);
+    public MethodInstance<T> createMathOperation(String operation, MethodInstance<T> left, MethodInstance<T> right) {
+        return mathOperationInst.create(operation, left, right);
     }
 
 
@@ -608,22 +612,22 @@ public class VarType<T> {
     public class WhenMethod extends Method<T> {
 
         @Override
-        public Method<T>.Instance load(JsonObject object, VarAnalyser analyser) {
-            Method<Boolean>.Instance condition = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "condition"), analyser);
-            Method<T>.Instance ifTrue = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ifTrue"), analyser);
-            Method<T>.Instance ifFalse = JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "ifFalse"), analyser);
+        public MethodInstance<T> load(JsonObject object, VarAnalyser analyser) {
+            MethodInstance<Boolean> condition = Method.loadInstance(GsonHelper.getAsJsonObject(object, "condition"), analyser);
+            MethodInstance<T> ifTrue = Method.loadInstance(GsonHelper.getAsJsonObject(object, "ifTrue"), analyser);
+            MethodInstance<T> ifFalse = Method.loadInstance(GsonHelper.getAsJsonObject(object, "ifFalse"), analyser);
             return new Instance(condition, ifTrue, ifFalse);
         }
 
-        public Method<T>.Instance createInst(Method<Boolean>.Instance condition, Method<T>.Instance ifTrue, Method<T>.Instance ifFalse, VarAnalyser analyser) {
+        public MethodInstance<T> createInst(MethodInstance<Boolean> condition, MethodInstance<T> ifTrue, MethodInstance<T> ifFalse, VarAnalyser analyser) {
             return new Instance(condition, ifTrue, ifFalse);
         }
 
-        public class Instance extends Method<T>.Instance {
-            private final Method<Boolean>.Instance condition;
-            private final Method<T>.Instance ifTrue, ifFalse;
+        public class Instance extends MethodInstance<T> {
+            private final MethodInstance<Boolean> condition;
+            private final MethodInstance<T> ifTrue, ifFalse;
 
-            public Instance(Method<Boolean>.Instance condition, Method<T>.Instance ifTrue, Method<T>.Instance ifFalse) {
+            public Instance(MethodInstance<Boolean> condition, MethodInstance<T> ifTrue, MethodInstance<T> ifFalse) {
                 this.condition = condition;
                 this.ifTrue = ifTrue;
                 this.ifFalse = ifFalse;
@@ -643,7 +647,7 @@ public class VarType<T> {
 
     private final WhenMethod whenInst = new WhenMethod();
 
-    public Method<T>.Instance createWhen(Method<Boolean>.Instance condition, Method<T>.Instance ifTrue, Method<T>.Instance ifFalse, VarAnalyser analyser) {
+    public MethodInstance<T> createWhen(MethodInstance<Boolean> condition, MethodInstance<T> ifTrue, MethodInstance<T> ifFalse, VarAnalyser analyser) {
         return whenInst.createInst(condition, ifTrue, ifFalse, analyser);
     }
 
@@ -651,24 +655,24 @@ public class VarType<T> {
 
     private class SetVarMethod extends InstanceMethod<T> {
 
-        private InstanceMethod<T>.Instance create(JsonObject object, VarAnalyser analyser, Method<?>.Instance inst) {
-            Method<T>.Instance setter = object.has("setter") ? JsonHelper.readMethodChain(GsonHelper.getAsJsonObject(object, "setter"), analyser) : null;
-            return new Instance((Method<T>.Instance) inst, setter, Setter.Type.CODEC.byName(GsonHelper.getAsString(object, "setterType")));
+        private InstanceMethod<T>.Instance create(JsonObject object, VarAnalyser analyser, MethodInstance<?> inst) {
+            MethodInstance<T> setter = object.has("setter") ? Method.loadInstance(GsonHelper.getAsJsonObject(object, "setter"), analyser) : null;
+            return new Instance((MethodInstance<T>) inst, setter, Setter.Type.CODEC.byName(GsonHelper.getAsString(object, "setterType")));
         }
 
-        public Method<T>.Instance create(Method<T>.Instance in, Setter.Type operation, Method<T>.Instance inst) {
+        public MethodInstance<T> create(MethodInstance<T> in, Setter.Type operation, MethodInstance<T> inst) {
             return new Instance(in, inst, operation);
         }
 
         @Override
-        public InstanceMethod<T>.Instance load(VarAnalyser analyser, Method<T>.Instance parent, JsonObject other) {
+        public InstanceMethod<T>.Instance load(VarAnalyser analyser, MethodInstance<T> parent, JsonObject other) {
             return null;
         }
 
         private class Instance extends InstanceMethod<T>.Instance {
             private final Setter<T> setter;
 
-            protected Instance(Method<T>.Instance parent, Method<T>.Instance setter, Setter.Type type) {
+            protected Instance(MethodInstance<T> parent, MethodInstance<T> setter, Setter.Type type) {
                 super(parent);
                 if (!(parent instanceof IVarReference)) {
                     throw new IllegalStateException("variable expected");
@@ -685,7 +689,7 @@ public class VarType<T> {
 
             @Override
             public T call(VarMap map, MethodPipeline<?> pipeline, T inst) {
-                T val = this.setter.createVal(inst, map);
+                T val = this.setter.createVal(inst, map, pipeline);
                 this.parent.buildVar(map, pipeline).setValue(val);
                 return val;
             }
@@ -697,7 +701,7 @@ public class VarType<T> {
         }
     }
 
-    public Method<T>.Instance createSetVar(Method<T>.Instance var, Setter.Type type, Method<T>.Instance inst) {
+    public MethodInstance<T> createSetVar(MethodInstance<T> var, Setter.Type type, MethodInstance<T> inst) {
         return setVarInst.create(var, type, inst);
     }
 
