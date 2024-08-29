@@ -142,7 +142,7 @@ public class VarType<T> {
     }
 
     private class MethodMap {
-        private final HashMap<String, > byId = new HashMap<>();
+        private final HashMap<String, Void> byId = new HashMap<>();
         private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
         public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, MethodInstance<T> parent) {
@@ -606,10 +606,9 @@ public class VarType<T> {
 
     private final MathOperationMethod mathOperationInst = new MathOperationMethod();
 
-    public MethodInstance<T> createMathOperation(String operation, MethodInstance<T> left, MethodInstance<T> right) {
-        return mathOperationInst.create(operation, left, right);
+    public MethodInstance<T> createMathOperation(String operation, MethodInstance<?> left, MethodInstance<?> right) {
+        return mathOperationInst.create(operation, (MethodInstance<T>) left, (MethodInstance<T>) right);
     }
-
 
     //when
     public class WhenMethod extends Method<T> {

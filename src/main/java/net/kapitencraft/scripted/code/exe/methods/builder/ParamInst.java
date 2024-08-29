@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.code.exe.methods.builder;
 
+import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.code.var.type.collection.MapType;
 
@@ -11,6 +12,10 @@ public record ParamInst<P>(VarType<P> type, String name) {
 
     public static <V> ParamInst<List<V>> listOf(String name, Supplier<? extends VarType<V>> type) {
         return new ParamInst<>(type.get().listOf(), name);
+    }
+
+    public static <P> ParamInst<P> of(Pair<VarType<P>, String> typeStringPair) {
+        return of(typeStringPair.getSecond(), typeStringPair.getFirst());
     }
 
     public static <K, V> ParamInst<Map<K, V>> mapOf(String name, Supplier<? extends VarType<K>> keyType, Supplier<? extends VarType<V>> valueType) {

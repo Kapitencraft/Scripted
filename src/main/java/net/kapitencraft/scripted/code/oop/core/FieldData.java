@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.oop.core;
 
-import net.kapitencraft.scripted.code.exe.methods.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
@@ -12,7 +13,7 @@ import java.util.Map;
 
 public class FieldData {
     private final HashMap<String, Field<?>> fields = new HashMap<>();
-    private final Map<Field<?>, Method<?>.Instance> appliers = new HashMap<>();
+    private final Map<Field<?>, MethodInstance<?>> appliers = new HashMap<>();
 
     public FieldData() {
     }
@@ -23,7 +24,7 @@ public class FieldData {
     }
 
     @ApiStatus.Internal
-    public <T> void addApplier(Field<T> field, Method<T>.Instance inst) {
+    public <T> void addApplier(Field<T> field, MethodInstance<T> inst) {
         appliers.put(field, inst);
     }
 
@@ -31,7 +32,7 @@ public class FieldData {
      * @param selfMap a {@link VarMap} only containing <i>this</i> with a self reference
      */
     @ApiStatus.Internal
-    public void checkConstructor(VarMap selfMap) { //TODO implement Pipeline
+    public void checkConstructor(VarMap selfMap, ) { //TODO implement Pipeline
         this.appliers.forEach((field, instance) -> applyValue(field, instance, selfMap));
         this.fields.values().stream().filter(Field::isFinal).filter(Field::notApplied).forEach(field -> {
             throw new IllegalStateException("variable has not been initialized");
@@ -39,8 +40,8 @@ public class FieldData {
     }
 
     @ApiStatus.Internal
-    private <T> void applyValue(Field<?> field, Method<?>.Instance inst, VarMap map) {
-        ((Field<T>) field).setValue(((Method<T>.Instance) inst).call(map));
+    private <T> void applyValue(Field<?> field, MethodInstance<?> inst, VarMap map) {
+        ((Field<T>) field).setValue(((MethodInstance<T>) inst).call(map));
     }
 
 

@@ -22,7 +22,7 @@ import java.util.function.Function;
 public class MN1P<R, P1> implements InstMapper<P1, R>, Returning<R> {
     private final VarType<R> retType;
     private final ParamInst<P1> param1;
-    private final DoubleMap<VarType<?>, String, MN2P<R, P1, ?>> children = new DoubleMap<>();
+    //private final DoubleMap<VarType<?>, String, MN2P<R, P1, ?>> children = new DoubleMap<>();
 
     private final @Nullable Function<P1, R> executor;
 
@@ -38,7 +38,7 @@ public class MN1P<R, P1> implements InstMapper<P1, R>, Returning<R> {
     }
 
     public MethodInstance<R> createInst(List<MethodInstance<?>> params) {
-        return create(params.get(0));
+        return create((MethodInstance<P1>) params.get(0));
     }
 
     public MethodInstance<R> create(MethodInstance<P1> param1Inst) {

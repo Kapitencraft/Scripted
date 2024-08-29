@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.code.oop.core;
 
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.var.Var;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -24,12 +25,13 @@ public class Object extends VarType<Object.ObjectInstance> {
         this.setConstructor(new ObjectConstructor(params, constructorBuilder));
     }
 
-    public class ObjectMethod<R> extends SimpleInstanceMethod<R> {
+    public class ObjectMethod<R> extends SimpleInstanceFunction<R> {
         private final VarType<R> retType;
         private final MethodPipeline<R> content;
+        private final List<ParamInst<?>> params;
 
         public ObjectMethod(List<Pair<VarType<?>, String>> params, String name, VarType<R> retType, MethodPipeline<R> content) {
-            super(set -> set.addEntry(entry -> entry.set(params)), name);
+            this.params = params.stream().map(ParamInst::of)
             this.retType = retType;
             this.content = content;
         }
