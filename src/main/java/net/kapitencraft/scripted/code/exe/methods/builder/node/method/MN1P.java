@@ -14,6 +14,9 @@ import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.util.GsonHelper;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 public class MN1P<R, P1> implements InstMapper<P1, R>, Returning<R> {
@@ -21,16 +24,21 @@ public class MN1P<R, P1> implements InstMapper<P1, R>, Returning<R> {
     private final ParamInst<P1> param1;
     private final DoubleMap<VarType<?>, String, MN2P<R, P1, ?>> children = new DoubleMap<>();
 
-    private final Function<P1, R> executor;
+    private final @Nullable Function<P1, R> executor;
 
-    public MN1P(VarType<R> retType, ParamInst<P1> param1, Function<P1, R> executor) {
+    public MN1P(VarType<R> retType, ParamInst<P1> param1, @Nullable Function<P1, R> executor) {
         this.retType = retType;
         this.param1 = param1;
         this.executor = executor;
     }
 
     public MethodInstance<R> read(JsonObject object, VarAnalyser analyser) {
-        return new Instance(Method.loadInstance(GsonHelper.getAsJsonObject(object, "param1"), analyser));
+        if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
+        return new Instance(Method.loadInstance(GsonHelper.getAsJsonObject(object, param1.name()), analyser));
+    }
+
+    public MethodInstance<R> createInst(List<MethodInstance<?>> params) {
+        return create(params.get(0));
     }
 
     public MethodInstance<R> create(MethodInstance<P1> param1Inst) {
@@ -38,15 +46,20 @@ public class MN1P<R, P1> implements InstMapper<P1, R>, Returning<R> {
     }
 
     private class Instance extends MethodInstance<R> {
-        private final MethodInstance<P1> parent;
+        private final MethodInstance<P1> param1;
 
-        private Instance(MethodInstance<P1> parent) {
-            this.parent = parent;
+        private Instance(MethodInstance<P1> param1) {
+            this.param1 = param1;
         }
 
         @Override
         public R call(VarMap origin, MethodPipeline<?> pipeline) {
-            return executor.apply(this.parent.call(origin, pipeline));
+            return Objects.requireNonNull(executor, "found method without executor!").apply(this.param1.call(origin, pipeline));
+        }
+
+        @Override
+        protected void saveAdditional(JsonObject object) {
+            object.add(MN1P.this.param1.name(), param1.toJson());
         }
 
         @Override

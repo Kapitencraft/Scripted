@@ -22,6 +22,7 @@ import net.kapitencraft.scripted.edit.text.language.Compiler;
 import net.kapitencraft.scripted.init.ModFunctions;
 import net.kapitencraft.scripted.init.ModMethods;
 import net.kapitencraft.scripted.init.VarTypes;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -109,32 +110,33 @@ public class JavaCompiler extends Compiler {
         }
 
         private <T> MethodInstance<?> castRunnable(VarAnalyser analyser, boolean allowLoops, VarType<T> retType) {
-            if (next().type == Token.Type.IF_IDENTIFIER) {
-                return castIf(analyser, retType);
-            } else if (next().type == Token.Type.MODIFIER || next().type == Token.Type.VAR_TYPE) {
-                return castCreateAndSetVarFunction(analyser);
-            } else if (next().type == Token.Type.FOR_IDENTIFIER) {
-                if (!allowLoops) {
-                    errors.add(line, "invalid statement");
+            return switch (next().type) {
+                case IF_IDENTIFIER: yield castIf(analyser, retType);
+                case FOR_IDENTIFIER: {
+                    if (!allowLoops) {
+                        errors.add(line, "invalid statement");
+                    }
+                    nextType();
+                    assertType(Token.Type.BRACKET_OPEN);
+                    MethodInstance<?> start = castRunnable(analyser, false, retType);
+                    MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
+                    MethodInstance<?> iteration = castRunnable(analyser, false, retType);
+                    assertType(Token.Type.BRACKET_CLOSE);
+                    MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
+                    yield ForLoopFunction.create(start, condition, iteration, pipeline);
                 }
-                nextType();
-                assertType(Token.Type.BRACKET_OPEN);
-                MethodInstance<?> start = castRunnable(analyser, false, retType);
-                MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
-                MethodInstance<?> iteration = castRunnable(analyser, false, retType);
-                assertType(Token.Type.BRACKET_CLOSE);
-                MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
-                return ForLoopFunction.create(start, condition, iteration, pipeline);
-            } else if (next().type == Token.Type.WHILE_IDENTIFIER) {
-                nextType();
-                assertType(Token.Type.BRACKET_OPEN);
-                MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
-                assertType(Token.Type.BRACKET_CLOSE);
-                MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
-                return WhileLoopFunction.create(condition, pipeline);
-            } else  {
-                return castMethod(analyser);
-            }
+                case WHILE_IDENTIFIER: {
+                    nextType();
+                    assertType(Token.Type.BRACKET_OPEN);
+                    MethodInstance<Boolean> condition = (MethodInstance<Boolean>) castMethod(analyser);
+                    assertType(Token.Type.BRACKET_CLOSE);
+                    MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
+                    yield WhileLoopFunction.create(condition, pipeline);
+                }
+                case MODIFIER:
+                case VAR_TYPE: yield castCreateAndSetVarFunction(analyser);
+                default: yield castMethod(analyser);
+            };
         }
 
         private <T> IfFunction.Instance<T> castIf(VarAnalyser analyser, VarType<T> retType) {
@@ -185,8 +187,7 @@ public class JavaCompiler extends Compiler {
             return Pair.of(type, name);
         }
 
-        //TODO rework
-        private ParamData castParamData(ParamSet set, VarAnalyser analyser) {
+        private List<MethodInstance<?>> castParamData(VarAnalyser analyser) {
             assertType(Token.Type.BRACKET_OPEN);
             List<MethodInstance<?>> params = new ArrayList<>();
             while (next().type != Token.Type.BRACKET_CLOSE) {
@@ -194,7 +195,7 @@ public class JavaCompiler extends Compiler {
                 if (next().type == Token.Type.NEXT_PARAM) assertType(Token.Type.NEXT_PARAM); //if not, the params are complete
             }
             assertType(Token.Type.BRACKET_CLOSE);
-            return ParamData.create(set, analyser, params);
+            return params;
         }
 
         private MethodInstance<?> castMethod(VarAnalyser analyser) {
@@ -217,7 +218,19 @@ public class JavaCompiler extends Compiler {
                             case XOR:
                             case AND: { //bool operation
                                 nextType();
-                                inst = ModMethods.BOOL_OPERATION.get().create(inst, current().value, castMethod(analyser), analyser);
+                                inst = ModMethods.BOOL_OPERATION.get().create(inst, current().value, castMethod(analyser));
+                            }
+                            case ADD:
+                            case DIV:
+                            case MOD:
+                            case SUB:
+                            case MULT: { //math operation
+                                nextType();
+                                if (inst == null) {
+                                    analyser.addError(Component.translatable("error.illegal_expression_start", current().value));
+                                    continue;
+                                }
+                                inst = inst.getType(analyser).createMathOperation(current().value, inst, castMethod(analyser));
                             }
                             default: {
                                 String value = castMethodName();
@@ -226,8 +239,7 @@ public class JavaCompiler extends Compiler {
                                     if (next().type != Token.Type.BRACKET_OPEN) { //if no brackets, it's a field
                                         inst = varType.createFieldReference(value, inst);
                                     } else {
-                                        VarType<?>.InstanceMethod<?> method = varType.getMethodForName(value);
-                                        inst = method.create(castParamData(method.set(), analyser), analyser, inst);
+                                        inst = varType.createMethod(value, castParamData(analyser));
                                     }
                                 } else {
                                     inst = ModMethods.VAR_REFERENCE.get().create(value);

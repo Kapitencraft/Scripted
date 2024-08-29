@@ -22,6 +22,10 @@ public class BooleanOperationMethod extends Method<Boolean>{
         return new Instance(OperationType.CODEC.byName(GsonHelper.getAsString(object, "operation_type")), left, right);
     }
 
+    public MethodInstance<Boolean> create(MethodInstance<?> left, String value, MethodInstance<?> right) {
+        return new Instance(OperationType.CODEC.byName(value), left, right);
+    }
+
     private static class Instance extends MethodInstance<Boolean> {
         private final OperationType operationType;
         private final MethodInstance<Boolean> left, right;

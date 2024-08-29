@@ -137,9 +137,12 @@ public class VarType<T> {
         this.methods.bakeMethods(StartupMessageManager.addProgressBar("Baking " + this.getName(), this.methods.unbakedMethods.size()));
     }
 
+    public MethodInstance<?> createMethod(String name, List<MethodInstance<?>> methodInstances) {
+        return null;
+    }
+
     private class MethodMap {
         private final HashMap<String, > byId = new HashMap<>();
-        private final HashMap<String, VarType<T>.InstanceMethod<?>> builders = new HashMap<>();
         private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
         public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, MethodInstance<T> parent) {
@@ -155,14 +158,14 @@ public class VarType<T> {
             int i = 0;
             int max = unbakedMethods.size();
             for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entrySet()) {
-                this.bakeMethod(entry.getValue().apply(VarType.this.context));
+                this.bakeMethod(entry.getKey(), entry.getValue().apply(VarType.this.context));
                 i++;
                 progressMeter.setAbsolute(i / max);
             }
             progressMeter.complete();
         }
 
-        private <R> void bakeMethod(InstMapper<T, R> mapper) {
+        private <R> void bakeMethod(String name, InstMapper<T, R> mapper) {
 
         }
 
@@ -706,6 +709,7 @@ public class VarType<T> {
     }
 
     private final SetVarMethod setVarInst = new SetVarMethod();
+
     /**
      * @return an instance of exactly -1 (or what matches -1 in that var type)
      */
