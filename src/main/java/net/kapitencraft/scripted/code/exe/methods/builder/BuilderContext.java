@@ -23,7 +23,7 @@ public class BuilderContext<I> {
     }
 
     public <R> MB1P<R, I> returning(VarType<R> retType) {
-        return new MB1P<>(retType, new ParamInst<>(instType, "instance"));
+        return new MB1P<>(retType, new ParamInst<>(instType, "instance"), null);
     }
 
     public MethodBuilder<I> constructor() {

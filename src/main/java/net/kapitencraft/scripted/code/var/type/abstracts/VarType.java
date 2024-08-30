@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.exe.methods.core.Method;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.exe.methods.mapper.IVarReference;
@@ -142,7 +143,7 @@ public class VarType<T> {
     }
 
     private class MethodMap {
-        private final HashMap<String, Void> byId = new HashMap<>();
+        private final HashMap<String, ArrayList<ReturningNode<?>>> byId = new HashMap<>();
         private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
         public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, MethodInstance<T> parent) {
@@ -166,19 +167,25 @@ public class VarType<T> {
         }
 
         private <R> void bakeMethod(String name, InstMapper<T, R> mapper) {
-
+            InstMapper<T, R> parent = mapper;
+            while (parent.getParent() != null) {
+                parent = (InstMapper<T, R>) parent.getParent();
+            }
+            ArrayList<ReturningNode<?>> list = new ArrayList<>();
+            parent.applyNodes(list::add);
+            this.byId.put(name, list);
         }
 
         public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
             this.unbakedMethods.put(name, method);
         }
 
-        public VarType<T>.InstanceMethod<?> getOrThrow(String name) {
+        public VarType<T>.InstanceMethod<?> getOrThrow(String name, List<VarType<?>> types) {
             return Objects.requireNonNull(builders.get(name), "unknown method " + TextHelper.wrapInNameMarkers(name));
         }
     }
 
-    public InstanceMethod<?> getMethodForName(String name) {
+    public List<ReturningNode<?>> getMethodsForName(String name) {
         return methods.getOrThrow(name);
     }
 

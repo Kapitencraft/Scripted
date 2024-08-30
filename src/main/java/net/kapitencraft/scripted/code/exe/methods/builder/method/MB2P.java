@@ -1,15 +1,18 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.Parenter;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R> {
+public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R>, Parenter<R> {
     private final VarType<R> retType;
     private final ParamInst<P1> param1;
     private final ParamInst<P2> param2;
@@ -17,10 +20,13 @@ public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R> {
 
     private BiFunction<P1, P2, R> executor;
 
-    public MB2P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2) {
+    private final MB1P<R, P1> parent;
+
+    public MB2P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, MB1P<R, P1> parent) {
         this.retType = retType;
         this.param1 = param1;
         this.param2 = param2;
+        this.parent = parent;
     }
 
     public <P3> MB3P<R, P1, P2, P3> withParam(String name, Supplier<? extends VarType<P3>> type) {
@@ -105,5 +111,15 @@ public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R> {
             ParamInst<P4> param4
     ) {
         return withParam(param3).withParam(param4);
+    }
+
+    @Override
+    public Returning<R> getParent() {
+        return parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<R>> consumer) {
+
     }
 }

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.node.method;
 
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-public class MethodNode<R> {
+public class MethodNode<R> implements ReturningNode<R> {
     private final VarType<R> retType;
     private final @Nullable Supplier<R> executor;
 
@@ -23,6 +24,11 @@ public class MethodNode<R> {
     public MethodInstance<R> createInst(List<MethodInstance<?>> ignored) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
         return new Instance();
+    }
+
+    @Override
+    public int getParamCount() {
+        return 0;
     }
 
     private final class Instance extends MethodInstance<R> {
