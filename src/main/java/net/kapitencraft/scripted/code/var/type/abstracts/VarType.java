@@ -146,14 +146,6 @@ public class VarType<T> {
         private final HashMap<String, ArrayList<ReturningNode<?>>> byId = new HashMap<>();
         private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
-        public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser analyser, MethodInstance<T> parent) {
-
-            VarType<T>.InstanceMethod<?> method = getOrThrow(GsonHelper.getAsString(object, "type"));
-            VarType<T>.InstanceMethod<?>.Instance instance = method.load(analyser, parent, object);
-            if (object.has("then")) return instance.loadChild(object.getAsJsonObject("then"), analyser);
-            return instance;
-        }
-
         public void bakeMethods(ProgressMeter progressMeter) {
             progressMeter.setAbsolute(0);
             int i = 0;
@@ -167,10 +159,7 @@ public class VarType<T> {
         }
 
         private <R> void bakeMethod(String name, InstMapper<T, R> mapper) {
-            InstMapper<T, R> parent = mapper;
-            while (parent.getParent() != null) {
-                parent = (InstMapper<T, R>) parent.getParent();
-            }
+            InstMapper<T, R> parent = (InstMapper<T, R>) mapper.getRootParent();
             ArrayList<ReturningNode<?>> list = new ArrayList<>();
             parent.applyNodes(list::add);
             this.byId.put(name, list);
@@ -181,7 +170,11 @@ public class VarType<T> {
         }
 
         public VarType<T>.InstanceMethod<?> getOrThrow(String name, List<VarType<?>> types) {
-            return Objects.requireNonNull(builders.get(name), "unknown method " + TextHelper.wrapInNameMarkers(name));
+            if (byId.containsKey(name)) {
+                ArrayList<ReturningNode<?>> returningNodes =
+                byId.get(name);
+            }
+            return  Objects.requireNonNull(builders.get(name), "unknown method " + TextHelper.wrapInNameMarkers(name));
         }
     }
 

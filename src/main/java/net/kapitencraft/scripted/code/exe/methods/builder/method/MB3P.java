@@ -1,12 +1,15 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.kap_lib.stream.Functions;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.method.MN3P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.util.Functions;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MB3P<R, P1, P2, P3> implements InstMapper<P1, R>, Returning<R> {
@@ -18,11 +21,25 @@ public class MB3P<R, P1, P2, P3> implements InstMapper<P1, R>, Returning<R> {
 
     private Functions.F3<P1, P2, P3, R> executor;
 
-    public MB3P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3) {
+    private final Returning<R> parent;
+
+    public MB3P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, Returning<R> parent) {
         this.retType = retType;
         this.param1 = param1;
         this.param2 = param2;
         this.param3 = param3;
+        this.parent = parent;
+    }
+
+    @Override
+    public Returning<R> getRootParent() {
+        return parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<R>> consumer) {
+        if (this.executor != null) consumer.accept(new MN3P<>(retType, param1, param2, param3, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
     }
 
     public <P4> MB4P<R, P1, P2, P3, P4> withParam(String name, Supplier<? extends VarType<P4>> type) {
@@ -36,7 +53,7 @@ public class MB3P<R, P1, P2, P3> implements InstMapper<P1, R>, Returning<R> {
     }
 
     public <P4> MB4P<R, P1, P2, P3, P4> withParam(ParamInst<P4> inst) {
-        return (MB4P<R, P1, P2, P3, P4>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB4P<>(retType, param1, param2, param3, inst));
+        return (MB4P<R, P1, P2, P3, P4>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB4P<>(retType, param1, param2, param3, inst, parent));
     }
 
     public <P4, P5, P6, P7, P8, P9, P10> MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

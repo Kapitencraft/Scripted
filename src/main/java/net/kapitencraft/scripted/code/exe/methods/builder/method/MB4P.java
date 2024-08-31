@@ -1,12 +1,15 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.kap_lib.stream.Functions;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.method.MN4P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.util.Functions;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MB4P<R, P1, P2, P3, P4> implements InstMapper<P1, R>, Returning<R> {
@@ -19,12 +22,26 @@ public class MB4P<R, P1, P2, P3, P4> implements InstMapper<P1, R>, Returning<R> 
 
     private Functions.F4<P1, P2, P3, P4, R> executor;
 
-    public MB4P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4) {
+    private final Returning<R> parent;
+
+    public MB4P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, Returning<R> parent) {
         this.retType = retType;
         this.param1 = param1;
         this.param2 = param2;
         this.param3 = param3;
         this.param4 = param4;
+        this.parent = parent;
+    }
+
+    @Override
+    public Returning<R> getRootParent() {
+        return parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<R>> consumer) {
+        if (this.executor != null) consumer.accept(new MN4P<>(retType, param1, param2, param3, param4, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
     }
 
     public <P5> MB5P<R, P1, P2, P3, P4, P5> withParam(String name, Supplier<? extends VarType<P5>> type) {
@@ -38,7 +55,7 @@ public class MB4P<R, P1, P2, P3, P4> implements InstMapper<P1, R>, Returning<R> 
     }
 
     public <P5> MB5P<R, P1, P2, P3, P4, P5> withParam(ParamInst<P5> inst) {
-        return (MB5P<R, P1, P2, P3, P4, P5>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB5P<>(retType, param1, param2, param3, param4, inst));
+        return (MB5P<R, P1, P2, P3, P4, P5>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB5P<>(retType, param1, param2, param3, param4, inst, parent));
     }
 
     public <P5, P6, P7, P8, P9, P10> MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

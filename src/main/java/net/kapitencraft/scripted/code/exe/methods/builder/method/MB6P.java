@@ -1,12 +1,15 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.method;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.kap_lib.stream.Functions;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.method.MN6P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.util.Functions;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MB6P<R, P1, P2, P3, P4, P5, P6> implements InstMapper<P1, R>, Returning<R> {
@@ -21,7 +24,9 @@ public class MB6P<R, P1, P2, P3, P4, P5, P6> implements InstMapper<P1, R>, Retur
 
     private Functions.F6<P1, P2, P3, P4, P5, P6, R> executor;
 
-    public MB6P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5, ParamInst<P6> param6) {
+    private final Returning<R> parent;
+
+    public MB6P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5, ParamInst<P6> param6, Returning<R> parent) {
         this.retType = retType;
         this.param1 = param1;
         this.param2 = param2;
@@ -29,6 +34,18 @@ public class MB6P<R, P1, P2, P3, P4, P5, P6> implements InstMapper<P1, R>, Retur
         this.param4 = param4;
         this.param5 = param5;
         this.param6 = param6;
+        this.parent = parent;
+    }
+
+    @Override
+    public Returning<R> getRootParent() {
+        return parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<R>> consumer) {
+        if (this.executor != null) consumer.accept(new MN6P<>(retType, param1, param2, param3, param4, param5, param6, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
     }
 
     public <P7> MB7P<R, P1, P2, P3, P4, P5, P6, P7> withParam(String name, Supplier<? extends VarType<P7>> type) {
@@ -42,7 +59,7 @@ public class MB6P<R, P1, P2, P3, P4, P5, P6> implements InstMapper<P1, R>, Retur
     }
 
     public <P7> MB7P<R, P1, P2, P3, P4, P5, P6, P7> withParam(ParamInst<P7> inst) {
-        return (MB7P<R, P1, P2, P3, P4, P5, P6, P7>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB7P<>(retType, param1, param2, param3, param4, param5, param6, inst));
+        return (MB7P<R, P1, P2, P3, P4, P5, P6, P7>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB7P<>(retType, param1, param2, param3, param4, param5, param6, inst, parent));
     }
 
     public <P7, P8, P9, P10> MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

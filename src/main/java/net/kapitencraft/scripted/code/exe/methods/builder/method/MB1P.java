@@ -42,8 +42,8 @@ public class MB1P<R, P1> implements InstMapper<P1, R>, Returning<R>, Parenter<R>
     }
 
     @Override
-    public Returning<R> getParent() {
-        return parent;
+    public Returning<R> getRootParent() {
+        return parent == null ? this : parent; //return this for instance methods
     }
 
     public <P2> MB2P<R, P1, P2> withParam(String name, Supplier<? extends VarType<P2>> type) {
@@ -51,7 +51,7 @@ public class MB1P<R, P1> implements InstMapper<P1, R>, Returning<R>, Parenter<R>
     }
 
     public <P2> MB2P<R, P1, P2> withParam(ParamInst<P2> inst) {
-        return (MB2P<R, P1, P2>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB2P<>(retType, param1, inst, this));
+        return (MB2P<R, P1, P2>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB2P<>(retType, param1, inst, this.getRootParent()));
     }
 
     public <P2, P3, P4, P5, P6, P7, P8, P9, P10> MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

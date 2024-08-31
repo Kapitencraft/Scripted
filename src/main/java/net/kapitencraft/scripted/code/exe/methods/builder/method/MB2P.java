@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.Parenter;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.method.MN2P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.function.BiFunction;
@@ -20,9 +21,9 @@ public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R>, Parente
 
     private BiFunction<P1, P2, R> executor;
 
-    private final MB1P<R, P1> parent;
+    private final Returning<R> parent;
 
-    public MB2P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, MB1P<R, P1> parent) {
+    public MB2P(VarType<R> retType, ParamInst<P1> param1, ParamInst<P2> param2, Returning<R> parent) {
         this.retType = retType;
         this.param1 = param1;
         this.param2 = param2;
@@ -40,7 +41,7 @@ public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R>, Parente
     }
 
     public <P3> MB3P<R, P1, P2, P3> withParam(ParamInst<P3> inst) {
-        return (MB3P<R, P1, P2, P3>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB3P<>(retType, param1, param2, inst));
+        return (MB3P<R, P1, P2, P3>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new MB3P<>(retType, param1, param2, inst, parent));
     }
 
     public <P3, P4, P5, P6, P7, P8, P9, P10> MB10P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(
@@ -114,12 +115,14 @@ public class MB2P<R, P1, P2> implements InstMapper<P1, R>, Returning<R>, Parente
     }
 
     @Override
-    public Returning<R> getParent() {
+    public Returning<R> getRootParent() {
         return parent;
     }
 
     @Override
     public void applyNodes(Consumer<ReturningNode<R>> consumer) {
+        if (this.executor != null) consumer.accept(new MN2P<>(retType, param1, param2, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
 
     }
 }
