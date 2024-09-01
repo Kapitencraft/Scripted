@@ -10,12 +10,12 @@ public class LivingEntityType<T extends LivingEntity> extends EntityType<T> {
     public LivingEntityType(String name) {
         super(name);
 
-        this.addMethod("getAttributeValue", this.context.returning(VarTypes.DOUBLE)
+        this.addMethod("getAttributeValue", context -> context.returning(VarTypes.DOUBLE)
                 .withParam("attribute", VarTypes.ATTRIBUTE)
                 .executes(LivingEntity::getAttributeValue)
         );
 
-        this.addMethod("setBaseValue", this.context.consumer()
+        this.addMethod("setBaseValue", context -> context.consumer()
                 .withParam("attribute", VarTypes.ATTRIBUTE)
                 .withParam("value", VarTypes.DOUBLE)
                 .executes((t, attribute, aDouble) ->

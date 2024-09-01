@@ -10,7 +10,11 @@ import net.kapitencraft.scripted.init.VarTypes;
 
 public abstract class Function extends Method<Void> {
 
-    public abstract class Instance extends MethodInstance<Void> {
+    public abstract static class Instance extends MethodInstance<Void> {
+
+        public Instance(String id) {
+            super(id);
+        }
 
         @Override
         public Void call(VarMap origin, MethodPipeline<?> pipeline) {

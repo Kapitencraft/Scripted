@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public record ParamInst<P>(VarType<P> type, String name) {
+    public static final List<String> RESERVED_PARAM_NAMES = List.of(
+            "type" //used for saving method type name
+    );
 
     public static <V> ParamInst<List<V>> listOf(String name, Supplier<? extends VarType<V>> type) {
         return new ParamInst<>(type.get().listOf(), name);

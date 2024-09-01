@@ -21,7 +21,22 @@ public abstract class Method<T> {
         MethodInstance<?> inst;
         if (type.startsWith("new")) {
             VarType<?> varType = VarType.NAME_MAP.get(type.substring(3));
-            inst = varType.build(object, analyser);
+            inst = varType.buildConstructor(object, analyser);
+        } else if (type.contains("-")) {
+            VarType<?> varType = VarType.NAME_MAP.get(type.substring(type.indexOf('-')));
+            String methodType = type.substring(0, type.indexOf('-'));
+            inst = switch (methodType) {
+                case "Comp":
+                    yield varType.loadComparator(object, analyser);
+                case "Math":
+                    yield varType.loadMathOperation(object, analyser);
+                case "When":
+                    yield varType.loadWhen(object, analyser);
+                case "SetVar":
+                    yield varType.loadSetVar(object, analyser);
+                default:
+                    throw new IllegalStateException("Unexpected value: " + methodType);
+            };
         } else if (type.startsWith("primitive$")) {
             PrimitiveType<?> prim = (PrimitiveType<?>) VarType.NAME_MAP.get(type.substring(10));
             inst = prim.loadInstance(object);

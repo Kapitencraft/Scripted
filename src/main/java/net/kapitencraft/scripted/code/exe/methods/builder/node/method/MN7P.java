@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
+import net.minecraft.util.GsonHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -40,9 +41,9 @@ public class MN7P<R, P1, P2, P3, P4, P5, P6, P7> implements ReturningNode<R> {
         this.executor = executor;
     }
 
-    public MethodInstance<R> read(JsonObject object, VarAnalyser analyser) {
+    public MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
-        return new Instance(
+        return new Instance(GsonHelper.getAsString(object, "type"),
                 Method.loadInstance(object, param1.name(), analyser),
                 Method.loadInstance(object, param2.name(), analyser),
                 Method.loadInstance(object, param3.name(), analyser),
@@ -53,16 +54,27 @@ public class MN7P<R, P1, P2, P3, P4, P5, P6, P7> implements ReturningNode<R> {
         );
     }
 
-    public MethodInstance<R> createInst(List<MethodInstance<?>> params) {
-        return create((MethodInstance<P1>) params.get(0), (MethodInstance<P2>) params.get(1),
+    @Override
+    public boolean matchesTypes(List<? extends VarType<?>> types) {
+        return param1.type() == types.get(0) &&
+               param2.type() == types.get(1) &&
+               param3.type() == types.get(2) &&
+               param4.type() == types.get(3) &&
+               param5.type() == types.get(4) &&
+               param6.type() == types.get(5) &&
+               param7.type() == types.get(6);
+    }
+
+    public MethodInstance<R> createInst(String id, List<MethodInstance<?>> params) {
+        return create(id, (MethodInstance<P1>) params.get(0), (MethodInstance<P2>) params.get(1),
                 (MethodInstance<P3>) params.get(2), (MethodInstance<P4>) params.get(3),
                 (MethodInstance<P5>) params.get(4), (MethodInstance<P6>) params.get(5), (MethodInstance<P7>) params.get(6));
     }
 
-    public MethodInstance<R> create(MethodInstance<P1> param1Inst, MethodInstance<P2> param2Inst,
+    public MethodInstance<R> create(String id, MethodInstance<P1> param1Inst, MethodInstance<P2> param2Inst,
                                     MethodInstance<P3> param3Inst, MethodInstance<P4> param4Inst,
                                     MethodInstance<P5> param5Inst, MethodInstance<P6> param6Inst, MethodInstance<P7> param7Inst) {
-        return new Instance(param1Inst, param2Inst, param3Inst, param4Inst, param5Inst, param6Inst, param7Inst);
+        return new Instance(id, param1Inst, param2Inst, param3Inst, param4Inst, param5Inst, param6Inst, param7Inst);
     }
 
     @Override
@@ -79,7 +91,8 @@ public class MN7P<R, P1, P2, P3, P4, P5, P6, P7> implements ReturningNode<R> {
         private final MethodInstance<P6> param6;
         private final MethodInstance<P7> param7;
 
-        private Instance(MethodInstance<P1> param1, MethodInstance<P2> param2, MethodInstance<P3> param3, MethodInstance<P4> param4, MethodInstance<P5> param5, MethodInstance<P6> param6, MethodInstance<P7> param7) {
+        private Instance(String id, MethodInstance<P1> param1, MethodInstance<P2> param2, MethodInstance<P3> param3, MethodInstance<P4> param4, MethodInstance<P5> param5, MethodInstance<P6> param6, MethodInstance<P7> param7) {
+            super(id);
             this.param1 = param1;
             this.param2 = param2;
             this.param3 = param3;

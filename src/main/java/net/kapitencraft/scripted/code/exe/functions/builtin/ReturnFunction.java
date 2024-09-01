@@ -20,10 +20,11 @@ public class ReturnFunction extends Function {
         );
     }
 
-    public class Instance<T> extends Function.Instance {
+    public static class Instance<T> extends Function.Instance {
         private final @Nullable MethodInstance<T> ret;
 
         public Instance(@Nullable MethodInstance<T> ret) {
+            super("return");
             this.ret = ret;
         }
 

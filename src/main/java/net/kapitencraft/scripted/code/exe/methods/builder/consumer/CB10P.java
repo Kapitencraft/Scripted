@@ -1,8 +1,14 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.kap_lib.stream.Consumers;
+import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
-import net.kapitencraft.scripted.util.Consumers;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.consumer.CN10P;
+
+import java.util.function.Consumer;
 
 public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMapper<P1, Void> {
     private final ParamInst<P1> param1;
@@ -19,7 +25,9 @@ public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMappe
 
     private Consumers.C10<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> executor;
 
-    public CB10P(ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5, ParamInst<P6> param6, ParamInst<P7> param7, ParamInst<P8> param8, ParamInst<P9> param9, ParamInst<P10> param10) {
+    private final Returning<Void> parent;
+
+    public CB10P(ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5, ParamInst<P6> param6, ParamInst<P7> param7, ParamInst<P8> param8, ParamInst<P9> param9, ParamInst<P10> param10, Returning<Void> parent) {
         this.param1 = param1;
         this.param2 = param2;
         this.param3 = param3;
@@ -30,7 +38,14 @@ public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMappe
         this.param8 = param8;
         this.param9 = param9;
         this.param10 = param10;
+        this.parent = parent;
     }
+
+    @Override
+    public Returning<Void> getRootParent() {
+        return parent;
+    }
+
 
 //    public <P9> MB9P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9> withParam(String name, Supplier<? extends VarType<P9>> type) {
 //        return (MB9P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9>) this.children.computeIfAbsent(type.get(), name, (type1, string) -> new MB9P<>(retType, param1, param2, param3, param4, param5, param6, param7, param8, new ParamInst<>(type1, string)));
@@ -40,5 +55,11 @@ public class CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> implements InstMappe
         if (this.executor != null) throw new IllegalStateException("executor has already been set");
         this.executor = executor;
         return this;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<Void>> consumer) {
+        if (this.executor != null) consumer.accept(new CN10P<>(param1, param2, param3, param4, param5, param6, param7, param8, param9, param10, executor));
+        else Scripted.LOGGER.warn("found method builder without executor!");
     }
 }

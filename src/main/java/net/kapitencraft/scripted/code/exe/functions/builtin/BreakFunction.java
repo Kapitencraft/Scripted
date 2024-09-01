@@ -13,7 +13,11 @@ public class BreakFunction extends Function {
         return new Instance();
     }
 
-    public class Instance extends Function.Instance {
+    public static class Instance extends Function.Instance {
+        public Instance() {
+            super("break");
+        }
+
         @Override
         protected void execute(VarMap map, MethodPipeline<?> pipeline) {
             pipeline.setBroken();

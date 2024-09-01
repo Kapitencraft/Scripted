@@ -50,6 +50,7 @@ public class IfFunction extends Function {
         private final @Nullable MethodPipeline<T> elseBody;
 
         public Instance(MethodInstance<Boolean> condition, MethodPipeline<T> body, List<Pair<MethodInstance<Boolean>, MethodPipeline<T>>> elifs, @Nullable MethodPipeline<T> elseBody) {
+            super("if");
             this.condition = condition;
             this.body = body;
             this.elifs = elifs;

@@ -1,11 +1,15 @@
 package net.kapitencraft.scripted.code.var.type.abstracts;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.kap_lib.helpers.TextHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.MethodContainer;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.exe.methods.core.Method;
@@ -21,6 +25,7 @@ import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.code.var.type.collection.ListType;
 import net.kapitencraft.scripted.code.var.type.collection.MapType;
 import net.kapitencraft.scripted.code.var.type.collection.MultimapType;
+import net.kapitencraft.scripted.init.VarTypes;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -28,6 +33,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.loading.progress.ProgressMeter;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,6 +42,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class VarType<T> {
@@ -69,7 +76,6 @@ public class VarType<T> {
         return location.toString().replaceAll("[.-]", "/");
     }
 
-    private final BuilderContext<T> context = new BuilderContext<>(this);
     /**
      * the name of the Type (how it's referred to in code)
      */
@@ -97,7 +103,7 @@ public class VarType<T> {
     private final Comparator<T> comp;
 
     /**
-     * override in your own type to add {@link VarType#addMethod(String, Function) methods}, {@link VarType#addField fields} and a {@link VarType#setConstructor(Function) constructor}
+     * override in your own type to add {@link VarType#addMethod methods}, {@link VarType#addField fields} and a {@link VarType#setConstructor constructor}
      * @param name the code name of this type, following java conventions
      * @param add a method to compute two values using addition
      * @param mult similar for multiplication
@@ -122,8 +128,8 @@ public class VarType<T> {
         this.fields = new FieldMap<>();
     }
 
-    public VarType<?>.InstanceMethod<?>.Instance buildMethod(JsonObject object, VarAnalyser map, MethodInstance<T> parent) {
-        return !object.has("params") ? createFieldReference(GsonHelper.getAsString(object, "name"), parent) : methods.buildMethod(object, map, parent);
+    public MethodInstance<?> buildMethod(JsonObject object, VarAnalyser analyser) {
+        return !object.has("params") ? createFieldReference(object, analyser) : methods.readMethod(object, analyser);
     }
 
     public Field<?> getFieldForName(String name) {
@@ -134,52 +140,123 @@ public class VarType<T> {
 
     //adding methods
 
+    /**
+     * used to bake the method builders into their dedicated nodes
+     * <br> do not call directly!
+     */
+    @ApiStatus.Internal
     public void bakeMethods() {
-        this.methods.bakeMethods(StartupMessageManager.addProgressBar("Baking " + this.getName(), this.methods.unbakedMethods.size()));
+        this.methods.bakeMethods();
     }
 
-    public MethodInstance<?> createMethod(String name, List<MethodInstance<?>> methodInstances) {
+    /**
+     * used to apply all VarTypes and fetch them out of their RegistryObject state
+     * <br> do not call directly!
+     */
+    @ApiStatus.Internal
+    public void createMethods() {
+        this.methods.createMethods();
+    }
+
+    public MethodInstance<?> createMethod(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
+        return this.methods.createMethodInstance(name, analyser, methodInstances);
+    }
+
+    public MethodInstance<T> buildConstructor(JsonObject object, VarAnalyser analyser) {
         return null;
     }
 
-    private class MethodMap {
-        private final HashMap<String, ArrayList<ReturningNode<?>>> byId = new HashMap<>();
-        private final HashMap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = new HashMap<>();
 
-        public void bakeMethods(ProgressMeter progressMeter) {
+    /**
+     * method container for all methods inside this type;
+     */
+    private class MethodMap {
+        /**
+         * id pattern for serialized Method ids
+         * <br>group 1: VarType name
+         * <br>group 2: Method name
+         * <br>group 3: Method id
+         */
+        private static final Pattern SERIALIZED_ID_PATTERN = Pattern.compile("([\\p{Alnum}/_]+)#([\\p{Alnum}/_]+)\\$(\\d+)");
+
+        //must be arraylist to keep index sensitivity
+        private final BuilderContext<T> context = new BuilderContext<>(VarType.this);
+        private final HashMap<String, MethodContainer> byId = new HashMap<>();
+        private final Multimap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = ArrayListMultimap.create();
+        private final ArrayList<ReturningNode<T>> constructorMethods = new ArrayList<>();
+
+        public void createMethods() {
+            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Registering " + VarType.this.getName(), this.unbakedMethods.size());
             progressMeter.setAbsolute(0);
             int i = 0;
             int max = unbakedMethods.size();
-            for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entrySet()) {
-                this.bakeMethod(entry.getKey(), entry.getValue().apply(VarType.this.context));
+            for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entries()) {
+                byId.putIfAbsent(entry.getKey(), new MethodContainer());
+                byId.get(entry.getKey()).registerElement(entry.getValue().apply(context));
                 i++;
                 progressMeter.setAbsolute(i / max);
             }
             progressMeter.complete();
         }
 
-        private <R> void bakeMethod(String name, InstMapper<T, R> mapper) {
-            InstMapper<T, R> parent = (InstMapper<T, R>) mapper.getRootParent();
-            ArrayList<ReturningNode<?>> list = new ArrayList<>();
-            parent.applyNodes(list::add);
-            this.byId.put(name, list);
+        public void bakeMethods() {
+            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Baking " + VarType.this.getName(), this.unbakedMethods.size());
+            progressMeter.setAbsolute(0);
+            int i = 0;
+            int max = byId.size();
+            for (MethodContainer container : byId.values()) {
+                container.bake();
+                i++;
+                progressMeter.setAbsolute(i / max);
+            }
+        }
+
+        private <R> MethodInstance<R> readMethod(JsonObject object, VarAnalyser analyser) {
+            String serializedId = GsonHelper.getAsString(object, "type");
+            Matcher matcher = SERIALIZED_ID_PATTERN.matcher(serializedId);
+            if (!matcher.matches()) {
+                throw new IllegalArgumentException("unknown id Pattern: \"" + serializedId + "\"");
+            }
+            if (!Objects.equals(matcher.group(1), VarType.this.getName())) {
+                throw new IllegalAccessError("attempting to get method '" + matcher.group(2) + "' from wrong VarType (expected: '" + matcher.group(1) + "', but got: '" + VarType.this.getName() + "'");
+            }
+            ReturningNode<R> node = this.byId.get(matcher.group(2)).getByIndex(Integer.parseInt(matcher.group(3)));
+            return node.loadInst(object, analyser);
         }
 
         public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
             this.unbakedMethods.put(name, method);
         }
 
-        public VarType<T>.InstanceMethod<?> getOrThrow(String name, List<VarType<?>> types) {
+        public Pair<String, ReturningNode<?>> getOrThrow(String name, List<? extends VarType<?>> types) throws IllegalArgumentException {
             if (byId.containsKey(name)) {
-                ArrayList<ReturningNode<?>> returningNodes =
-                byId.get(name);
+                Pair<ReturningNode<?>, Integer> methodAndId = byId.get(name).getMethodAndId(types);
+                return Pair.of(VarType.this.getName() + "#" + name + "$" + methodAndId.getSecond(), methodAndId.getFirst());
+            } else {
+                return throwNoMethod(name);
             }
-            return  Objects.requireNonNull(builders.get(name), "unknown method " + TextHelper.wrapInNameMarkers(name));
+        }
+
+        public List<ReturningNode<?>> getMethod(String name) {
+            if (byId.containsKey(name)) {
+                return byId.get(name).getBaked();
+            }
+            return throwNoMethod(name);
+        }
+
+        //make method have return type to prevent compiler from crying
+        private <R> R throwNoMethod(String name) {
+            throw new IllegalArgumentException("unknown method with name '" + name + "' in VarType '" + VarType.this.getName() + "'");
+        }
+
+        public MethodInstance<?> createMethodInstance(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
+            Pair<String, ReturningNode<?>> pair = getOrThrow(name, methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
+            return null;
         }
     }
 
     public List<ReturningNode<?>> getMethodsForName(String name) {
-        return methods.getOrThrow(name);
+        return methods.getMethod(name);
     }
 
     /**
@@ -190,8 +267,8 @@ public class VarType<T> {
         this.methods.registerMethod(in, builder);
     }
 
-    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, Supplier<? extends VarType<J>> typeSupplier) {
-        this.fields.addField(name, new Field<>(getter, setter, typeSupplier));
+    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> typeSupplier) {
+        this.fields.addField(name, new Field<>(name, getter, setter, typeSupplier));
     }
 
     protected void setConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
@@ -265,7 +342,8 @@ public class VarType<T> {
         public abstract class Instance extends MethodInstance<R> {
             protected final @NotNull MethodInstance<T> parent;
 
-            protected Instance(@NotNull MethodInstance<T> parent) {
+            protected Instance(String id, @NotNull MethodInstance<T> parent) {
+                super(id);
                 this.parent = parent;
             }
 
@@ -286,11 +364,13 @@ public class VarType<T> {
 
     //Fields
     public class Field<J> {
-        private final java.util.function.Function<T, J> getter;
+        private final String name;
+        private final Function<T, J> getter;
         private final @Nullable BiConsumer<T, J> setter;
         private final Supplier<? extends VarType<J>> type;
 
-        public Field(java.util.function.Function<T, J> getter, @Nullable BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> type) {
+        public Field(String name, Function<T, J> getter, @Nullable BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> type) {
+            this.name = name;
             this.type = type;
             this.getter = getter;
             this.setter = setter;
@@ -351,7 +431,7 @@ public class VarType<T> {
             private final Field<R> field;
 
             protected Instance(Field<R> field, MethodInstance<T> parent) {
-                super(parent);
+                super(VarType.this.getName() + "@" + field.name, parent);
                 this.field = field;
             }
 
@@ -372,9 +452,12 @@ public class VarType<T> {
         }
     }
 
-    public final <J> InstanceMethod<J>.Instance createFieldReference(String s, MethodInstance<?> varInstance) {
-        Field<J> field = (Field<J>) getFieldForName(s);
-        return (InstanceMethod<J>.Instance) fieldReferenceInst.create(field, varInstance);
+    public final <J> InstanceMethod<J>.Instance createFieldReference(JsonObject object, VarAnalyser analyser) {
+        return createFieldReference(GsonHelper.getAsString(object, "name"), Method.loadInstance(object, "instance", analyser));
+    }
+
+    public final <J> InstanceMethod<J>.Instance createFieldReference(String name, MethodInstance<?> in) {
+        return (InstanceMethod<J>.Instance) fieldReferenceInst.create(getFieldForName(name), in);
     }
 
     //Functions
@@ -389,13 +472,13 @@ public class VarType<T> {
 
         public abstract class Instance extends InstanceMethod<Void>.Instance {
 
-            protected Instance(MethodInstance<T> parent) {
-                super(parent);
+            protected Instance(String id, MethodInstance<T> parent) {
+                super(id, parent);
             }
 
             @Override
             public VarType<Void> getType(IVarAnalyser analyser) {
-                return net.kapitencraft.scripted.init.VarTypes.VOID.get();
+                return VarTypes.VOID.get();
             }
 
             @Override
@@ -414,13 +497,13 @@ public class VarType<T> {
 
         @Override
         public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, MethodInstance<T> inst) {
-            return new Instance(inst);
+            return new Instance(GsonHelper.getAsString(object, "type"), inst);
         }
 
         private class Instance extends InstanceFunction.Instance {
 
-            protected Instance(MethodInstance<T> parent) {
-                super(parent);
+            protected Instance(String id, MethodInstance<T> parent) {
+                super(id, parent);
             }
 
             @Override
@@ -444,10 +527,14 @@ public class VarType<T> {
 
         @Override
         public MethodInstance<T> construct(JsonObject object, VarAnalyser analyser) {
-            return new Instance();
+            return new Instance(GsonHelper.getAsString(object, "type"));
         }
 
         private class Instance extends MethodInstance<T> {
+
+            private Instance(String id) {
+                super(id);
+            }
 
             @Override
             public T call(VarMap origin, MethodPipeline<?> pipeline) {
@@ -460,8 +547,6 @@ public class VarType<T> {
             }
         }
     }
-
-    //Operations
 
     //Comparators
     public class Comparators extends Method<Boolean> {
@@ -478,6 +563,7 @@ public class VarType<T> {
             private final CompareMode compareMode;
 
             private Instance(MethodInstance<T> left, MethodInstance<T> right, CompareMode compareMode) {
+                super("Comp-" + VarType.this.getName());
                 this.left = left;
                 this.right = right;
                 this.compareMode = compareMode;
@@ -503,7 +589,7 @@ public class VarType<T> {
 
             @Override
             public VarType<Boolean> getType(IVarAnalyser analyser) {
-                return net.kapitencraft.scripted.init.VarTypes.BOOL.get();
+                return VarTypes.BOOL.get();
             }
         }
 
@@ -530,6 +616,12 @@ public class VarType<T> {
         }
     }
 
+    private final Comparators compsInst = new Comparators();
+
+    public MethodInstance<Boolean> loadComparator(JsonObject object, VarAnalyser analyser) {
+        return compsInst.load(object, analyser);
+    }
+
     //Math Operations
     public class MathOperationMethod extends Method<T> {
 
@@ -550,6 +642,7 @@ public class VarType<T> {
             private final Operation operation;
 
             private Instance(MethodInstance<T> left, MethodInstance<T> right, Operation operation) {
+                super("Math-" + VarType.this.getName());
                 this.left = left;
                 this.right = right;
                 this.operation = operation;
@@ -610,6 +703,10 @@ public class VarType<T> {
         return mathOperationInst.create(operation, (MethodInstance<T>) left, (MethodInstance<T>) right);
     }
 
+    public MethodInstance<T> loadMathOperation(JsonObject object, VarAnalyser analyser) {
+        return mathOperationInst.load(object, analyser);
+    }
+
     //when
     public class WhenMethod extends Method<T> {
 
@@ -630,6 +727,7 @@ public class VarType<T> {
             private final MethodInstance<T> ifTrue, ifFalse;
 
             public Instance(MethodInstance<Boolean> condition, MethodInstance<T> ifTrue, MethodInstance<T> ifFalse) {
+                super("When-" + VarType.this.getName());
                 this.condition = condition;
                 this.ifTrue = ifTrue;
                 this.ifFalse = ifFalse;
@@ -648,6 +746,10 @@ public class VarType<T> {
     }
 
     private final WhenMethod whenInst = new WhenMethod();
+
+    public MethodInstance<T> loadWhen(JsonObject object, VarAnalyser analyser) {
+        return whenInst.load(object, analyser);
+    }
 
     public MethodInstance<T> createWhen(MethodInstance<Boolean> condition, MethodInstance<T> ifTrue, MethodInstance<T> ifFalse, VarAnalyser analyser) {
         return whenInst.createInst(condition, ifTrue, ifFalse, analyser);
@@ -675,7 +777,7 @@ public class VarType<T> {
             private final Setter<T> setter;
 
             protected Instance(MethodInstance<T> parent, MethodInstance<T> setter, Setter.Type type) {
-                super(parent);
+                super("SetVar-" + VarType.this.getName(), parent);
                 if (!(parent instanceof IVarReference)) {
                     throw new IllegalStateException("variable expected");
                 }
@@ -703,11 +805,15 @@ public class VarType<T> {
         }
     }
 
+    private final SetVarMethod setVarInst = new SetVarMethod();
+
     public MethodInstance<T> createSetVar(MethodInstance<T> var, Setter.Type type, MethodInstance<T> inst) {
         return setVarInst.create(var, type, inst);
     }
 
-    private final SetVarMethod setVarInst = new SetVarMethod();
+    public MethodInstance<T> loadSetVar(JsonObject object, VarAnalyser analyser) {
+        return setVarInst.load(object, analyser);
+    }
 
     /**
      * @return an instance of exactly -1 (or what matches -1 in that var type)

@@ -36,6 +36,7 @@ public class CreateAndSetVarFunction extends Function {
         private final MethodInstance<T> setter;
 
         public Instance(String varName, MethodInstance<T> method, VarType<T> type, boolean isFinal) {
+            super("createAndSet");
             this.varName = varName;
             this.type = type;
             this.isFinal = isFinal;

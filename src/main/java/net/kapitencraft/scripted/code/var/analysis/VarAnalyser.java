@@ -6,7 +6,6 @@ import net.kapitencraft.scripted.util.Leveled;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
@@ -58,11 +57,5 @@ public class VarAnalyser extends Leveled<String, VarType<?>> implements IVarAnal
 
     public void addError(Component component) {
         errors.add(component);
-    }
-
-    public VarAnalyser createClone() {
-        VarAnalyser analyser = new VarAnalyser();
-        analyser.content.putAll(this.content);
-        return analyser;
     }
 }

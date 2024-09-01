@@ -17,10 +17,15 @@ public class NotMethod extends Method<Boolean> {
         return new Instance(Method.loadInstance(object, "val", analyser));
     }
 
+    public MethodInstance<?> create(MethodInstance<?> methodInstance) {
+        return new Instance((MethodInstance<Boolean>) methodInstance);
+    }
+
     public static class Instance extends MethodInstance<Boolean> {
         private final MethodInstance<Boolean> parent;
 
         public Instance(MethodInstance<Boolean> parent) {
+            super("not"); //TODO make default system for registered method types
             this.parent = parent;
         }
 

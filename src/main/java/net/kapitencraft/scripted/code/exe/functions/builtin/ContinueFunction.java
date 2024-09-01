@@ -14,6 +14,10 @@ public class ContinueFunction extends Function {
     }
 
     public class Instance extends Function.Instance {
+        public Instance() {
+            super("continue");
+        }
+
         @Override
         protected void execute(VarMap map, MethodPipeline<?> pipeline) {
             pipeline.setContinued();

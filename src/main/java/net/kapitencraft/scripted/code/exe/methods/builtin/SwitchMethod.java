@@ -17,28 +17,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SwitchMethod<T> extends Method<T> {
-    private static final Map<VarType<?>, SwitchMethod<?>> CACHE = new HashMap<>();
-
-    public static <T> SwitchMethod<T> getOrCreate(VarType<T> type) {
-        return (SwitchMethod<T>) CACHE.computeIfAbsent(type, SwitchMethod::new);
-    }
-
-    private final VarType<T> targetType;
-
-    protected SwitchMethod(VarType<T> targetType) {
-        this.targetType = targetType;
-    }
-
-    @Override
-    public MethodInstance<T> load(JsonObject object, VarAnalyser analyser) {
-        return readInstance(object, analyser);
-    }
+public class SwitchMethod {
 
     //TODO fix
 
-    private <I> MethodInstance<T> readInstance(JsonObject object, VarAnalyser analyser) {
+    private <I, T> MethodInstance<T> readInstance(JsonObject object, VarAnalyser analyser) {
         PrimitiveType<I> instanceType = (PrimitiveType<I>) JsonHelper.readType(object, "instanceType");
+        VarType<T> targetType = JsonHelper.readType(object, "targetType");
         MethodInstance<T> defaulted = Method.loadInstance(object, "default", analyser);
         MethodInstance<I> provider = Method.loadInstance(object, "provider", analyser);
         Map<I, MethodInstance<T>> content = IOHelper.readMap(
@@ -46,20 +31,23 @@ public class SwitchMethod<T> extends Method<T> {
                 (object1, string) -> instanceType.loadFromJson(object1.getAsJsonPrimitive(string)),
                 (object1, string) -> (MethodInstance<T>) Method.loadInstance(object1, string, analyser)
         ).toMap();
-        return new Instance<>(defaulted, instanceType, content, provider);
+        return new Instance<>(defaulted, instanceType, content, provider, targetType);
     }
 
-    private class Instance<I> extends MethodInstance<T> {
+    private static class Instance<I, T> extends MethodInstance<T> {
         private final HashMap<I, MethodInstance<T>> content = new HashMap<>();
         private final MethodInstance<I> provider;
+        private final VarType<T> targetType;
         @NotNull
         private final MethodInstance<T> defaulted;
         private final PrimitiveType<I> instanceType;
 
-        private Instance(@NotNull MethodInstance<T> defaulted, PrimitiveType<I> instanceType, Map<I, MethodInstance<T>> content, MethodInstance<I> provider) {
+        private Instance(@NotNull MethodInstance<T> defaulted, PrimitiveType<I> instanceType, Map<I, MethodInstance<T>> content, MethodInstance<I> provider, VarType<T> targetType) {
+            super("switch");
             this.defaulted = defaulted;
             this.instanceType = instanceType;
             this.provider = provider;
+            this.targetType = targetType;
             this.content.putAll(content);
         }
 
@@ -78,6 +66,7 @@ public class SwitchMethod<T> extends Method<T> {
             object.add("default", defaulted.toJson());
             object.add("provider", provider.toJson());
             object.addProperty("instanceType", JsonHelper.saveType(instanceType));
+            object.addProperty("targetType", JsonHelper.saveType(targetType));
             object.add("content", IOHelper.writeMap(content, instanceType::saveToJson, MethodInstance::toJson));
             super.saveAdditional(object);
         }

@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ModCallbacks {
-    public static class VarTypes implements IForgeRegistry.AddCallback<VarType<?>>, IForgeRegistry.CreateCallback<VarType<?>> {
+    public static class VarTypes implements IForgeRegistry.AddCallback<VarType<?>>, IForgeRegistry.CreateCallback<VarType<?>>, IForgeRegistry.BakeCallback<VarType<?>> {
         public static final ResourceLocation NAME_MAP = Scripted.res("name_map");
         public static final ResourceLocation PRIMITIVES = Scripted.res("primitives");
         public static final ResourceLocation REGISTRIES = Scripted.res("registries");
@@ -63,6 +63,12 @@ public class ModCallbacks {
             owner.setSlaveMap(NAME_MAP, Maps.newHashMap());
             owner.setSlaveMap(PRIMITIVES, Lists.newArrayList());
             owner.setSlaveMap(REGISTRIES, Maps.newHashMap());
+        }
+
+        @Override
+        public void onBake(IForgeRegistryInternal<VarType<?>> owner, RegistryManager stage) {
+            owner.getValues().forEach(VarType::createMethods);
+            owner.getValues().forEach(VarType::bakeMethods);
         }
     }
 }

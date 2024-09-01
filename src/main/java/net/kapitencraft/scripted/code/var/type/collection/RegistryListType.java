@@ -1,10 +1,8 @@
 package net.kapitencraft.scripted.code.var.type.collection;
 
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.code.exe.methods.core.Method;
+import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
-import net.kapitencraft.scripted.code.exe.param.ParamData;
-import net.kapitencraft.scripted.code.exe.param.ParamSet;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
@@ -17,7 +15,8 @@ import java.util.List;
 public class RegistryListType<V> extends ListType<V> {
     public RegistryListType(RegistryType<V> type) {
         super(type);
-        this.setConstructor(new Constructor());
+        //this.setConstructor(new Constructor());
+        //TODO fix constructor
     }
 
     @Override
@@ -31,30 +30,26 @@ public class RegistryListType<V> extends ListType<V> {
 
     public class Constructor extends RegistryType<List<V>>.Constructor {
 
-        protected Constructor() {
-            super(ParamSet.empty());
-        }
-
         @Override
-        public Method<List<V>>.Instance construct(JsonObject object, VarAnalyser analyser) {
+        public MethodInstance<List<V>> construct(JsonObject object, VarAnalyser analyser) {
             return new Instance(GsonHelper.getAsString(object, "key"));
         }
 
         @Override
-        public Method<List<V>>.Instance load(JsonObject object, VarAnalyser analyser, ParamData data) {
+        public MethodInstance<List<V>> load(JsonObject object, VarAnalyser analyser) {
             return construct(object, analyser);
         }
 
-        public Method<?>.Instance createInstance(String value) {
+        public MethodInstance<?> createInstance(String value) {
             return new Instance(value);
         }
 
-        private class Instance extends Method<List<V>>.Instance {
+        private class Instance extends MethodInstance<List<V>> {
             private final List<V> val;
             private final String saveVal;
 
             protected Instance(String saveVal) {
-                super(ParamData.empty());
+                super("new");
                 this.saveVal = saveVal;
                 this.val = RegistryListType.this.getType().readListValue(saveVal);
             }
@@ -65,7 +60,7 @@ public class RegistryListType<V> extends ListType<V> {
             }
 
             @Override
-            protected List<V> call(VarMap params, VarMap origin) {
+            public List<V> call(VarMap origin, MethodPipeline<?> pipeline) {
                 return val;
             }
 

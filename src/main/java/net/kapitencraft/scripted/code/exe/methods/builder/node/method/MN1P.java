@@ -29,17 +29,22 @@ public class MN1P<R, P1> implements ReturningNode<R> {
         this.executor = executor;
     }
 
-    public MethodInstance<R> read(JsonObject object, VarAnalyser analyser) {
+    public MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
-        return new Instance(Method.loadInstance(GsonHelper.getAsJsonObject(object, param1.name()), analyser));
+        return new Instance(GsonHelper.getAsString(object, "type"), Method.loadInstance(GsonHelper.getAsJsonObject(object, param1.name()), analyser));
     }
 
-    public MethodInstance<R> createInst(List<MethodInstance<?>> params) {
-        return create((MethodInstance<P1>) params.get(0));
+    @Override
+    public boolean matchesTypes(List<? extends VarType<?>> types) {
+        return param1.type() == types.get(0);
     }
 
-    public MethodInstance<R> create(MethodInstance<P1> param1Inst) {
-        return new Instance(param1Inst);
+    public MethodInstance<R> createInst(String methodId, List<MethodInstance<?>> params) {
+        return create(methodId, (MethodInstance<P1>) params.get(0));
+    }
+
+    public MethodInstance<R> create(String methodId, MethodInstance<P1> param1Inst) {
+        return new Instance(methodId, param1Inst);
     }
 
     @Override
@@ -50,7 +55,8 @@ public class MN1P<R, P1> implements ReturningNode<R> {
     private class Instance extends MethodInstance<R> {
         private final MethodInstance<P1> param1;
 
-        private Instance(MethodInstance<P1> param1) {
+        private Instance(String id, MethodInstance<P1> param1) {
+            super(id);
             this.param1 = param1;
         }
 

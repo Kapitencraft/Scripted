@@ -15,7 +15,7 @@ public class BuilderContext<I> {
     }
 
     public CB1P<I> consumer() {
-        return new CB1P<>(ParamInst.of("instance", instType));
+        return new CB1P<>(ParamInst.of("instance", instType), null);
     }
 
     public <R> MB1P<R, I> returning(Supplier<? extends VarType<R>> retType) {

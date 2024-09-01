@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.IVarAnalyser;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
+import net.minecraft.util.GsonHelper;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -30,20 +31,25 @@ public class MN2P<R, P1, P2> implements ReturningNode<R> {
         this.executor = executor;
     }
 
-    public MethodInstance<R> read(JsonObject object, VarAnalyser analyser) {
+    public MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
-        return new Instance(
+        return new Instance(GsonHelper.getAsString(object, "type"),
                 Method.loadInstance(object, param1.name(), analyser),
                 Method.loadInstance(object, param2.name(), analyser)
         );
     }
 
-    public MethodInstance<R> createInst(List<MethodInstance<?>> params) {
-        return create((MethodInstance<P1>) params.get(0), (MethodInstance<P2>) params.get(1));
+    @Override
+    public boolean matchesTypes(List<? extends VarType<?>> types) {
+        return param1.type() == types.get(0) && param2.type() == types.get(1);
     }
 
-    public MethodInstance<R> create(MethodInstance<P1> param1Inst, MethodInstance<P2> param2Inst) {
-        return new Instance(param1Inst, param2Inst);
+    public MethodInstance<R> createInst(String id, List<MethodInstance<?>> params) {
+        return create(id, (MethodInstance<P1>) params.get(0), (MethodInstance<P2>) params.get(1));
+    }
+
+    public MethodInstance<R> create(String id, MethodInstance<P1> param1Inst, MethodInstance<P2> param2Inst) {
+        return new Instance(id, param1Inst, param2Inst);
     }
 
     @Override
@@ -55,7 +61,8 @@ public class MN2P<R, P1, P2> implements ReturningNode<R> {
         private final MethodInstance<P1> param1;
         private final MethodInstance<P2> param2;
 
-        private Instance(MethodInstance<P1> param1, MethodInstance<P2> param2) {
+        private Instance(String id, MethodInstance<P1> param1, MethodInstance<P2> param2) {
+            super(id);
             this.param1 = param1;
             this.param2 = param2;
         }

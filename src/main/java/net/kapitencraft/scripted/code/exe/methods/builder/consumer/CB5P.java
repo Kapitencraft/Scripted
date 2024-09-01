@@ -1,11 +1,15 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.kap_lib.stream.Consumers;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.consumer.CN5P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
-import net.kapitencraft.scripted.util.Consumers;
 
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class CB5P<P1, P2, P3, P4, P5> implements InstMapper<P1, Void> {
@@ -18,12 +22,26 @@ public class CB5P<P1, P2, P3, P4, P5> implements InstMapper<P1, Void> {
 
     private Consumers.C5<P1, P2, P3, P4, P5> executor;
 
-    public CB5P(ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5) {
+    private final Returning<Void> parent;
+
+    public CB5P(ParamInst<P1> param1, ParamInst<P2> param2, ParamInst<P3> param3, ParamInst<P4> param4, ParamInst<P5> param5, Returning<Void> parent) {
         this.param1 = param1;
         this.param2 = param2;
         this.param3 = param3;
         this.param4 = param4;
         this.param5 = param5;
+        this.parent = parent;
+    }
+
+    @Override
+    public Returning<Void> getRootParent() {
+        return parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<Void>> consumer) {
+        if (this.executor != null) consumer.accept(new CN5P<>(param1, param2, param3, param4, param5, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
     }
 
     public <P6> CB6P<P1, P2, P3, P4, P5, P6> withParam(String name, Supplier<? extends VarType<P6>> type) {
@@ -37,7 +55,7 @@ public class CB5P<P1, P2, P3, P4, P5> implements InstMapper<P1, Void> {
     }
 
     public <P6> CB6P<P1, P2, P3, P4, P5, P6> withParam(ParamInst<P6> inst) {
-        return (CB6P<P1, P2, P3, P4, P5, P6>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new CB6P<>(param1, param2, param3, param4, param5, inst));
+        return (CB6P<P1, P2, P3, P4, P5, P6>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new CB6P<>(param1, param2, param3, param4, param5, inst, parent));
     }
 
     public <P6, P7, P8, P9, P10> CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

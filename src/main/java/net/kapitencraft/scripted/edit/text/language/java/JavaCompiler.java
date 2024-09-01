@@ -8,7 +8,7 @@ import net.kapitencraft.scripted.code.exe.functions.builtin.IfFunction;
 import net.kapitencraft.scripted.code.exe.functions.builtin.WhileLoopFunction;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.exe.methods.mapper.Setter;
-import net.kapitencraft.scripted.code.oop.core.Object;
+import net.kapitencraft.scripted.code.oop.Script;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
@@ -32,10 +32,10 @@ public class JavaCompiler extends Compiler {
 
     private final ErrorList errors;
 
-    public static Object compileObject(String string) {
+    public static Script compileScript(String string) {
         JavaTokenizer tokenizer = new JavaTokenizer();
         JavaCompiler compiler = new JavaCompiler(tokenizer.tokenize(string));
-        return compiler.castObject();
+        return compiler.castScript();
     }
 
     public JavaCompiler(List<Token> tokens) {
@@ -45,7 +45,7 @@ public class JavaCompiler extends Compiler {
     }
 
     @Override
-    public Object castObject() {
+    public Script castScript() {
         return new InstCompiler().cast();
     }
 
@@ -54,17 +54,17 @@ public class JavaCompiler extends Compiler {
         int line = 1;
 
 
-        private Object cast() {
+        private Script cast() {
             assertType(Token.Type.MODIFIER);
-            Object object = new Object(castName());
+            Script script = new Script(castName());
             assertType(Token.Type.CURLY_BRACKET_OPEN);
             if (nextType() == Token.Type.VAR_TYPE) {
                 pos--;
-                compileMethod(object);
+                compileMethod(script);
             } else {
-                compileConstructor(object);
+                compileConstructor(script);
             }
-            return object;
+            return script;
         }
 
         private Token current() {
@@ -75,18 +75,18 @@ public class JavaCompiler extends Compiler {
             return tokens.get(pos + 1);
         }
 
-        private <T> void compileMethod(Object object) {
+        private <T> void compileMethod(Script script) {
             //TODO compile modifiers
             VarType<T> retType = castType();
             String name = castName();
             List<Pair<VarType<?>, String>> params = castParams();
-            object.newMethod(name, retType, params, castPipeline(retType, VarAnalyser.of(params), false));
+            script.newMethod(name, retType, params, castPipeline(retType, VarAnalyser.of(params), false));
         }
 
-        private void compileConstructor(Object object) {
+        private void compileConstructor(Script script) {
             nextType(); //skip name
             List<Pair<VarType<?>, String>> params = castParams();
-            object.setConstructor(params, castPipeline(VarTypes.VOID.get(), VarAnalyser.of(params), false));
+            script.setConstructor(params, castPipeline(VarTypes.VOID.get(), VarAnalyser.of(params), false));
         }
 
         private List<Pair<VarType<?>, String>> castParams() {
@@ -207,6 +207,7 @@ public class JavaCompiler extends Compiler {
                 }
                 case PRIM_STRING -> StringType.readInstance(current().value);
                 case PRIM_REG_ELEMENT -> RegistryType.readInstance(current().value);
+                case NOT -> ModMethods.NOT.get().create(castMethod(analyser));
                 default -> {
                     MethodInstance<?> inst = null;
                     while (next().type != Token.Type.EXPR_END && next().type != Token.Type.NEXT_PARAM) {
@@ -239,7 +240,7 @@ public class JavaCompiler extends Compiler {
                                     if (next().type != Token.Type.BRACKET_OPEN) { //if no brackets, it's a field
                                         inst = varType.createFieldReference(value, inst);
                                     } else {
-                                        inst = varType.createMethod(value, castParamData(analyser));
+                                        inst = varType.createMethod(value, analyser, castParamData(analyser));
                                     }
                                 } else {
                                     inst = ModMethods.VAR_REFERENCE.get().create(value);

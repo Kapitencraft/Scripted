@@ -9,12 +9,13 @@ import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 public abstract class MethodInstance<T> {
+    private final String id;
+
+    protected MethodInstance(String id) {
+        this.id = id;
+    }
 
     public abstract T call(VarMap origin, MethodPipeline<?> pipeline);
-
-    public VarType<?>.InstanceMethod<?>.Instance loadChild(JsonObject then, VarAnalyser analyser) {
-        return this.getType(analyser).buildMethod(then, analyser, this);
-    }
 
     public abstract VarType<T> getType(IVarAnalyser analyser);
 
@@ -35,10 +36,11 @@ public abstract class MethodInstance<T> {
      */
     protected void saveAdditional(JsonObject object) {}
 
-    //TODO save parent and ID
+    //TODO save ID
     public final JsonObject toJson() {
         JsonObject object = new JsonObject();
         saveAdditional(object);
+        object.addProperty("type", id);
         return object;
     }
 }

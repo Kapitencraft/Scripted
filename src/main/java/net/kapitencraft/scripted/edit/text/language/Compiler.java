@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.text.language;
 
-import net.kapitencraft.scripted.code.oop.core.Object;
+import net.kapitencraft.scripted.code.oop.Script;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.kapitencraft.scripted.edit.Token;
 import net.kapitencraft.scripted.edit.text.builder.ArgumentCompilerBuilder;
@@ -16,7 +16,7 @@ public abstract class Compiler {
         this.tokens = tokens;
     }
 
-    public abstract Object castObject();
+    public abstract Script castScript();
 
     public static <S> TokenCompilerBuilder<S> token(Token.Type type) {
         return TokenCompilerBuilder.token(type);

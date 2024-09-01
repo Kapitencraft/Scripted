@@ -30,6 +30,7 @@ public class VarReference<T> extends Method<T> {
         private final String methodName;
 
         protected Instance(String methodName) {
+            super("Var-" + methodName);
             this.methodName = methodName;
         }
 

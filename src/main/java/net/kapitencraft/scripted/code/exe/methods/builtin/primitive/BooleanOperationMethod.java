@@ -23,7 +23,7 @@ public class BooleanOperationMethod extends Method<Boolean>{
     }
 
     public MethodInstance<Boolean> create(MethodInstance<?> left, String value, MethodInstance<?> right) {
-        return new Instance(OperationType.CODEC.byName(value), left, right);
+        return new Instance(OperationType.CODEC.byName(value), (MethodInstance<Boolean>) left, (MethodInstance<Boolean>) right);
     }
 
     private static class Instance extends MethodInstance<Boolean> {
@@ -31,6 +31,7 @@ public class BooleanOperationMethod extends Method<Boolean>{
         private final MethodInstance<Boolean> left, right;
 
         private Instance(OperationType operationType, MethodInstance<Boolean> left, MethodInstance<Boolean> right) {
+            super("boolOperation");
             this.operationType = operationType;
             this.left = left;
             this.right = right;

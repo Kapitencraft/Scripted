@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit;
 
 import net.kapitencraft.kap_lib.client.widget.ScrollableWidget;
 import net.kapitencraft.kap_lib.client.widget.text.MultiLineTextBox;
-import net.kapitencraft.scripted.code.oop.core.Object;
+import net.kapitencraft.scripted.code.oop.Script;
 import net.kapitencraft.scripted.edit.text.language.java.JavaCompiler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -21,7 +21,7 @@ public class EditWidget extends ScrollableWidget {
         this.editor = new MultiLineTextBox(Minecraft.getInstance().font, pX, pY, pWidth, pHeight - 20, old.editor, Component.empty());
         this.editor.setFocused(true);
         this.button = new PlainTextButton(pX + 1, pY + pHeight - 19, 20, 18, Component.translatable("scripted.edit"), pButton -> {
-            Object object = JavaCompiler.compileObject(this.editor.getValue());
+            Script script = JavaCompiler.compileScript(this.editor.getValue());
         }, Minecraft.getInstance().font);
     }
 

@@ -32,6 +32,7 @@ public class WhileLoopFunction extends Function {
         private final MethodPipeline<T> body;
 
         public Instance(MethodInstance<Boolean> condition, MethodPipeline<T> body) {
+            super("while");
             this.condition = condition;
             this.body = body;
         }

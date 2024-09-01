@@ -33,6 +33,7 @@ public class CreateVarFunction extends Function {
         private final boolean isFinal;
 
         public Instance(String name, VarType<?> type, boolean isFinal) {
+            super("create");
             this.name = name;
             this.type = type;
             this.isFinal = isFinal;

@@ -30,7 +30,7 @@ public class Token {
         CURLY_BRACKET_OPEN(null), CURLY_BRACKET_CLOSE(null),
         ADD(Category.OPERATION), MULT(Category.OPERATION), SUB(Category.OPERATION), DIV(Category.OPERATION), MOD(Category.OPERATION),
         AND(Category.OPERATION), OR(Category.OPERATION), XOR(Category.OPERATION), NOT(Category.OPERATION),
-        EQUAL(Category.OPERATION), GREATER(Category.OPERATION), LESSER(Category.OPERATION);
+        EQUAL(Category.OPERATION), GREATER(Category.OPERATION), LESSER(Category.OPERATION), LEQUAL(Category.OPERATION), GEQUAL(Category.OPERATION), NEQUAL(Category.OPERATION);
 
         private final Category category;
 

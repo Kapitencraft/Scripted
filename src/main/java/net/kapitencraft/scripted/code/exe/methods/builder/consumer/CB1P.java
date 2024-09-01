@@ -1,8 +1,11 @@
 package net.kapitencraft.scripted.code.exe.methods.builder.consumer;
 
 import net.kapitencraft.kap_lib.collection.DoubleMap;
-import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
+import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.consumer.CN1P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.function.Consumer;
@@ -14,8 +17,11 @@ public class CB1P<P1> implements InstMapper<P1, Void> {
 
     private Consumer<P1> executor;
 
-    public CB1P(ParamInst<P1> param1) {
+    private final ConsumerBuilder parent;
+
+    public CB1P(ParamInst<P1> param1, ConsumerBuilder parent) {
         this.param1 = param1;
+        this.parent = parent;
     }
 
 
@@ -25,12 +31,23 @@ public class CB1P<P1> implements InstMapper<P1, Void> {
         return this;
     }
 
+    @Override
+    public Returning<Void> getRootParent() {
+        return parent == null ? this : parent;
+    }
+
+    @Override
+    public void applyNodes(Consumer<ReturningNode<Void>> consumer) {
+        if (this.executor != null) consumer.accept(new CN1P<>(param1, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
+    }
+
     public <P2> CB2P<P1, P2> withParam(String name, Supplier<? extends VarType<P2>> type) {
         return withParam(ParamInst.create(name, type));
     }
 
     public <P2> CB2P<P1, P2> withParam(ParamInst<P2> inst) {
-        return (CB2P<P1, P2>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new CB2P<>(param1, inst));
+        return (CB2P<P1, P2>) this.children.computeIfAbsent(inst.type(), inst.name(), (type1, string) -> new CB2P<>(param1, inst, getRootParent()));
     }
 
     public <P2, P3, P4, P5, P6, P7, P8, P9, P10> CB10P<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10> params(

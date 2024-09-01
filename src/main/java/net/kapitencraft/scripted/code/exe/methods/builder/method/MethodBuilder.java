@@ -36,9 +36,7 @@ public class MethodBuilder<R> implements Returning<R> {
 
     @Override
     public void applyNodes(Consumer<ReturningNode<R>> consumer) {
-        if (this.executor != null) {
-            consumer.accept(new MethodNode<>(retType, executor));
-        }
+        if (this.executor != null) consumer.accept(new MethodNode<>(retType, executor));
         if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
     }
 }

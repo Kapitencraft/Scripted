@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.edit.text.language;
 
 import net.kapitencraft.scripted.code.LanguageProvider;
-import net.kapitencraft.scripted.code.oop.core.Object;
+import net.kapitencraft.scripted.code.oop.Script;
 import net.kapitencraft.scripted.edit.Token;
 
 import java.util.List;
@@ -26,7 +26,7 @@ public class LanguageData<P extends LanguageProvider, I extends LanguageIDE<T, P
         return ide;
     }
 
-    public Object compile(String string) {
-        return compilerCreator.apply(tokenizer.tokenize(string)).castObject();
+    public Script compile(String string) {
+        return compilerCreator.apply(tokenizer.tokenize(string)).castScript();
     }
 }

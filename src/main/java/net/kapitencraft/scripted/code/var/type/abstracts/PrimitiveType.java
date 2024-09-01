@@ -38,6 +38,7 @@ public abstract class PrimitiveType<I> extends VarType<I> {
         private final I value;
 
         private Reference(I value) {
+            super("primitive$" + PrimitiveType.this.getName());
             this.value = value;
         }
 

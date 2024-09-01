@@ -39,6 +39,7 @@ public class ForLoopFunction extends Function {
         private final MethodPipeline<T> body;
 
         public Instance(MethodInstance<?> onInit, MethodInstance<Boolean> condition, MethodInstance<?> onLoop, MethodPipeline<T> body) {
+            super("forLoop");
             this.onInit = onInit;
             this.condition = condition;
             this.onLoop = onLoop;

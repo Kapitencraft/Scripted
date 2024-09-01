@@ -85,11 +85,25 @@ public class JavaTokenizer extends Tokenizer {
                 case '<': tokens.add(new Token("<", Token.Type.LESSER)); break;
                 case '>': tokens.add(new Token(">", Token.Type.GREATER)); break;
                 case '=': {
-                    if (isMathOperation(last(tokens).type)) {
+                    Token.Type lastType = last(tokens).type;
+                    if (isMathOperation(lastType)) { //mathematical operation methods
                         removeLast(tokens);
                         tokens.add(new Token(last(tokens).value + '=', Token.Type.ASSIGN_WITH_OPERATION));
+                        break;
                     }
-                    if (content.charAt(i+1) == '=') {
+                    if (lastType == Token.Type.LESSER || lastType == Token.Type.GREATER || lastType == Token.Type.NOT) { //comparators
+                        removeLast(tokens);
+                        Token.Type newType = switch (lastType) {
+                            case LESSER -> Token.Type.LEQUAL;
+                            case GREATER -> Token.Type.GEQUAL;
+                            case NOT -> Token.Type.NEQUAL;
+                            default -> throw new IllegalStateException("Unexpected (and illegal) value: " + lastType);
+                        };
+                        tokens.add(new Token(last(tokens).value + "=", newType));
+                        break;
+                    }
+                    if (lastType == Token.Type.ASSIGN) {
+                        removeLast(tokens);
                         tokens.add(new Token("==", Token.Type.EQUAL));
                         i++;
                     } else {

@@ -21,7 +21,6 @@ public class ListType<T> extends VarType<List<T>> {
         this.type = type;
 
         this.setConstructor(context -> context.constructor().executes(ArrayList::new));
-        this.setExtendable(); //only used for Registry list's new constructor; do not override yourself
 
         this.addMethod("get", context -> context.returning(type)
                 .withParam("index", VarTypes.INTEGER)
