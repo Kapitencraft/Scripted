@@ -18,7 +18,7 @@ public class EditWidget extends ScrollableWidget {
 
     public EditWidget(int pX, int pY, int pWidth, int pHeight, Component pMessage, EditWidget old) {
         super(pX, pY, pWidth, pHeight, pMessage);
-        this.editor = new MultiLineTextBox(Minecraft.getInstance().font, pX, pY, pWidth, pHeight - 20, old.editor, Component.empty());
+        this.editor = new MultiLineTextBox(Minecraft.getInstance().font, pX, pY, pWidth, pHeight - 20, old == null ? null : old.editor, Component.empty());
         this.editor.setFocused(true);
         this.button = new PlainTextButton(pX + 1, pY + pHeight - 19, 20, 18, Component.translatable("scripted.edit"), pButton -> {
             Script script = JavaCompiler.compileScript(this.editor.getValue());

@@ -190,32 +190,25 @@ public class VarType<T> {
         public void createMethods() {
             ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Registering " + VarType.this.getName(), this.methods.size());
             progressMeter.setAbsolute(0);
-            int i = 0;
-            int max = methods.size() + 1;
             this.constructor.create(this.context);
-            i++;
-            progressMeter.setAbsolute(i / max);
+            progressMeter.increment();
             for (Map.Entry<String, InstanceMethodContainer<T>> container : methods.entrySet()) {
                 container.getValue().create(this.context, VarType.this.getName(), container.getKey());
-                i++;
-                progressMeter.setAbsolute(i / max);
+                progressMeter.increment();
             }
             progressMeter.complete();
         }
 
         public void bakeMethods() {
-            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Baking " + VarType.this.getName(), this.methods.size());
+            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Baking " + VarType.this.getName(), this.methods.size() + 1);
             progressMeter.setAbsolute(0);
-            int i = 0;
-            int max = methods.size() + 1;
-            constructor.bake(VarType.this.getName(), "Constructor");
-            i++;
-            progressMeter.setAbsolute(i / max);
+            this.constructor.bake(VarType.this.getName(), "Constructor");
+            progressMeter.increment();
             for (Map.Entry<String, InstanceMethodContainer<T>> container : methods.entrySet()) {
                 container.getValue().bake(VarType.this.getName(), container.getKey());
-                i++;
-                progressMeter.setAbsolute(i / max);
+                progressMeter.increment();
             }
+            progressMeter.complete();
         }
 
         //loading
