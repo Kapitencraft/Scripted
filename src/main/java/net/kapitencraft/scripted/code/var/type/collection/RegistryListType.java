@@ -25,7 +25,7 @@ public class RegistryListType<V> extends ListType<V> {
     }
 
     public MethodInstance<?> createInstance(String value) {
-        return ((Constructor) this.constructor).createInstance(value);
+        return null;
     }
 
     public class Constructor extends RegistryType<List<V>>.Constructor {

@@ -7,6 +7,6 @@ import net.minecraft.world.entity.Entity;
 public class EntityType<T extends Entity> extends VarType<T> {
     public EntityType(String name) {
         super(name, null, null, null, null, null, null);
-        setConstructor(context -> context.constructor().withParam("type", VarTypes.ENTITY_TYPE).withParam("level", VarTypes.LEVEL).executes((entityType, level) -> (T) entityType.create(level)));
+        addConstructor(context -> context.constructor().withParam("type", VarTypes.ENTITY_TYPE).withParam("level", VarTypes.LEVEL).executes((entityType, level) -> (T) entityType.create(level)));
     }
 }

@@ -9,7 +9,7 @@ public class ItemStackType extends VarType<ItemStack> {
 
     public ItemStackType() {
         super("ItemStack", null, null, null, null, null, null);
-        this.setConstructor(context -> context.constructor()
+        this.addConstructor(context -> context.constructor()
                 .withParam("item", VarTypes.ITEM)
                 .executes(ItemStack::new)
                 .withParam("count", VarTypes.INTEGER)

@@ -3,13 +3,13 @@ package net.kapitencraft.scripted.code.exe.functions.builtin;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.kap_lib.io.JsonHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.functions.abstracts.Function;
 import net.kapitencraft.scripted.code.exe.methods.core.Method;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
 import net.kapitencraft.scripted.code.var.VarMap;
 import net.kapitencraft.scripted.code.var.analysis.VarAnalyser;
-import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,7 +43,7 @@ public class IfFunction extends Function {
         return new Instance<>(main.getFirst(), main.getSecond(), elifs, elseBody);
     }
 
-    public class Instance<T> extends Function.Instance {
+    public static class Instance<T> extends Function.Instance {
         private final MethodPipeline<T> body;
         private final MethodInstance<Boolean> condition;
         private final List<Pair<MethodInstance<Boolean>, MethodPipeline<T>>> elifs;

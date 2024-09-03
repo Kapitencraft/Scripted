@@ -1,12 +1,15 @@
-package net.kapitencraft.scripted.code.exe.methods.builder;
+package net.kapitencraft.scripted.code.exe.methods.builder.container;
 
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.code.exe.methods.builder.Parenter;
+import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
 public class MethodContainer {
@@ -15,13 +18,24 @@ public class MethodContainer {
 
 
 
-    public void bake() {
-        unbaked.forEach(returning -> {
-            if (returning instanceof Parenter<?> parenter) {
-                returning = parenter.getRootParent();
+    public void bake(String varTypeName, String methodName) {
+        int i = 0;
+        for (Returning<?> returning : unbaked) {
+            try {
+                if (returning instanceof Parenter<?> parenter) {
+                    returning = parenter.getRootParent();
+                }
+                returning.applyNodes(baked::add);
+            } catch (Exception e) {
+                CrashReport report = CrashReport.forThrowable(e, "Baking Methods of " + varTypeName);
+                report.addCategory("MethodInfo")
+                        .setDetail("Name", methodName)
+                        .setDetail("Index", i);
+
+                throw new ReportedException(report);
             }
-            returning.applyNodes(baked::add);
-        });
+            i++;
+        }
     }
 
     public <R> ReturningNode<R> getByIndex(int id) {
@@ -38,10 +52,6 @@ public class MethodContainer {
 
     public ArrayList<ReturningNode<?>> getBaked() {
         return baked;
-    }
-
-    public Pair<String, ReturningNode<?>> create(IntFunction<String> nameMapper, List<VarType<?>> types) {
-        return null;
     }
 
     public void registerElement(Returning<?> method) {

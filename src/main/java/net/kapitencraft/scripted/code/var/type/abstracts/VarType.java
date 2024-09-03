@@ -1,7 +1,5 @@
 package net.kapitencraft.scripted.code.var.type.abstracts;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.datafixers.util.Pair;
@@ -9,8 +7,9 @@ import net.kapitencraft.kap_lib.helpers.TextHelper;
 import net.kapitencraft.scripted.code.exe.MethodPipeline;
 import net.kapitencraft.scripted.code.exe.methods.builder.BuilderContext;
 import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
-import net.kapitencraft.scripted.code.exe.methods.builder.MethodContainer;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
+import net.kapitencraft.scripted.code.exe.methods.builder.container.ConstructorContainer;
+import net.kapitencraft.scripted.code.exe.methods.builder.container.InstanceMethodContainer;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.exe.methods.core.Method;
 import net.kapitencraft.scripted.code.exe.methods.core.MethodInstance;
@@ -28,6 +27,8 @@ import net.kapitencraft.scripted.code.var.type.collection.MultimapType;
 import net.kapitencraft.scripted.init.VarTypes;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
+import net.minecraft.CrashReport;
+import net.minecraft.ReportedException;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
@@ -85,10 +86,6 @@ public class VarType<T> {
      */
     private final MethodMap methods;
     /**
-     * the constructor; there can only be one
-     */
-    protected List<Function<BuilderContext<T>, Returning<T>>> constructor;
-    /**
      * fields...
      */
     private final FieldMap<T> fields;
@@ -103,7 +100,7 @@ public class VarType<T> {
     private final Comparator<T> comp;
 
     /**
-     * override in your own type to add {@link VarType#addMethod methods}, {@link VarType#addField fields} and a {@link VarType#setConstructor constructor}
+     * override in your own type to add {@link VarType#addMethod methods}, {@link VarType#addField fields} and a {@link VarType#addConstructor constructor}
      * @param name the code name of this type, following java conventions
      * @param add a method to compute two values using addition
      * @param mult similar for multiplication
@@ -146,7 +143,12 @@ public class VarType<T> {
      */
     @ApiStatus.Internal
     public void bakeMethods() {
-        this.methods.bakeMethods();
+        try {
+            this.methods.bakeMethods();
+        } catch (Exception e) {
+            CrashReport report = CrashReport.forThrowable(e, "Baking Method " + this.getName());
+            throw new ReportedException(report);
+        }
     }
 
     /**
@@ -156,6 +158,7 @@ public class VarType<T> {
     @ApiStatus.Internal
     public void createMethods() {
         this.methods.createMethods();
+
     }
 
     public MethodInstance<?> createMethod(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
@@ -163,7 +166,7 @@ public class VarType<T> {
     }
 
     public MethodInstance<T> buildConstructor(JsonObject object, VarAnalyser analyser) {
-        return null;
+        return this.methods.readConstructor(object, analyser);
     }
 
 
@@ -181,18 +184,19 @@ public class VarType<T> {
 
         //must be arraylist to keep index sensitivity
         private final BuilderContext<T> context = new BuilderContext<>(VarType.this);
-        private final HashMap<String, MethodContainer> byId = new HashMap<>();
-        private final Multimap<String, Function<BuilderContext<T>, InstMapper<T, ?>>> unbakedMethods = ArrayListMultimap.create();
-        private final ArrayList<ReturningNode<T>> constructorMethods = new ArrayList<>();
+        private final HashMap<String, InstanceMethodContainer<T>> methods = new HashMap<>();
+        private final ConstructorContainer<T> constructor = new ConstructorContainer<>();
 
         public void createMethods() {
-            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Registering " + VarType.this.getName(), this.unbakedMethods.size());
+            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Registering " + VarType.this.getName(), this.methods.size());
             progressMeter.setAbsolute(0);
             int i = 0;
-            int max = unbakedMethods.size();
-            for (Map.Entry<String, Function<BuilderContext<T>, InstMapper<T, ?>>> entry : unbakedMethods.entries()) {
-                byId.putIfAbsent(entry.getKey(), new MethodContainer());
-                byId.get(entry.getKey()).registerElement(entry.getValue().apply(context));
+            int max = methods.size() + 1;
+            this.constructor.create(this.context);
+            i++;
+            progressMeter.setAbsolute(i / max);
+            for (Map.Entry<String, InstanceMethodContainer<T>> container : methods.entrySet()) {
+                container.getValue().create(this.context, VarType.this.getName(), container.getKey());
                 i++;
                 progressMeter.setAbsolute(i / max);
             }
@@ -200,17 +204,21 @@ public class VarType<T> {
         }
 
         public void bakeMethods() {
-            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Baking " + VarType.this.getName(), this.unbakedMethods.size());
+            ProgressMeter progressMeter = StartupMessageManager.addProgressBar("Baking " + VarType.this.getName(), this.methods.size());
             progressMeter.setAbsolute(0);
             int i = 0;
-            int max = byId.size();
-            for (MethodContainer container : byId.values()) {
-                container.bake();
+            int max = methods.size() + 1;
+            constructor.bake(VarType.this.getName(), "Constructor");
+            i++;
+            progressMeter.setAbsolute(i / max);
+            for (Map.Entry<String, InstanceMethodContainer<T>> container : methods.entrySet()) {
+                container.getValue().bake(VarType.this.getName(), container.getKey());
                 i++;
                 progressMeter.setAbsolute(i / max);
             }
         }
 
+        //loading
         private <R> MethodInstance<R> readMethod(JsonObject object, VarAnalyser analyser) {
             String serializedId = GsonHelper.getAsString(object, "type");
             Matcher matcher = SERIALIZED_ID_PATTERN.matcher(serializedId);
@@ -220,17 +228,30 @@ public class VarType<T> {
             if (!Objects.equals(matcher.group(1), VarType.this.getName())) {
                 throw new IllegalAccessError("attempting to get method '" + matcher.group(2) + "' from wrong VarType (expected: '" + matcher.group(1) + "', but got: '" + VarType.this.getName() + "'");
             }
-            ReturningNode<R> node = this.byId.get(matcher.group(2)).getByIndex(Integer.parseInt(matcher.group(3)));
+            ReturningNode<R> node = this.methods.get(matcher.group(2)).getByIndex(Integer.parseInt(matcher.group(3)));
             return node.loadInst(object, analyser);
         }
 
-        public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
-            this.unbakedMethods.put(name, method);
+        public MethodInstance<T> readConstructor(JsonObject object, VarAnalyser analyser) {
+            String type = GsonHelper.getAsString(object, "type");
+            int index = Integer.parseInt(type.split("\\$")[1]);
+            return this.constructor.getByIndex(index).loadInst(object, analyser);
         }
 
-        public Pair<String, ReturningNode<?>> getOrThrow(String name, List<? extends VarType<?>> types) throws IllegalArgumentException {
-            if (byId.containsKey(name)) {
-                Pair<ReturningNode<?>, Integer> methodAndId = byId.get(name).getMethodAndId(types);
+        //registering
+        public void registerMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> method) {
+            this.methods.putIfAbsent(name, new InstanceMethodContainer<>());
+            this.methods.get(name).register(method);
+        }
+
+        public void registerConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
+            this.constructor.register(constructor);
+        }
+
+        //using methods
+        public Pair<String, ReturningNode<?>> getMethodOrThrow(String name, List<? extends VarType<?>> types) throws IllegalArgumentException {
+            if (methods.containsKey(name)) {
+                Pair<ReturningNode<?>, Integer> methodAndId = methods.get(name).getMethodAndId(types);
                 return Pair.of(VarType.this.getName() + "#" + name + "$" + methodAndId.getSecond(), methodAndId.getFirst());
             } else {
                 return throwNoMethod(name);
@@ -238,10 +259,20 @@ public class VarType<T> {
         }
 
         public List<ReturningNode<?>> getMethod(String name) {
-            if (byId.containsKey(name)) {
-                return byId.get(name).getBaked();
+            if (methods.containsKey(name)) {
+                return methods.get(name).getBaked();
             }
             return throwNoMethod(name);
+        }
+
+        //using constructors
+        public Pair<String, ReturningNode<?>> getConstructorOrThrow(List<? extends VarType<?>> types) throws IllegalArgumentException {
+            Pair<ReturningNode<?>, Integer> methodAndId = constructor.getMethodAndId(types);
+            return Pair.of("new" + VarType.this.getName() + "$" + methodAndId.getSecond(), methodAndId.getFirst());
+        }
+
+        public List<ReturningNode<?>> getConstructor() {
+            return constructor.getBaked();
         }
 
         //make method have return type to prevent compiler from crying
@@ -249,9 +280,15 @@ public class VarType<T> {
             throw new IllegalArgumentException("unknown method with name '" + name + "' in VarType '" + VarType.this.getName() + "'");
         }
 
+        //creating
         public MethodInstance<?> createMethodInstance(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
-            Pair<String, ReturningNode<?>> pair = getOrThrow(name, methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
+            Pair<String, ReturningNode<?>> pair = getMethodOrThrow(name, methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
             return null;
+        }
+
+        public MethodInstance<?> createConstructorInstance(VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
+            Pair<String, ReturningNode<?>> pair = getConstructorOrThrow(methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
+            return null; //TODO fix
         }
     }
 
@@ -271,8 +308,8 @@ public class VarType<T> {
         this.fields.addField(name, new Field<>(name, getter, setter, typeSupplier));
     }
 
-    protected void setConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
-        this.constructor.add(constructor);
+    protected void addConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
+        this.methods.registerConstructor(constructor);
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ListType<T> extends VarType<List<T>> {
         super("List<" + type.getName() + ">", null, null, null, null, null, null);
         this.type = type;
 
-        this.setConstructor(context -> context.constructor().executes(ArrayList::new));
+        this.addConstructor(context -> context.constructor().executes(ArrayList::new));
 
         this.addMethod("get", context -> context.returning(type)
                 .withParam("index", VarTypes.INTEGER)

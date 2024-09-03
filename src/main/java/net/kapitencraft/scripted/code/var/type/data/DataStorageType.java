@@ -7,6 +7,6 @@ public class DataStorageType extends VarType<CompoundTag> {
 
     public DataStorageType() {
         super("DataStorage", null, null, null, null, null, null);
-        this.setConstructor(context -> context.constructor().executes(CompoundTag::new));
+        this.addConstructor(context -> context.constructor().executes(CompoundTag::new));
     }
 }
