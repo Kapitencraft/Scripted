@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.gson.JsonElement;
 import net.kapitencraft.kap_lib.helpers.IOHelper;
 import net.kapitencraft.kap_lib.io.JsonHelper;
+import net.kapitencraft.scripted.Markers;
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.code.script.Script;
 import net.kapitencraft.scripted.code.script.type.ScriptType;
@@ -44,7 +45,7 @@ public class ScriptManager extends SimpleJsonResourceReloadListener {
                     String name = directories[directories.length - 1];
                     map.put(location.withPath(location.getPath() + "/" + name.replace("." + scriptType.getFileSuffix(), "")), JsonHelper.GSON.fromJson(new FileReader(file), JsonElement.class));
                 } catch (FileNotFoundException e) {
-                    Scripted.LOGGER.warn("error loading script: {}", e.getMessage());
+                    Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error finding script: {}", e.getMessage());
                 }
             });
         });
@@ -54,10 +55,14 @@ public class ScriptManager extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> data, ResourceManager pResourceManager, ProfilerFiller pProfiler) {
         data.forEach((resourceLocation, jsonElement) -> {
-            ResourceLocation elementId = resourceLocation.withPath(resourceLocation.getPath().split("/")[0]);
-            ScriptType<?, ?> type = ModRegistries.SCRIPT_TYPES.getValue(elementId);
-            assert type != null;
-            this.scripts.put(type, type.load(jsonElement));
+            try {
+                ResourceLocation elementId = resourceLocation.withPath(resourceLocation.getPath().split("/")[0]);
+                ScriptType<?, ?> type = ModRegistries.SCRIPT_TYPES.getValue(elementId);
+                assert type != null;
+                this.scripts.put(type, type.load(jsonElement));
+            } catch (Exception e) {
+                Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error loading script: {}", e.getMessage());
+            }
         });
     }
 }
