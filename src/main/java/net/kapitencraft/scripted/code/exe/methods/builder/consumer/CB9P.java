@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.code.exe.methods.builder.InstMapper;
 import net.kapitencraft.scripted.code.exe.methods.builder.ParamInst;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
+import net.kapitencraft.scripted.code.exe.methods.builder.node.consumer.CN9P;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 
 import java.util.function.Consumer;
@@ -61,6 +62,8 @@ public class CB9P<P1, P2, P3, P4, P5, P6, P7, P8, P9> implements InstMapper<P1, 
 
     @Override
     public void applyNodes(Consumer<ReturningNode<Void>> consumer) {
+        if (this.executor != null) consumer.accept(new CN9P<>(param1, param2, param3, param4, param5, param6, param7, param8, param9, executor));
+        if (!this.children.isEmpty()) this.children.actualValues().forEach(mb -> mb.applyNodes(consumer));
 
     }
 }

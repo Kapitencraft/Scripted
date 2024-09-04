@@ -133,10 +133,19 @@ public class JavaCompiler extends Compiler {
                     MethodPipeline<?> pipeline = castPipeline(retType, analyser, true);
                     yield WhileLoopFunction.create(condition, pipeline);
                 }
+                case CONTINUE_IDENTIFIER: yield ModFunctions.CONTINUE.get().create();
+                case BREAK_IDENTIFIER: yield ModFunctions.BREAK.get().create();
+                case RETURN_IDENTIFIER: castReturn(analyser, retType);
                 case MODIFIER:
                 case VAR_TYPE: yield castCreateAndSetVarFunction(analyser);
                 default: yield castMethod(analyser);
             };
+        }
+
+        private <T> void castReturn(VarAnalyser analyser, VarType<T> retType) {
+            if (retType == VarTypes.VOID.get()) {
+                assertType(Token.Type.EXPR_END);
+            }
         }
 
         private <T> IfFunction.Instance<T> castIf(VarAnalyser analyser, VarType<T> retType) {
@@ -287,6 +296,10 @@ public class JavaCompiler extends Compiler {
 
         private Token.Type nextType() {
             pos++;
+            if (current().type == Token.Type.NEW_LINE) {
+                line++;
+                return nextType();
+            }
             return current().type;
         }
 

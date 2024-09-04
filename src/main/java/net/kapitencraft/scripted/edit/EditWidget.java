@@ -29,6 +29,8 @@ public class EditWidget extends ScrollableWidget {
     protected void updateScroll(boolean b) {
     }
 
+
+
     @Override
     protected int valueSize(boolean b) {
         return 0;

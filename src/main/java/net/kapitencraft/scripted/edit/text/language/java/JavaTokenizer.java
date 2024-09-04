@@ -140,6 +140,9 @@ public class JavaTokenizer extends Tokenizer {
             case "do" -> tokens.add(new Token("do", Token.Type.DO_IDENTIFIER));
             case "while" -> tokens.add(new Token("while", Token.Type.WHILE_IDENTIFIER));
             case "for" -> tokens.add(new Token("for", Token.Type.FOR_IDENTIFIER));
+            case "return" -> tokens.add(new Token("return", Token.Type.RETURN_IDENTIFIER));
+            case "break" -> tokens.add(new Token("break", Token.Type.BREAK_IDENTIFIER));
+            case "continue" -> tokens.add(new Token("continue", Token.Type.CONTINUE_IDENTIFIER));
             default -> {
                 if (toTokenize.contains(":")) { //is registry-element or -list (or when mod)
                     String regKey = toTokenize.substring(0, toTokenize.indexOf(":"));

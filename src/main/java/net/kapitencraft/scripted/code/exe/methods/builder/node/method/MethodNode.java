@@ -24,6 +24,11 @@ public class MethodNode<R> implements ReturningNode<R> {
         this.executor = executor;
     }
 
+    @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of();
+    }
+
     public MethodInstance<R> createInst(String methodId, List<MethodInstance<?>> ignored) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
         return new Instance(methodId);

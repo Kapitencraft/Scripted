@@ -25,7 +25,7 @@ public class MethodContainer {
                 if (returning instanceof Parenter<?> parenter) {
                     returning = parenter.getRootParent();
                 }
-                returning.applyNodes(baked::add);
+                returning.applyNodes(this::checkVarTypeDupeAndAdd);
             } catch (Exception e) {
                 CrashReport report = CrashReport.forThrowable(e, "Baking Methods of " + varTypeName);
                 report.addCategory("MethodInfo")
@@ -36,6 +36,14 @@ public class MethodContainer {
             }
             i++;
         }
+    }
+
+    private void checkVarTypeDupeAndAdd(ReturningNode<?> node) {
+        this.baked.stream().filter(node1 -> node1.getParamCount() == node.getParamCount()).filter(node1 -> node1.matchesTypes(node.getTypes()))
+                .findAny()
+                .ifPresent(node1 -> {
+                    throw new IllegalArgumentException("duplicate method declaration with signature " + node1.getTypes().stream().map(VarType::getRegName).collect(Collectors.joining()));
+                });
     }
 
     public <R> ReturningNode<R> getByIndex(int id) {

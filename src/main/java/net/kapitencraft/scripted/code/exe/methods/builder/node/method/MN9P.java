@@ -45,6 +45,21 @@ public class MN9P<R, P1, P2, P3, P4, P5, P6, P7, P8, P9> implements ReturningNod
         this.executor = executor;
     }
 
+    @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of(
+                param1.type(),
+                param2.type(),
+                param3.type(),
+                param4.type(),
+                param5.type(),
+                param6.type(),
+                param7.type(),
+                param8.type(),
+                param9.type()
+        );
+    }
+
     public MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
         return new Instance(GsonHelper.getAsString(object, "type"),

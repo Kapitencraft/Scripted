@@ -38,6 +38,17 @@ public class MN5P<R, P1, P2, P3, P4, P5> implements ReturningNode<R> {
     }
 
     @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of(
+                param1.type(),
+                param2.type(),
+                param3.type(),
+                param4.type(),
+                param5.type()
+        );
+    }
+
+    @Override
     public boolean matchesTypes(List<? extends VarType<?>> types) {
         return param1.type() == types.get(0) &&
                param2.type() == types.get(1) &&

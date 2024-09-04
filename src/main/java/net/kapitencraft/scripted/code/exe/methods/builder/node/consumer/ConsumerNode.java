@@ -36,6 +36,11 @@ public class ConsumerNode implements ReturningNode<Void> {
     }
 
     @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of();
+    }
+
+    @Override
     public boolean matchesTypes(List<? extends VarType<?>> types) {
         return true;
     }

@@ -27,6 +27,13 @@ public class CN1P<P1> implements ReturningNode<Void> {
     }
 
     @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of(
+                param1.type()
+        );
+    }
+
+    @Override
     public MethodInstance<Void> createInst(String methodId, List<MethodInstance<?>> params) {
         return new Instance(methodId,
                 (MethodInstance<P1>) params.get(0)

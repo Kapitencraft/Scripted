@@ -12,22 +12,22 @@ import net.minecraft.util.GsonHelper;
 public class CreateVarFunction extends Function {
 
     @Override
-    public Instance load(JsonObject object, VarAnalyser analyser) {
+    public Function.Instance load(JsonObject object, VarAnalyser analyser) {
         return load(object);
     }
 
-    private Instance load(JsonObject object) {
+    private Function.Instance load(JsonObject object) {
         String name = GsonHelper.getAsString(object, "name");
         VarType<?> varType = JsonHelper.readType(object, "var_type");
         boolean isFinal = GsonHelper.getAsBoolean(object, "isFinal");
         return create(name, varType, isFinal);
     }
 
-    public Instance create(String name, VarType<?> type, boolean isFinal) {
+    public Function.Instance create(String name, VarType<?> type, boolean isFinal) {
         return new Instance(name, type, isFinal);
     }
 
-    public class Instance extends Function.Instance {
+    private static class Instance extends Function.Instance {
         private final String name;
         private final VarType<?> type;
         private final boolean isFinal;

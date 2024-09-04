@@ -16,4 +16,6 @@ public interface ReturningNode<R> {
     MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser);
 
     boolean matchesTypes(List<? extends VarType<?>> types);
+
+    List<? extends VarType<?>> getTypes();
 }

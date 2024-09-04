@@ -33,6 +33,15 @@ public class MN3P<R, P1, P2, P3> implements ReturningNode<R> {
         this.executor = executor;
     }
 
+    @Override
+    public List<? extends VarType<?>> getTypes() {
+        return List.of(
+                param1.type(),
+                param2.type(),
+                param3.type()
+        );
+    }
+
     public MethodInstance<R> loadInst(JsonObject object, VarAnalyser analyser) {
         if (executor == null) throw new IllegalAccessError("can not create a Method without executor");
         return new Instance(GsonHelper.getAsString(object, "type"),

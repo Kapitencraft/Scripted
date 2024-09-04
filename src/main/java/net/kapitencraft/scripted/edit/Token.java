@@ -22,6 +22,7 @@ public class Token {
         ASSIGN(Category.OPERATION), ASSIGN_WITH_OPERATION(Category.OPERATION),
         MODIFIER(Category.KEY_WORD), VAR_TYPE(Category.VAR_TYPE), METHOD_NAME(null), VAR_NAME(null),
         FOR_IDENTIFIER(Category.KEY_WORD), IF_IDENTIFIER(Category.KEY_WORD), ELSE_IDENTIFIER(Category.KEY_WORD), WHILE_IDENTIFIER(Category.KEY_WORD), DO_IDENTIFIER(Category.KEY_WORD),
+        RETURN_IDENTIFIER(Category.KEY_WORD), BREAK_IDENTIFIER(Category.KEY_WORD), CONTINUE_IDENTIFIER(Category.KEY_WORD),
         SEPARATOR(null),
         EXPR_END(null),
         NEXT_PARAM(null),

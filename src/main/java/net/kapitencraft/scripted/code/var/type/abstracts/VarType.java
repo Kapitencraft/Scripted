@@ -125,6 +125,15 @@ public class VarType<T> {
         this.fields = new FieldMap<>();
     }
 
+    public String getName() {
+        return this.name;
+    }
+
+    public String getRegName() {
+        return "L" + Objects.requireNonNull(ModRegistries.VAR_TYPES.getKey(this), "unknown VarType for class " + this.getClass().getCanonicalName()).toString().replaceAll(":", "/") + ";";
+    }
+
+
     public MethodInstance<?> buildMethod(JsonObject object, VarAnalyser analyser) {
         return !object.has("params") ? createFieldReference(object, analyser) : methods.readMethod(object, analyser);
     }
@@ -297,10 +306,21 @@ public class VarType<T> {
         this.methods.registerMethod(in, builder);
     }
 
+    /**
+     * add a field to this Type
+     * @param name name of the field
+     * @param getter getter of the field
+     * @param setter setter of the field (might be null if final)
+     * @param typeSupplier type of the field
+     */
     protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> typeSupplier) {
         this.fields.addField(name, new Field<>(name, getter, setter, typeSupplier));
     }
 
+    /**
+     * add a constructor to this type
+     * @param constructor the constructor to add
+     */
     protected void addConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
         this.methods.registerConstructor(constructor);
     }
@@ -348,10 +368,6 @@ public class VarType<T> {
 
     public VarType<List<T>> listOf() {
         return new ListType<>(this);
-    }
-
-    public String getName() {
-        return this.name;
     }
 
     //Instance Methods/Functions/Constructors/Fields
@@ -490,92 +506,10 @@ public class VarType<T> {
         return (InstanceMethod<J>.Instance) fieldReferenceInst.create(getFieldForName(name), in);
     }
 
-    //Functions
-    public abstract class InstanceFunction extends InstanceMethod<Void> {
-
-        @Override
-        public InstanceMethod<Void>.Instance load(VarAnalyser analyser, MethodInstance<T> parent, JsonObject other) {
-            return loadInstance(other, analyser, parent);
-        }
-
-        public abstract Instance loadInstance(JsonObject object, VarAnalyser analyser, MethodInstance<T> inst);
-
-        public abstract class Instance extends InstanceMethod<Void>.Instance {
-
-            protected Instance(String id, MethodInstance<T> parent) {
-                super(id, parent);
-            }
-
-            @Override
-            public VarType<Void> getType(IVarAnalyser analyser) {
-                return VarTypes.VOID.get();
-            }
-
-            @Override
-            public final Void call(VarMap map, MethodPipeline<?> pipeline, T inst) {
-                executeInstanced(map, pipeline, inst);
-                return null; //always return null
-            }
-
-            protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, T instance);
-        }
-    }
-
-    protected abstract class SimpleInstanceFunction extends InstanceFunction {
-
-        protected abstract void executeInstanced(VarMap map, MethodPipeline<?> source, T instance);
-
-        @Override
-        public InstanceFunction.Instance loadInstance(JsonObject object, VarAnalyser analyser, MethodInstance<T> inst) {
-            return new Instance(GsonHelper.getAsString(object, "type"), inst);
-        }
-
-        private class Instance extends InstanceFunction.Instance {
-
-            protected Instance(String id, MethodInstance<T> parent) {
-                super(id, parent);
-            }
-
-            @Override
-            protected void executeInstanced(VarMap map, MethodPipeline<?> source, T instance) {
-                SimpleInstanceFunction.this.executeInstanced(map, source, instance);
-            }
-        }
-    }
-
     //Constructor
     public abstract class Constructor extends Method<T> {
 
         public abstract MethodInstance<T> construct(JsonObject object, VarAnalyser analyser);
-    }
-
-    protected abstract class SimpleConstructor extends Constructor {
-
-        protected abstract T call(VarMap params);
-
-        protected abstract VarType<T> getType(IVarAnalyser analyser);
-
-        @Override
-        public MethodInstance<T> construct(JsonObject object, VarAnalyser analyser) {
-            return new Instance(GsonHelper.getAsString(object, "type"));
-        }
-
-        private class Instance extends MethodInstance<T> {
-
-            private Instance(String id) {
-                super(id);
-            }
-
-            @Override
-            public T call(VarMap origin, MethodPipeline<?> pipeline) {
-                return SimpleConstructor.this.call(origin);
-            }
-
-            @Override
-            public VarType<T> getType(IVarAnalyser analyser) {
-                return SimpleConstructor.this.getType(analyser);
-            }
-        }
     }
 
     //Comparators

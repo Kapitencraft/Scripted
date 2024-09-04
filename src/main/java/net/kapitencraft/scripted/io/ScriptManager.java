@@ -41,11 +41,12 @@ public class ScriptManager extends SimpleJsonResourceReloadListener {
                 String[] directories = path.split("\\\\");
                 ResourceLocation location = ModRegistries.SCRIPT_TYPES.getKey(scriptType);
                 assert location != null;
+                String name = directories[directories.length - 1];
+                location = location.withPath(location.getPath() + "/" + name.replace("." + scriptType.getFileSuffix(), ""));
                 try {
-                    String name = directories[directories.length - 1];
-                    map.put(location.withPath(location.getPath() + "/" + name.replace("." + scriptType.getFileSuffix(), "")), JsonHelper.GSON.fromJson(new FileReader(file), JsonElement.class));
+                    map.put(location, JsonHelper.GSON.fromJson(new FileReader(file), JsonElement.class));
                 } catch (FileNotFoundException e) {
-                    Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error finding script: {}", e.getMessage());
+                    Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error finding script '{}': {}", location, e.getMessage());
                 }
             });
         });
@@ -61,7 +62,7 @@ public class ScriptManager extends SimpleJsonResourceReloadListener {
                 assert type != null;
                 this.scripts.put(type, type.load(jsonElement));
             } catch (Exception e) {
-                Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error loading script: {}", e.getMessage());
+                Scripted.LOGGER.warn(Markers.SCRIPT_MANAGER, "error loading script '{}': {}", resourceLocation, e.getMessage());
             }
         });
     }
