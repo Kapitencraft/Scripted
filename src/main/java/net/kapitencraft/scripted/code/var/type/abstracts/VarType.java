@@ -24,14 +24,18 @@ import net.kapitencraft.scripted.code.var.type.ItemStackType;
 import net.kapitencraft.scripted.code.var.type.collection.ListType;
 import net.kapitencraft.scripted.code.var.type.collection.MapType;
 import net.kapitencraft.scripted.code.var.type.collection.MultimapType;
+import net.kapitencraft.scripted.event.custom.RegisterExtraMethodsEvent;
 import net.kapitencraft.scripted.init.VarTypes;
 import net.kapitencraft.scripted.init.custom.ModCallbacks;
 import net.kapitencraft.scripted.init.custom.ModRegistries;
+import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
+import net.minecraftforge.fml.ModLoader;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.loading.progress.ProgressMeter;
 import org.jetbrains.annotations.ApiStatus;
@@ -167,8 +171,12 @@ public class VarType<T> {
     @ApiStatus.Internal
     public void createMethods() {
         this.methods.createMethods();
-
     }
+
+    public void fireExtraMethodsEvent() {
+        ModLoader.get().postEvent(new RegisterExtraMethodsEvent<>(this));
+    }
+
 
     public MethodInstance<?> createMethod(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
         return this.methods.createMethodInstance(name, analyser, methodInstances);
@@ -177,7 +185,6 @@ public class VarType<T> {
     public MethodInstance<T> buildConstructor(JsonObject object, VarAnalyser analyser) {
         return this.methods.readConstructor(object, analyser);
     }
-
 
     /**
      * method container for all methods inside this type;
@@ -284,44 +291,48 @@ public class VarType<T> {
 
         //creating
         public MethodInstance<?> createMethodInstance(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
-            Pair<String, ReturningNode<?>> pair = getMethodOrThrow(name, methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
-            return null;
+            List<? extends VarType<?>> types = methodInstances.stream().map(inst -> inst.getType(analyser)).toList();
+            Pair<String, ReturningNode<?>> pair = getMethodOrThrow(name, types);
+            if (pair != null) {
+                return pair.getSecond().createInst(pair.getFirst(), methodInstances);
+            }
+            throw new IllegalArgumentException("could not resolve method " + name + "'s signature with " + JsonHelper.getSignature(types));
         }
 
         public MethodInstance<?> createConstructorInstance(VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
+            List<? extends VarType<?>> types = methodInstances.stream().map(inst -> inst.getType(analyser)).toList();
             Pair<String, ReturningNode<?>> pair = getConstructorOrThrow(methodInstances.stream().map(inst -> inst.getType(analyser)).toList());
-            return null; //TODO fix
+            return pair.getSecond().createInst(pair.getFirst(), methodInstances);
         }
-    }
-
-    public List<ReturningNode<?>> getMethodsForName(String name) {
-        return methods.getMethod(name);
     }
 
     /**
      * adds a new Method to be registered
+     * <br> call in child constructor or {@link RegisterExtraMethodsEvent} only
      * @param builder the builder
      */
-    protected void addMethod(String in, Function<BuilderContext<T>, InstMapper<T, ?>> builder) {
-        this.methods.registerMethod(in, builder);
+    public void addMethod(String name, Function<BuilderContext<T>, InstMapper<T, ?>> builder) {
+        this.methods.registerMethod(name, builder);
     }
 
     /**
      * add a field to this Type
+     * <br> call in child constructor or {@link RegisterExtraMethodsEvent} only
      * @param name name of the field
      * @param getter getter of the field
      * @param setter setter of the field (might be null if final)
      * @param typeSupplier type of the field
      */
-    protected <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> typeSupplier) {
+    public <J> void addField(String name, Function<T, J> getter, BiConsumer<T, J> setter, @NotNull Supplier<? extends VarType<J>> typeSupplier) {
         this.fields.addField(name, new Field<>(name, getter, setter, typeSupplier));
     }
 
     /**
      * add a constructor to this type
+     * <br> call in child constructor or {@link RegisterExtraMethodsEvent} only
      * @param constructor the constructor to add
      */
-    protected void addConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
+    public void addConstructor(Function<BuilderContext<T>, Returning<T>> constructor) {
         this.methods.registerConstructor(constructor);
     }
 
@@ -331,10 +342,6 @@ public class VarType<T> {
     }
 
     //Comparing & math operation
-
-    public boolean matches(VarType<?> otherType) {
-        return this == otherType;
-    }
 
     public T multiply(T a, T b) {
         return mult.apply(a, b);

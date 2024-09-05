@@ -8,7 +8,9 @@ import net.kapitencraft.scripted.init.custom.ModRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public interface JsonHelper {
@@ -23,5 +25,9 @@ public interface JsonHelper {
 
     static Stream<JsonObject> castToObjects(JsonArray array) {
         return array.asList().stream().filter(JsonElement::isJsonObject).map(JsonElement::getAsJsonObject);
+    }
+
+    static String getSignature(List<? extends VarType<?>> types) {
+        return types.stream().map(VarType::getRegName).collect(Collectors.joining());
     }
 }

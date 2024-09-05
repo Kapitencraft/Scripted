@@ -7,12 +7,15 @@ import net.kapitencraft.scripted.code.var.type.abstracts.RegistryType;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.StartupMessageManager;
+import net.minecraftforge.fml.loading.progress.ProgressMeter;
 import net.minecraftforge.registries.IForgeRegistry;
 import net.minecraftforge.registries.IForgeRegistryInternal;
 import net.minecraftforge.registries.RegistryManager;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -67,8 +70,15 @@ public class ModCallbacks {
 
         @Override
         public void onBake(IForgeRegistryInternal<VarType<?>> owner, RegistryManager stage) {
-            owner.getValues().forEach(VarType::createMethods);
-            owner.getValues().forEach(VarType::bakeMethods);
+            Collection<VarType<?>> collection = owner.getValues();
+            ProgressMeter meter = StartupMessageManager.addProgressBar("Firing Extra Method Events...", collection.size());
+            collection.forEach(varType -> {
+                varType.fireExtraMethodsEvent();
+                meter.increment();
+            });
+            meter.complete();
+            collection.forEach(VarType::createMethods);
+            collection.forEach(VarType::bakeMethods);
         }
     }
 }

@@ -23,12 +23,6 @@ public abstract class MethodInstance<T> {
         return new Var<>(this.getType(origin), this.call(origin, pipeline), true);
     }
 
-    public boolean matchesType(VarAnalyser analyser, MethodInstance<?> other) {
-        VarType<T> type = this.getType(analyser);
-        VarType<?> otherType = other.getType(analyser);
-        return type.matches(otherType);
-    }
-
     //save
     /**
      * use to add more information to the save.

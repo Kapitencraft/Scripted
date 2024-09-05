@@ -5,6 +5,7 @@ import net.kapitencraft.scripted.code.exe.methods.builder.Parenter;
 import net.kapitencraft.scripted.code.exe.methods.builder.Returning;
 import net.kapitencraft.scripted.code.exe.methods.builder.node.ReturningNode;
 import net.kapitencraft.scripted.code.var.type.abstracts.VarType;
+import net.kapitencraft.scripted.util.JsonHelper;
 import net.minecraft.CrashReport;
 import net.minecraft.ReportedException;
 
@@ -42,7 +43,7 @@ public class MethodContainer {
         this.baked.stream().filter(node1 -> node1.getParamCount() == node.getParamCount()).filter(node1 -> node1.matchesTypes(node.getTypes()))
                 .findAny()
                 .ifPresent(node1 -> {
-                    throw new IllegalArgumentException("duplicate method declaration with signature " + node1.getTypes().stream().map(VarType::getRegName).collect(Collectors.joining()));
+                    throw new IllegalArgumentException("duplicate method declaration with signature " + JsonHelper.getSignature(node1.getTypes()));
                 });
     }
 
