@@ -19,4 +19,9 @@ public class MultimapType<K, V> extends VarType<Multimap<K, V>> {
         this.key = key;
         this.value = value;
     }
+
+    @Override
+    public Class<Multimap<K, V>> getTypeClass() {
+        return null;
+    }
 }

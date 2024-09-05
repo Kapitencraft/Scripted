@@ -35,7 +35,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.loading.progress.ProgressMeter;
 import org.jetbrains.annotations.ApiStatus;
@@ -50,13 +49,15 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VarType<T> {
+public abstract class VarType<T> {
     /**
      * contains a check for any un-allowed name patterns
      */
     private static final Pattern NAME_BLOCKED = Pattern.compile("(^primtive\\$)|(^\\d)|([\\W&&[^<>,]])");
 
+    //Slave maps
     public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.NAME_MAP, Map.class);
+    public static final Map<Class<?>, VarType<?>> CLASS_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.CLASS_MAP, Map.class);
 
     public static <T> VarType<T> read(String string) {
         string = string.replaceAll(" ", "");
@@ -178,6 +179,7 @@ public class VarType<T> {
     }
 
 
+    //creating instances
     public MethodInstance<?> createMethod(String name, VarAnalyser analyser, List<MethodInstance<?>> methodInstances) {
         return this.methods.createMethodInstance(name, analyser, methodInstances);
     }
@@ -185,6 +187,10 @@ public class VarType<T> {
     public MethodInstance<T> buildConstructor(JsonObject object, VarAnalyser analyser) {
         return this.methods.readConstructor(object, analyser);
     }
+
+
+    //reflective class loading
+    public abstract Class<T> getTypeClass();
 
     /**
      * method container for all methods inside this type;

@@ -13,4 +13,9 @@ public class Vec2Type extends VarType<Vec2> {
                 (vec2, vec22) -> new Vec2(vec2.x % vec22.x, vec2.y % vec22.y),
                 null);
     }
+
+    @Override
+    public Class<Vec2> getTypeClass() {
+        return Vec2.class;
+    }
 }

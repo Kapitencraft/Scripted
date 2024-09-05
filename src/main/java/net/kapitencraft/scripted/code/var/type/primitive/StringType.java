@@ -11,6 +11,11 @@ public class StringType extends PrimitiveType<String> {
         super("String", (s, s1) -> s + s1, null, null, null, null, String::compareTo);
     }
 
+    @Override
+    public Class<String> getTypeClass() {
+        return String.class;
+    }
+
     public static MethodInstance<?> readInstance(String string) {
         return (VarTypes.STRING.get()).readPrimitiveInstance(string);
     }

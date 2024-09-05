@@ -9,4 +9,9 @@ public class VoidType extends VarType<Void> {
     public VoidType() {
         super("void", null, null, null, null, null, null);
     }
+
+    @Override
+    public Class<Void> getTypeClass() {
+        return void.class; //cursed
+    }
 }

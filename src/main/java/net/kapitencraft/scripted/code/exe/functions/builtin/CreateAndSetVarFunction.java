@@ -29,7 +29,7 @@ public class CreateAndSetVarFunction extends Function {
         return new Instance<>(name, creator, type, isFinal);
     }
 
-    public class Instance<T> extends Function.Instance {
+    public static class Instance<T> extends Function.Instance {
         private final String varName;
         private final VarType<T> type;
         private final boolean isFinal;

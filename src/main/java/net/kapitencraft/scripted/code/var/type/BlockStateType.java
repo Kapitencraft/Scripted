@@ -17,4 +17,9 @@ public class BlockStateType extends VarType<BlockState> {
     public static Collection<Property<?>> getProperties(Var<Block> blockVar) {
         return blockVar.getValue().getStateDefinition().getProperties();
     }
+
+    @Override
+    public Class<BlockState> getTypeClass() {
+        return BlockState.class;
+    }
 }

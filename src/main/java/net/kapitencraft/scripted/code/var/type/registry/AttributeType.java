@@ -8,4 +8,9 @@ public class AttributeType extends RegistryType<Attribute> {
     public AttributeType() {
         super("Attribute", ForgeRegistries.ATTRIBUTES);
     }
+
+    @Override
+    public Class<Attribute> getTypeClass() {
+        return Attribute.class;
+    }
 }

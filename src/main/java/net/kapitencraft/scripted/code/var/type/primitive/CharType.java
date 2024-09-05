@@ -12,6 +12,11 @@ public class CharType extends PrimitiveType<Character> {
         super("char", null, null, null, null, null, Character::compareTo);
     }
 
+    @Override
+    public Class<Character> getTypeClass() {
+        return char.class;
+    }
+
     public static MethodInstance<?> read(char value) {
         return VarTypes.CHAR.get().readPrimitiveInstance(String.valueOf(value));
     }

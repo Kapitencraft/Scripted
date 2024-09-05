@@ -9,4 +9,9 @@ public class EntityType<T extends Entity> extends VarType<T> {
         super(name, null, null, null, null, null, null);
         addConstructor(context -> context.constructor().withParam("type", VarTypes.ENTITY_TYPE).withParam("level", VarTypes.LEVEL).executes((entityType, level) -> (T) entityType.create(level)));
     }
+
+    @Override
+    public Class<T> getTypeClass() {
+        return null;
+    }
 }

@@ -12,4 +12,9 @@ public class LevelType extends VarType<Level> {
         addMethod("spawn", context -> context.consumer().withParam("entity", VarTypes.ENTITY).executes(Level::addFreshEntity));
         addMethod("setBlock", context -> context.consumer().withParam("pos", VarTypes.BLOCK_POS).withParam("state", VarTypes.BLOCK_STATE).executes(Level::setBlockAndUpdate));
     }
+
+    @Override
+    public Class<Level> getTypeClass() {
+        return Level.class;
+    }
 }

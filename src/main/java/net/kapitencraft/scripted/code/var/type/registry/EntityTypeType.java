@@ -8,4 +8,9 @@ public class EntityTypeType extends RegistryType<EntityType<?>> {
     public EntityTypeType() {
         super("EntityType", ForgeRegistries.ENTITY_TYPES);
     }
+
+    @Override
+    public Class<EntityType<?>> getTypeClass() {
+        return null;
+    }
 }

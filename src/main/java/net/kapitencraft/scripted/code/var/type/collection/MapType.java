@@ -43,6 +43,11 @@ public class MapType<K, V> extends VarType<Map<K, V>> {
         );
     }
 
+    @Override
+    public Class<Map<K, V>> getTypeClass() {
+        return null;
+    }
+
     public VarType<K> getKey() {
         return key;
     }

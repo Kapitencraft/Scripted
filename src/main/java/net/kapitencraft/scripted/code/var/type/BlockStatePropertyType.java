@@ -10,4 +10,9 @@ public class BlockStatePropertyType<T extends Comparable<T>> extends VarType<Pro
         super("Property<" + type + ">", null, null, null, null, null, null);
         this.type = type;
     }
+
+    @Override
+    public Class<Property<T>> getTypeClass() {
+        return null; //TODO make f*** generics!
+    }
 }

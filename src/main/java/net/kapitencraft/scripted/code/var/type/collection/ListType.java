@@ -39,6 +39,11 @@ public class ListType<T> extends VarType<List<T>> {
     }
 
     @Override
+    public Class<List<T>> getTypeClass() {
+        return null;
+    }
+
+    @Override
     public @NotNull String toId() {
         return String.format("List<%s>", this.type.toId());
     }
