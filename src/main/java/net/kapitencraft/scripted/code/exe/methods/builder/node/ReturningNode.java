@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface ReturningNode<R> {
 
-    MethodInstance<R> createInst(String methodId, List<MethodInstance<?>> params);
+    R createInst(String methodId, List<Object> params);
 
     int getParamCount();
 
