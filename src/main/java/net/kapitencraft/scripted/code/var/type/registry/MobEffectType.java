@@ -8,4 +8,9 @@ public class MobEffectType extends RegistryType<MobEffect> {
     public MobEffectType() {
         super("MobEffect", ForgeRegistries.MOB_EFFECTS);
     }
+
+    @Override
+    public Class<MobEffect> getTypeClass() {
+        return MobEffect.class;
+    }
 }

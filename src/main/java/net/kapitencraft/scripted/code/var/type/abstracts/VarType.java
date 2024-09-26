@@ -43,7 +43,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 import net.minecraftforge.fml.ModLoader;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.StartupMessageManager;
 import net.minecraftforge.fml.loading.progress.ProgressMeter;
 import org.jetbrains.annotations.ApiStatus;
@@ -58,13 +57,15 @@ import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class VarType<T> implements LoxClass {
+public abstract class VarType<T> implements LoxClass {
     /**
      * contains a check for any un-allowed name patterns
      */
     private static final Pattern NAME_BLOCKED = Pattern.compile("(^primtive\\$)|(^\\d)|([\\W&&[^<>,]])");
 
+    //Slave maps
     public static final Map<String, VarType<?>> NAME_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.NAME_MAP, Map.class);
+    public static final Map<Class<?>, VarType<?>> CLASS_MAP = ModRegistries.VAR_TYPES.getSlaveMap(ModCallbacks.VarTypes.CLASS_MAP, Map.class);
 
     public static <T> VarType<T> read(String string) {
         string = string.replaceAll(" ", "");
@@ -107,6 +108,7 @@ public class VarType<T> implements LoxClass {
     private final BiFunction<T, T, T> add, mult, div, sub, mod;
     /**
      * used to compare different values of the same type using GREATER or LESSER
+     * @see Comparators.CompareMode
      */
     private final Comparator<T> comp;
 
@@ -238,6 +240,10 @@ public class VarType<T> implements LoxClass {
     public boolean isAbstract() {
         return false;
     }
+
+
+    //reflective class loading
+    public abstract Class<T> getTypeClass();
 
     /**
      * method container for all methods inside this type;

@@ -15,4 +15,9 @@ public class BlockType extends RegistryType<Block> {
     public void render(int x, int y, Block value, GuiGraphics graphics) {
         graphics.renderFakeItem(new ItemStack(value.asItem()), x, y);
     }
+
+    @Override
+    public Class<Block> getTypeClass() {
+        return Block.class;
+    }
 }

@@ -8,4 +8,9 @@ public class DataListType extends VarType<ListTag> {
         super("DataList", null, null, null, null, null, null);
 
     }
+
+    @Override
+    public Class<ListTag> getTypeClass() {
+        return ListTag.class;
+    }
 }

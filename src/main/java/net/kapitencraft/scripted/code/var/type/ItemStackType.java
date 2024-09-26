@@ -42,4 +42,9 @@ public class ItemStackType extends VarType<ItemStack> {
                 .executes(ItemStack::getAllEnchantments)
         );
     }
+
+    @Override
+    public Class<ItemStack> getTypeClass() {
+        return ItemStack.class;
+    }
 }

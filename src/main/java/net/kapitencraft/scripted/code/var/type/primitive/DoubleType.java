@@ -11,6 +11,11 @@ public class DoubleType extends PrimitiveType<Double> {
         super("double", Double::sum, (d, d1) -> d * d1, (d, d1) -> d / d1, (d, d1) -> d - d1, (d, d1) -> d % d1, Double::compareTo);
     }
 
+    @Override
+    public Class<Double> getTypeClass() {
+        return double.class;
+    }
+
     public static MethodInstance<?> readInstance(String value) {
         return VarTypes.DOUBLE.get().readPrimitiveInstance(value);
     }

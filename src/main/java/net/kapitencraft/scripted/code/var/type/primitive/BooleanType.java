@@ -10,6 +10,11 @@ public class BooleanType extends PrimitiveType<Boolean> {
     }
 
     @Override
+    public Class<Boolean> getTypeClass() {
+        return boolean.class; //why is there an extra class
+    }
+
+    @Override
     public @NotNull String toId() {
         return "Z"; //don't ask me why java uses Z for booleans... (maybe because of bytes?)
     }

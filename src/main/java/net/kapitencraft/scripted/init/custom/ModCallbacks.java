@@ -22,6 +22,7 @@ import java.util.Map;
 public class ModCallbacks {
     public static class VarTypes implements IForgeRegistry.AddCallback<VarType<?>>, IForgeRegistry.CreateCallback<VarType<?>>, IForgeRegistry.BakeCallback<VarType<?>> {
         public static final ResourceLocation NAME_MAP = Scripted.res("name_map");
+        public static final ResourceLocation CLASS_MAP = Scripted.res("class_map");
         public static final ResourceLocation PRIMITIVES = Scripted.res("primitives");
         public static final ResourceLocation REGISTRIES = Scripted.res("registries");
 
@@ -35,6 +36,11 @@ public class ModCallbacks {
             Map<String, VarType<?>> nameMap = owner.getSlaveMap(NAME_MAP, Map.class);
             if (oldObj != null) removeOldName(oldObj, nameMap);
             nameMap.put(obj.getName(), obj);
+
+            //classes
+            Map<Class<?>, VarType<?>> classMap = owner.getSlaveMap(CLASS_MAP, Map.class);
+            if (oldObj != null) removeOldClass(oldObj, classMap);
+            classMap.put(obj.getTypeClass(), obj);
 
             //primitives
             List<PrimitiveType<?>> primitives = owner.getSlaveMap(PRIMITIVES, List.class);
@@ -53,6 +59,10 @@ public class ModCallbacks {
             }
         }
 
+        private void removeOldClass(VarType<?> type, Map<Class<?>, VarType<?>> classMap) {
+            classMap.remove(type.getTypeClass());
+        }
+
         private static void removeOldName(VarType<?> type, Map<String, VarType<?>> nameMap) {
             nameMap.remove(type.getName());
         }
@@ -64,6 +74,7 @@ public class ModCallbacks {
         @Override
         public void onCreate(IForgeRegistryInternal<VarType<?>> owner, RegistryManager stage) {
             owner.setSlaveMap(NAME_MAP, Maps.newHashMap());
+            owner.setSlaveMap(CLASS_MAP, Maps.newHashMap());
             owner.setSlaveMap(PRIMITIVES, Lists.newArrayList());
             owner.setSlaveMap(REGISTRIES, Maps.newHashMap());
         }

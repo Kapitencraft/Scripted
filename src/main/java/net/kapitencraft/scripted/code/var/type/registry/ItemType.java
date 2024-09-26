@@ -15,4 +15,9 @@ public class ItemType extends RegistryType<Item> {
     public void render(int x, int y, Item value, GuiGraphics graphics) {
         graphics.renderFakeItem(new ItemStack(value), x, y);
     }
+
+    @Override
+    public Class<Item> getTypeClass() {
+        return Item.class;
+    }
 }

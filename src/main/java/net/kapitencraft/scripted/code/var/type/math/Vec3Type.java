@@ -17,6 +17,11 @@ public class Vec3Type extends VarType<Vec3> {
         this.addMethod("getZ", context -> context.returning(VarTypes.DOUBLE).executes(Vec3::z));
     }
 
+    @Override
+    public Class<Vec3> getTypeClass() {
+        return Vec3.class;
+    }
+
     private static Vec3 makeDivide(Vec3 a, Vec3 b) {
         return new Vec3(a.x / b.x, a.y / b.y, a.z/ b.z);
     }

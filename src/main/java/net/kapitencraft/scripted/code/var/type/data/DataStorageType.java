@@ -9,4 +9,9 @@ public class DataStorageType extends VarType<CompoundTag> {
         super("DataStorage", null, null, null, null, null, null);
         this.addConstructor(context -> context.constructor().executes(CompoundTag::new));
     }
+
+    @Override
+    public Class<CompoundTag> getTypeClass() {
+        return CompoundTag.class;
+    }
 }

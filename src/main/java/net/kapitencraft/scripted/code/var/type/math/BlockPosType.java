@@ -13,4 +13,9 @@ public class BlockPosType extends VarType<BlockPos> {
                 (pos, pos1) -> new BlockPos(pos.getX() % pos1.getX(), pos.getY() % pos1.getY(), pos.getZ() % pos1.getZ()),
                 Vec3i::compareTo);
     }
+
+    @Override
+    public Class<BlockPos> getTypeClass() {
+        return BlockPos.class;
+    }
 }

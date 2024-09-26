@@ -12,6 +12,11 @@ public class IntegerType extends PrimitiveType<Integer> {
         super("int", Integer::sum, (i, i1) -> i * i1, (i, i1) -> i / i1, (i, i1) -> i - i1, (i, i1) -> i % i1, Integer::compareTo);
     }
 
+    @Override
+    public Class<Integer> getTypeClass() {
+        return int.class;
+    }
+
     public static MethodInstance<?> readInstance(String value) {
         return VarTypes.INTEGER.get().readPrimitiveInstance(value);
     }
