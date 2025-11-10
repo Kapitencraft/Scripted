@@ -2,14 +2,7 @@ package net.kapitencraft.scripted.edit;
 
 import net.minecraft.ChatFormatting;
 
-public class Token {
-    public final String value;
-    public final Type type;
-
-    public Token(String value, Type type) {
-        this.value = value;
-        this.type = type;
-    }
+public record Token(String value, net.kapitencraft.scripted.edit.Token.Type type) {
 
     @Override
     public String toString() {

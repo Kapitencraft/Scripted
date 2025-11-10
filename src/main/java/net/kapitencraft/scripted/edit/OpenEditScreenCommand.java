@@ -7,9 +7,6 @@ import net.minecraft.commands.Commands;
 
 public class OpenEditScreenCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("code").executes(context -> {
-            ClientHelper.postCommandScreen = new EditScreen();
-            return 1;
-        }));
+        dispatcher.register(Commands.literal("code").executes(ClientHelper.createScreenCommand(EditScreen::new)));
     }
 }
