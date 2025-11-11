@@ -2,6 +2,11 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.scripted.edit.RenderHelper;
+import net.kapitencraft.scripted.edit.graphical.widgets.BodyWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ScopeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.TextWidget;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -10,11 +15,25 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public class GraphicalEditor extends AbstractWidget {
-    private float scrollX, scrollY, scale = 1;
+import java.util.List;
 
-    public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage) {
+public class GraphicalEditor extends AbstractWidget {
+    private final Font font;
+    private float scrollX, scrollY, scale = 1;
+    private ScopeWidget widget = new ScopeWidget(
+            List.of(
+                    new BodyWidget(
+                            new TextWidget("ABCDEFGHIJKLMNOP")
+                    ),
+                    new BodyWidget(
+                            new TextWidget("Scripted!")
+                    )
+            )
+    );
+
+    public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font) {
         super(pX, pY, pWidth, pHeight, pMessage);
+        this.font = font;
     }
 
     @Override
@@ -42,10 +61,33 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(scale, scale, 1);
         pose.translate(this.scrollX, this.scrollY, 0);
 
-        for (int x = 0; x < 40; x++) {
-            for (int y = 0; y < 20; y++) {
-                pGuiGraphics.fill(40 * x, 40 * y, 40 * x + 10, 40 * y + 10, -1);
-            }
+        if (widget != null) {
+            pose.pushPose();
+            pose.translate(100, 100, 0);
+            pose.scale(3, 3, 1);
+            pose.translate(-100, -100, 0);
+            this.widget.render(pGuiGraphics, font, 100, 100, 104, 107);
+            //String text = ;
+            //Font font = this.font;
+            //RenderHelper.renderBlock(pGuiGraphics, font, text, 100, 100);
+            //String text2 = ;
+            //RenderHelper.renderBlock(pGuiGraphics, font, text2, 100, 119);
+//
+            //String loopText = "while x";
+            //int loopWidth = font.width(loopText);
+            //pGuiGraphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, 100, 138, 6 + loopWidth, 22);
+            //pGuiGraphics.drawString(font, loopText, 104, 147, 0, false);
+            //pGuiGraphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, 100, 158, 6, 18);
+//
+            //String enclosedText = "enclosed";
+            //RenderHelper.renderBlock(pGuiGraphics, font, enclosedText, 106, 157);
+//
+            //pGuiGraphics.blitSprite(CodeWidgetSprites.SCOPE_END, 100, 176, 6 + loopWidth, 16);
+            //pGuiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, 100, 189, 40, 22);
+//
+            //String exprText = "ab";
+            //RenderHelper.renderExpr(pGuiGraphics, font, exprText, 110, 194);
+            pose.popPose();
         }
 
         pGuiGraphics.disableScissor();

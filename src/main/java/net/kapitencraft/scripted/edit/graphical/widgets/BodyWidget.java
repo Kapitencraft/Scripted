@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
-import net.kapitencraft.kap_lib.helpers.MathHelper;
 import net.kapitencraft.scripted.edit.RenderHelper;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.IRenderable;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -15,6 +15,14 @@ public class BodyWidget implements CodeWidget {
         this.children = RenderHelper.decompileVisualText(renderable);
     }
 
+    public BodyWidget(List<CodeWidget> children) {
+        this.children = children;
+    }
+
+    public BodyWidget(CodeWidget... children) {
+        this.children = List.of(children);
+    }
+
     @Override
     public Type getType() {
         return null;
@@ -22,6 +30,7 @@ public class BodyWidget implements CodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY, int textX, int textY) {
+        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 22);
         int i = 0;
         for (CodeWidget child : children) {
             child.render(graphics, font, renderX + i, renderY, textX + i, textY);
@@ -31,11 +40,11 @@ public class BodyWidget implements CodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return MathHelper.count(this.children.stream().map(w -> w.getWidth(font)).toList());
+        return this.children.stream().mapToInt(w -> w.getWidth(font)).sum();
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return Math.max(19, this.children.stream().mapToInt(CodeWidget::getHeight).max().orElse(19));
     }
 }
