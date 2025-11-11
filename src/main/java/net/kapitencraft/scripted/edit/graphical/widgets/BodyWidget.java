@@ -29,13 +29,9 @@ public class BodyWidget implements CodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY, int textX, int textY) {
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 22);
-        int i = 0;
-        for (CodeWidget child : children) {
-            child.render(graphics, font, renderX + i, renderY, textX + i, textY);
-            i += child.getWidth(font);
-        }
+        RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 7, children);
     }
 
     @Override

@@ -12,28 +12,31 @@ public class ScopeWidget implements CodeWidget {
         this.widgets = widgets;
     }
 
+    public ScopeWidget(CodeWidget... widgets) {
+        this.widgets = List.of(widgets);
+    }
+
     @Override
     public Type getType() {
         return null;
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY, int textX, int textY) {
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         for (CodeWidget widget : this.widgets) {
-            widget.render(graphics, font, renderX, renderY, textX, textY);
+            widget.render(graphics, font, renderX, renderY);
             int height = widget.getHeight();
             renderY += height;
-            textY += height;
         }
     }
 
     @Override
     public int getWidth(Font font) {
-        return 0;
+        return this.widgets.stream().mapToInt(w -> w.getWidth(font)).max().orElse(0);
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return this.widgets.stream().mapToInt(CodeWidget::getHeight).sum();
     }
 }

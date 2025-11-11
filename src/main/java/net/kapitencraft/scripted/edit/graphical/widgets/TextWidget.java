@@ -16,8 +16,8 @@ public class TextWidget implements CodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY, int textX, int textY) {
-        graphics.drawString(font, text, textX, textY, 0, false);
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        graphics.drawString(font, text, renderX, renderY, 0, false);
     }
 
     @Override

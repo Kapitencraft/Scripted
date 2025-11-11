@@ -2,10 +2,7 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
-import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.widgets.BodyWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.ScopeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.TextWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -21,13 +18,27 @@ public class GraphicalEditor extends AbstractWidget {
     private final Font font;
     private float scrollX, scrollY, scale = 1;
     private ScopeWidget widget = new ScopeWidget(
-            List.of(
-                    new BodyWidget(
-                            new TextWidget("ABCDEFGHIJKLMNOP")
+            new BodyWidget(
+                    new TextWidget("ABCDEFGHIJKLMNOP")
+            ),
+            new BodyWidget(
+                    new TextWidget("Scripted!"),
+                    new ExprWidget(ExprType.BOOLEAN, List.of(
+                            new TextWidget("A")
+                    ))
+            ),
+            new LoopWidget(
+                    List.of(
+                            new TextWidget("while x")
                     ),
-                    new BodyWidget(
-                            new TextWidget("Scripted!")
+                    new ScopeWidget(
+                            new BodyWidget(
+                                    new TextWidget("enclosed")
+                            )
                     )
+            ),
+            new BodyWidget(
+                    new TextWidget("after enclosure")
             )
     );
 
@@ -66,7 +77,7 @@ public class GraphicalEditor extends AbstractWidget {
             pose.translate(100, 100, 0);
             pose.scale(3, 3, 1);
             pose.translate(-100, -100, 0);
-            this.widget.render(pGuiGraphics, font, 100, 100, 104, 107);
+            this.widget.render(pGuiGraphics, font, 100, 100);
             //String text = ;
             //Font font = this.font;
             //RenderHelper.renderBlock(pGuiGraphics, font, text, 100, 100);

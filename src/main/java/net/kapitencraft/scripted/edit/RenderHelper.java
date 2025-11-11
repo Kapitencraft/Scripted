@@ -50,4 +50,12 @@ public interface RenderHelper {
         pGuiGraphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, x, y, 8 + exprWidth, 12);
         pGuiGraphics.drawString(font, "ab", x + 4, y + 2, 0, false);
     }
+
+    static void renderExprList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> children) {
+        int i = 0;
+        for (CodeWidget child : children) {
+            child.render(graphics, font, renderX + i, renderY);
+            i += child.getWidth(font);
+        }
+    }
 }
