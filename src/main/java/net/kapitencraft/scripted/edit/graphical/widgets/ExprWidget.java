@@ -23,17 +23,17 @@ public class ExprWidget implements CodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - 3, getWidth(font), getHeight());
-        RenderHelper.renderExprList(graphics, font, renderX + 5, renderY, this.children);
+        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - getHeight() / 2 + 4, getWidth(font), getHeight());
+        RenderHelper.renderExprList(graphics, font, renderX + 6, renderY, this.children);
     }
 
     @Override
     public int getWidth(Font font) {
-        return CodeWidget.getWidthFromList(font, this.children) + 9;
+        return CodeWidget.getWidthFromList(font, this.children) + 12;
     }
 
     @Override
     public int getHeight() {
-        return CodeWidget.getHeightFromList(this.children) + 3;
+        return CodeWidget.getHeightFromList(this.children) + 4;
     }
 }

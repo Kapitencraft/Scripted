@@ -1,0 +1,6 @@
+1. increase body-script width to remove "zebra"-effect
+2. add head block (like on execute for events / other code)
+3. add method code map
+4. add code storage
+5. add code selection panel
+6.

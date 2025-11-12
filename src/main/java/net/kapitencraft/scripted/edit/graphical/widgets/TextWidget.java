@@ -22,7 +22,7 @@ public class TextWidget implements CodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return font.width(this.text);
+        return font.width(this.text) + 1;
     }
 
     @Override

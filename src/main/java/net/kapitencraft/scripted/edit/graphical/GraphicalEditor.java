@@ -24,7 +24,10 @@ public class GraphicalEditor extends AbstractWidget {
             new BodyWidget(
                     new TextWidget("Scripted!"),
                     new ExprWidget(ExprType.BOOLEAN, List.of(
-                            new TextWidget("A")
+                            new TextWidget("A"),
+                            new ExprWidget(ExprType.OTHER, List.of(
+                                    new TextWidget("abcdef")
+                            ))
                     ))
             ),
             new LoopWidget(
@@ -56,7 +59,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.scale(scale, scale, 1);
 
-        ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/netherrack.png");
+        ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/black_glazed_terracotta.png");
         int i = Mth.floor(this.scrollX);
         int j = Mth.floor(this.scrollY);
         int k = i % 16;

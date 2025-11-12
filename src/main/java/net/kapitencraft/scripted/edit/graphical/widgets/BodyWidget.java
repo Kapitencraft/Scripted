@@ -30,8 +30,9 @@ public class BodyWidget implements CodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 22);
-        RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 7, children);
+        int height = getHeight();
+        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
+        RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) / 2, children);
     }
 
     @Override
@@ -41,6 +42,6 @@ public class BodyWidget implements CodeWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(19, this.children.stream().mapToInt(CodeWidget::getHeight).max().orElse(19));
+        return Math.max(19, 9 + CodeWidget.getHeightFromList(this.children));
     }
 }
