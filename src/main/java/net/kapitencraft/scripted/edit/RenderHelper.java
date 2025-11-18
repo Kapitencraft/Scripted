@@ -18,10 +18,6 @@ public interface RenderHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("%\\{([a-zA-Z0-9_]+)}%"); //oooh pattern :pog:
 
-    static void renderFunction(int x, int y) {
-
-    }
-
     static List<CodeWidget> decompileVisualText(IRenderable renderable) {
         RenderMap map = renderable.getParamData();
         List<CodeWidget> list = new ArrayList<>();

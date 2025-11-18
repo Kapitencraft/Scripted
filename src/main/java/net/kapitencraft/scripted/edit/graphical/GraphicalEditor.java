@@ -77,30 +77,7 @@ public class GraphicalEditor extends AbstractWidget {
 
         if (widget != null) {
             pose.pushPose();
-            pose.translate(100, 100, 0);
-            pose.scale(3, 3, 1);
-            pose.translate(-100, -100, 0);
             this.widget.render(pGuiGraphics, font, 100, 100);
-            //String text = ;
-            //Font font = this.font;
-            //RenderHelper.renderBlock(pGuiGraphics, font, text, 100, 100);
-            //String text2 = ;
-            //RenderHelper.renderBlock(pGuiGraphics, font, text2, 100, 119);
-//
-            //String loopText = "while x";
-            //int loopWidth = font.width(loopText);
-            //pGuiGraphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, 100, 138, 6 + loopWidth, 22);
-            //pGuiGraphics.drawString(font, loopText, 104, 147, 0, false);
-            //pGuiGraphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, 100, 158, 6, 18);
-//
-            //String enclosedText = "enclosed";
-            //RenderHelper.renderBlock(pGuiGraphics, font, enclosedText, 106, 157);
-//
-            //pGuiGraphics.blitSprite(CodeWidgetSprites.SCOPE_END, 100, 176, 6 + loopWidth, 16);
-            //pGuiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, 100, 189, 40, 22);
-//
-            //String exprText = "ab";
-            //RenderHelper.renderExpr(pGuiGraphics, font, exprText, 110, 194);
             pose.popPose();
         }
 
