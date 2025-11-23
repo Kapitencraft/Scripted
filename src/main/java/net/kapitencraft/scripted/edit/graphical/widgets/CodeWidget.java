@@ -14,7 +14,6 @@ public interface CodeWidget {
     int getWidth(Font font);
 
     int getHeight();
-
     enum Type {
         START,
         TEXT,

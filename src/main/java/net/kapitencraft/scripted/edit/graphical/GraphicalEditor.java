@@ -3,6 +3,10 @@ package net.kapitencraft.scripted.edit.graphical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.widgets.*;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BodyWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -11,43 +15,45 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GraphicalEditor extends AbstractWidget {
+    private CodeWidget dragged;
+    private int draggedOffsetX, draggedOffsetY;
+
     private final Font font;
     private float scrollX, scrollY, scale = 1;
-    private ScopeWidget widget = new ScopeWidget(
-            new BodyWidget(
-                    new TextWidget("ABCDEFGHIJKLMNOP")
-            ),
-            new BodyWidget(
-                    new TextWidget("Scripted!"),
-                    new ExprWidget(ExprType.BOOLEAN, List.of(
-                            new TextWidget("A"),
-                            new ExprWidget(ExprType.OTHER, List.of(
-                                    new TextWidget("abcdef")
-                            ))
-                    ))
-            ),
-            new LoopWidget(
-                    List.of(
-                            new TextWidget("while x")
-                    ),
-                    new ScopeWidget(
-                            new BodyWidget(
-                                    new TextWidget("enclosed")
-                            )
-                    )
-            ),
-            new BodyWidget(
-                    new TextWidget("after enclosure")
-            )
-    );
+    private final List<CodeElement> elements = new ArrayList<>();
 
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font) {
         super(pX, pY, pWidth, pHeight, pMessage);
         this.font = font;
+
+        this.elements.add(
+                new CodeElement(HeadWidget.builder()
+                        .withExpr(new TextWidget("First Method omg"))
+                        .setChild(
+                                BodyWidget.text("ABCDEFGHIJKLMNOP")
+                                        .setChild(BodyWidget.builder()
+                                                .withExpr(new TextWidget("Scripted!"))
+                                                .withExpr(new ExprWidget(ExprType.BOOLEAN, List.of(
+                                                        new TextWidget("A"),
+                                                        new ExprWidget(ExprType.OTHER, List.of(
+                                                                new TextWidget("abcdef")
+                                                        ))
+                                                )))
+                                                .setChild(LoopWidget.builder()
+                                                        .withHead(new TextWidget("while x"))
+                                                        .setBody(BodyWidget.text("enclosed"))
+                                                        .setChild(BodyWidget.text("after enclosure"))
+                                                )
+                                        ).build()
+                        ).build()
+                )
+        );
     }
 
     @Override
@@ -74,16 +80,35 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose(); //reset pose
         pose.scale(scale, scale, 1);
         pose.translate(this.scrollX, this.scrollY, 0);
+        //0 = scale * (translate + aPos)
+        //0 = translate + aPos | -translate
+        //-translate = aPos
+        int minX =  -(int)scrollX;
+        int minY = -(int) scrollY;
+        //width = scale * (translate + aPos) | /scale
+        //width / scale = translate + aPos | - translate
+        //width / scale - translate = aPos
+        int maxX = (int) (getWidth() / scale - scrollX);
+        int maxY = (int) (getHeight() / scale - scrollY);
 
-        if (widget != null) {
-            pose.pushPose();
-            this.widget.render(pGuiGraphics, font, 100, 100);
-            pose.popPose();
+        for (CodeElement element : this.elements) {
+            if (element.visible(minX, minY, maxX, maxY)) {
+                element.widget.render(pGuiGraphics, font, element.x, element.y);
+            }
         }
 
         pGuiGraphics.disableScissor();
         pose.popPose();
         pose.popPose();
+        //region dragged
+        pose.pushPose();
+        pose.scale(scale, scale, 1);
+        pose.translate(0, 0, 100);
+        if (this.dragged != null) {
+            this.dragged.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
+        }
+        pose.popPose();
+        //endregion
     }
 
     @Override
@@ -124,6 +149,103 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     @Override
-    protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {
+    protected void updateWidgetNarration(@NotNull NarrationElementOutput pNarrationElementOutput) {
+    }
+
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        int posX = (int) (mouseX / scale - scrollX) - getX();
+        int posY = (int) (mouseY / scale - scrollY) - getY();
+        for (int i = 0; i < this.elements.size(); i++) {
+            CodeElement element = this.elements.get(i);
+            if (element.hovered(posX, posY)) {
+                WidgetFetchResult result = element.fetchAndRemoveHoveredWidget(posX, posY, font);
+                if (result == null) {
+                    break;
+                }
+                if (result.widget() != element.widget) {
+                    element.recalculateSize();
+                }
+                this.dragged = result.widget();
+                this.draggedOffsetX = -result.x();
+                this.draggedOffsetY = -result.y();
+                if (!result.removed())
+                    this.elements.remove(i);
+                return true;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.dragged != null) {
+            int uiX = (int) (mouseX / scale - scrollX) - getX();
+            int uiY = (int) (mouseY / scale - scrollY) - getY();
+            this.elements.add(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY));
+            this.dragged = null;
+        }
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private class CodeElement {
+        private final int x;
+        private final int y;
+        private int width;
+        private int height;
+        private final CodeWidget widget;
+
+        private CodeElement(CodeWidget widget) {
+            this(widget, 100, 100);
+        }
+
+        private CodeElement(CodeWidget widget, int x, int y) {
+            this.widget = widget;
+            this.recalculateSize();
+            this.x = x;
+            this.y = y;
+        }
+
+        private int calculateWidgetWidth() {
+            int width = 0;
+            if (widget instanceof BlockWidget blockWidget) {
+                do {
+                    width += blockWidget.getWidth(font);
+                    blockWidget = blockWidget.getChild();
+                } while (blockWidget != null);
+            } else
+                width = this.widget.getWidth(font);
+            return width;
+        }
+
+        private int calculateWidgetHeight() {
+            int height = 0;
+            if (widget instanceof BlockWidget blockWidget) {
+                do {
+                    height += blockWidget.getHeight();
+                    blockWidget = blockWidget.getChild();
+                } while (blockWidget != null);
+            } else
+                height = widget.getHeight();
+            return height;
+        }
+
+        public boolean hovered(int mouseX, int mouseY) {
+            return mouseX > this.x && mouseX < this.x + this.width &&
+                    mouseY > this.y && mouseY < this.y + this.height;
+        }
+
+        public boolean visible(int minX, int minY, int maxX, int maxY) {
+            return this.x + width > minX || this.y + height > minY || this.x < maxX || this.y < maxY;
+        }
+
+        public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
+            return ((Removable) this.widget).fetchAndRemoveHovered(posX - x, posY - y, font);
+        }
+
+        public void recalculateSize() {
+            this.width = calculateWidgetWidth();
+            this.height = calculateWidgetHeight();
+        }
     }
 }

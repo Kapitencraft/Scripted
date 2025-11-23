@@ -5,15 +5,16 @@ import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class ExprWidget implements CodeWidget {
+public class ExprWidget implements CodeWidget, Removable {
     private final ExprType type;
     private final List<CodeWidget> children;
 
     public ExprWidget(ExprType type, List<CodeWidget> children) {
         this.type = type;
-        this.children = children;
+        this.children = new ArrayList<>(children);
     }
 
     @Override
@@ -35,5 +36,11 @@ public class ExprWidget implements CodeWidget {
     @Override
     public int getHeight() {
         return CodeWidget.getHeightFromList(this.children) + 4;
+    }
+
+    @Override
+    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        if (x > this.getWidth(font)) return null;
+        return WidgetFetchResult.fromExprList(6, x, y, font, this, this.children);
     }
 }
