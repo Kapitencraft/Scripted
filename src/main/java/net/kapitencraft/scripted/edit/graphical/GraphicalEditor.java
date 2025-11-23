@@ -16,12 +16,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GraphicalEditor extends AbstractWidget {
     private CodeWidget dragged;
+    private BlockWidget ghostTarget;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -65,7 +67,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.scale(scale, scale, 1);
 
-        ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/black_glazed_terracotta.png");
+        ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/deepslate_tiles.png");
         int i = Mth.floor(this.scrollX);
         int j = Mth.floor(this.scrollY);
         int k = i % 16;
@@ -161,7 +163,7 @@ public class GraphicalEditor extends AbstractWidget {
             if (element.hovered(posX, posY)) {
                 WidgetFetchResult result = element.fetchAndRemoveHoveredWidget(posX, posY, font);
                 if (result == null) {
-                    break;
+                    continue;
                 }
                 if (result.widget() != element.widget) {
                     element.recalculateSize();
@@ -178,8 +180,21 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        if (dragged != null && dragged instanceof BlockWidget) {
+            int uiX = (int) (mouseX / scale - scrollX) - getX();
+            int uiY = (int) (mouseY / scale - scrollY) - getY();
+        }
+        super.mouseMoved(mouseX, mouseY);
+    }
+
+    @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.dragged != null) {
+            if (this.ghostTarget != null && this.dragged instanceof BlockWidget blockWidget) {
+                blockWidget.setBottomChild(this.ghostTarget.getChild());
+                this.ghostTarget.setChild(blockWidget);
+            }
             int uiX = (int) (mouseX / scale - scrollX) - getX();
             int uiY = (int) (mouseY / scale - scrollY) - getY();
             this.elements.add(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY));
@@ -246,6 +261,29 @@ public class GraphicalEditor extends AbstractWidget {
         public void recalculateSize() {
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
+        }
+    }
+
+    private class GhostBlockWidget extends BlockWidget {
+
+        @Override
+        public Type getType() {
+            return null;
+        }
+
+        @Override
+        public int getWidth(Font font) {
+            return dragged.getWidth(font);
+        }
+
+        @Override
+        public int getHeight() {
+            return dragged.getHeight();
+        }
+
+        @Override
+        public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+            return null;
         }
     }
 }

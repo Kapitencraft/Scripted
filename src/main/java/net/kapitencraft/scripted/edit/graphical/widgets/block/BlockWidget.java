@@ -13,6 +13,14 @@ public abstract class BlockWidget implements CodeWidget, Removable {
         this.child = child;
     }
 
+    public void setBottomChild(BlockWidget ghostTarget) {
+        BlockWidget parent = this;
+        while (parent.child != null) {
+            parent = parent.child;
+        }
+        parent.setChild(ghostTarget);
+    }
+
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         if (this.child != null)
@@ -25,6 +33,7 @@ public abstract class BlockWidget implements CodeWidget, Removable {
 
     protected WidgetFetchResult fetchChildRemoveHovered(int x, int y, Font font) {
         WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
+        if (result == null) return null;
         if (!result.removed())
             this.setChild(null);
         return result.setRemoved();

@@ -42,5 +42,5 @@ public class ExprWidget implements CodeWidget, Removable {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
         return WidgetFetchResult.fromExprList(6, x, y, font, this, this.children);
-    }
+    } //TODO fix offset
 }

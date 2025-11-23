@@ -36,7 +36,7 @@ public class LoopWidget extends BlockWidget {
         int loopWidth = 6 + getHeadWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, 22);
         RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 7, head);
-        int bodyHeight = this.body != null ? this.body.getHeight() : 19;
+        int bodyHeight = this.body != null ? this.body.getHeight() : 10;
         if (this.body != null)
             this.body.render(graphics, font, renderX + 6, renderY + getHeadHeight());
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + getHeadHeight() + 3, 6, bodyHeight - 3);
