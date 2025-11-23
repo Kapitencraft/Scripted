@@ -10,6 +10,7 @@ logoFile="examplemod.png" #optional
 credits="" #optional
 authors="${mod_authors}" #optional
 description='''${mod_description}'''
+featureFlags="META-INF/feature_flags.json"
 
 [[mixins]]
 config="${mod_id}.mixins.json"
