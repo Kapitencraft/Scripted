@@ -62,23 +62,25 @@ public class GraphicalEditor extends AbstractWidget {
     protected void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         pGuiGraphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight());
         PoseStack pose = pGuiGraphics.pose();
-        pose.pushPose();
-        pose.translate(this.getX(), this.getY(), 0);
-        pose.pushPose();
-        pose.scale(scale, scale, 1);
+        {
+            pose.pushPose();
+            pose.translate(this.getX(), this.getY(), 0);
+            pose.pushPose();
+            pose.scale(scale, scale, 1);
 
-        ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/deepslate_tiles.png");
-        int i = Mth.floor(this.scrollX);
-        int j = Mth.floor(this.scrollY);
-        int k = i % 16;
-        int l = j % 16;
+            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/deepslate_tiles.png");
+            int i = Mth.floor(this.scrollX);
+            int j = Mth.floor(this.scrollY);
+            int k = i % 16;
+            int l = j % 16;
 
-        for (int i1 = -1; i1 <= this.width / 16f / this.scale; i1++) {
-            for (int j1 = -1; j1 <= this.height / 16f / this.scale; j1++) {
-                pGuiGraphics.blit(resourcelocation, -k + 16 * i1, -l + 16 * j1, 0.0F, 0.0F, 16, 16, 16, 16);
+            for (int i1 = -1; i1 <= this.width / 16f / this.scale; i1++) {
+                for (int j1 = -1; j1 <= this.height / 16f / this.scale; j1++) {
+                    pGuiGraphics.blit(resourcelocation, -k + 16 * i1, -l + 16 * j1, 0.0F, 0.0F, 16, 16, 16, 16);
+                }
             }
-        }
-        pose.popPose();
+            pose.popPose();
+        } //background
         pose.pushPose(); //reset pose
         pose.scale(scale, scale, 1);
         pose.translate(this.scrollX, this.scrollY, 0);
@@ -93,7 +95,8 @@ public class GraphicalEditor extends AbstractWidget {
         int maxX = (int) (getWidth() / scale - scrollX);
         int maxY = (int) (getHeight() / scale - scrollY);
 
-        for (CodeElement element : this.elements) {
+        for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
+            CodeElement element = this.elements.get(i);
             if (element.visible(minX, minY, maxX, maxY)) {
                 element.widget.render(pGuiGraphics, font, element.x, element.y);
             }
@@ -182,8 +185,11 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
         if (dragged != null && dragged instanceof BlockWidget) {
-            int uiX = (int) (mouseX / scale - scrollX) - getX();
-            int uiY = (int) (mouseY / scale - scrollY) - getY();
+            int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
+            int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
+            for (CodeElement element : elements) {
+                
+            }
         }
         super.mouseMoved(mouseX, mouseY);
     }
@@ -197,7 +203,7 @@ public class GraphicalEditor extends AbstractWidget {
             }
             int uiX = (int) (mouseX / scale - scrollX) - getX();
             int uiY = (int) (mouseY / scale - scrollY) - getY();
-            this.elements.add(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY));
+            this.elements.addFirst(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
             this.dragged = null;
         }
         return super.mouseReleased(mouseX, mouseY, button);
