@@ -41,6 +41,7 @@ public class LoopWidget extends BlockWidget {
             this.body.render(graphics, font, renderX + 6, renderY + getHeadHeight());
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + getHeadHeight() + 3, 6, bodyHeight - 3);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + getHeadHeight() + bodyHeight, loopWidth, 16);
+        super.render(graphics, font, renderX, renderY);
     }
 
     private int getHeadHeight() {

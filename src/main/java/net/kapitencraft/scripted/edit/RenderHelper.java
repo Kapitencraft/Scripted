@@ -35,16 +35,12 @@ public interface RenderHelper {
         return list;
     }
 
-    static void renderBlock(GuiGraphics pGuiGraphics, Font font, String text, int x, int y) {
-        int width = font.width(text);
-        pGuiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x, y, 6 + width, 22);
-        pGuiGraphics.drawString(font, text, x + 4, y + 7, 0, false);
-    }
-
-    static void renderExpr(GuiGraphics pGuiGraphics, Font font, String text, int x, int y) {
-        int exprWidth = font.width(text);
-        pGuiGraphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, x, y, 8 + exprWidth, 12);
-        pGuiGraphics.drawString(font, "ab", x + 4, y + 2, 0, false);
+    static void renderStmtList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> statements) {
+        for (CodeWidget widget : statements) {
+            widget.render(graphics, font, renderX, renderY);
+            int height = widget.getHeight();
+            renderY += height;
+        }
     }
 
     static void renderExprList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> children) {

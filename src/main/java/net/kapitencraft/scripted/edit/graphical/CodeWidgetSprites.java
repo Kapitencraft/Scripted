@@ -8,10 +8,10 @@ public interface CodeWidgetSprites {
     ResourceLocation ELSE_CONDITION_HEAD = Scripted.res("code/else_condition_head");
     ResourceLocation GENERIC_EXPR = Scripted.res("code/generic_expr");
     ResourceLocation LOOP_HEAD = Scripted.res("code/loop_head");
+    ResourceLocation METHOD_HEAD = Scripted.res("code/method_head");
     ResourceLocation NUMBER_EXPR = Scripted.res("code/number_expr");
     ResourceLocation SCOPE_ENCLOSURE = Scripted.res("code/scope_enclosure");
     ResourceLocation SCOPE_END = Scripted.res("code/scope_end");
     ResourceLocation SCOPE_END_WITH_CODE = Scripted.res("code/scope_end_with_code");
     ResourceLocation SIMPLE_BLOCK = Scripted.res("code/simple_block");
-    ResourceLocation METHOD_HEAD = Scripted.res("code/block_start");
 }
