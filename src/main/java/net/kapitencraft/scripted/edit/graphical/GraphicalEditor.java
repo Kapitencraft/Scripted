@@ -3,10 +3,7 @@ package net.kapitencraft.scripted.edit.graphical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.widgets.*;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BodyWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -50,7 +47,14 @@ public class GraphicalEditor extends AbstractWidget {
                                                 .setChild(LoopWidget.builder()
                                                         .withHead(new TextWidget("while x"))
                                                         .setBody(BodyWidget.text("enclosed"))
-                                                        .setChild(BodyWidget.text("after enclosure"))
+                                                        .setChild(BodyWidget.text("after enclosure")
+                                                                .setChild(BranchWidget.builder()
+                                                                        .headExpr(new TextWidget("if something"))
+                                                                        .withBranch(BodyWidget.text("branch"))
+                                                                        .elseHeadExpr(new TextWidget("else"))
+                                                                        .withElseBranch(BodyWidget.text("else branch"))
+                                                                )
+                                                        )
                                                 )
                                         ).build()
                         ).build()

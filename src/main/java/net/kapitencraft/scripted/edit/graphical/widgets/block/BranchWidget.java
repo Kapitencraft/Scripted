@@ -8,6 +8,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BranchWidget extends BlockWidget {
@@ -21,6 +22,17 @@ public class BranchWidget extends BlockWidget {
         this.elseHead = elseHead;
     }
 
+    private BranchWidget(BlockWidget child, List<CodeWidget> head, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody) {
+        this(head, elseHead);
+        this.conditionBody = conditionBody;
+        this.elseBody = elseBody;
+        this.setChild(child);
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
     @Override
     public Type getType() {
         return null;
@@ -28,19 +40,22 @@ public class BranchWidget extends BlockWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 0;
+        return Math.max(6 + getHeadWidth(font), 6 + getElseHeadWidth(font));
     }
 
     @Override
     public int getHeight() {
-        return 0;
+        return getHeadHeight() +
+                getElseHeadHeight() +
+                (this.conditionBody != null ? this.conditionBody.getHeight() : 10) +
+                (this.elseBody != null ? this.elseBody.getHeight() : 10);
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int headWidth = 6 + getHeadWidth(font);
+        int headWidth = getWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, 22);
-        RenderHelper.renderExprList(graphics, font, renderX, renderY, head);
+        RenderHelper.renderExprList(graphics, font, renderX + 6, renderY + 7, head);
         int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeight() : 10;
         int headHeight = getHeadHeight();
         if (this.conditionBody != null)
@@ -48,12 +63,17 @@ public class BranchWidget extends BlockWidget {
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
         if (elseHead != null) {
             graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, 22);
-            int elseHeadHeight = 6 + getHeadHeight();
+            int elseHeadHeight = getHeadHeight();
+            int elseBodyHeight = this.elseBody != null ? this.elseBody.getHeight() : 10;
+            RenderHelper.renderExprList(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + 7, elseHead);
             if (this.elseBody != null) {
                 this.elseBody.render(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + elseHeadHeight);
             }
+            graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + 3, 6, elseBodyHeight - 3);
+            graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + elseBodyHeight, headWidth, 16);
+        } else {
+            graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight, headWidth, 16);
         }
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight, headWidth, 16);
         super.render(graphics, font, renderX, renderY);
     }
 
@@ -69,8 +89,48 @@ public class BranchWidget extends BlockWidget {
         return this.head.stream().mapToInt(w -> w.getWidth(font)).sum();
     }
 
+    private int getElseHeadWidth(Font font) {
+        return this.elseHead.stream().mapToInt(w -> w.getWidth(font)).sum();
+    }
+
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    public static class Builder implements BlockWidget.Builder<BranchWidget> {
+        private final List<CodeWidget> head = new ArrayList<>(),
+                elseHead = new ArrayList<>();
+        private BlockWidget child, branch, elseBranch;
+        public Builder headExpr(CodeWidget head) {
+            this.head.add(head);
+            return this;
+        }
+
+        public Builder elseHeadExpr(CodeWidget elseHead) {
+            this.elseHead.add(elseHead);
+            return this;
+        }
+
+        public Builder withChild(BlockWidget.Builder<?> builder) {
+            this.child = builder.build();
+            return this;
+        }
+
+        public Builder withBranch(BlockWidget.Builder<?> builder) {
+            this.branch = builder.build();
+            return this;
+        }
+
+        public Builder withElseBranch(BlockWidget.Builder<?> builder) {
+            this.elseBranch = builder.build();
+            return this;
+        }
+
+        @Override
+        public BranchWidget build() {
+            boolean hasElse = this.elseBranch != null || !this.elseHead.isEmpty();
+            return new BranchWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null);
+        }
     }
 }
