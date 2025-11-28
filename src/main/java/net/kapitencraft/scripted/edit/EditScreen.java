@@ -24,4 +24,10 @@ public class EditScreen extends Screen {
     public void render(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
         super.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
     }
+
+    @Override
+    public void mouseMoved(double mouseX, double mouseY) {
+        this.children().forEach(l -> l.mouseMoved(mouseX, mouseY));
+        super.mouseMoved(mouseX, mouseY);
+    }
 }

@@ -20,7 +20,8 @@ import java.util.List;
 
 public class GraphicalEditor extends AbstractWidget {
     private CodeWidget dragged;
-    private BlockWidget ghostTarget;
+    private final GhostBlockWidget ghostTarget = new GhostBlockWidget();
+    private BlockWidget ghostTargetParent;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -191,8 +192,19 @@ public class GraphicalEditor extends AbstractWidget {
         if (dragged != null && dragged instanceof BlockWidget) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
+            BlockWidget widget;
             for (CodeElement element : elements) {
-                
+                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
+                    if (widget != ghostTargetParent) {
+                        widget.insertChildMiddle(ghostTarget);
+                        ghostTargetParent = widget;
+                    }
+                    return;
+                }
+            }
+            if (this.ghostTargetParent != null) {
+                ghostTargetParent.setChild(ghostTarget.getChild());
+                ghostTargetParent = null;
             }
         }
         super.mouseMoved(mouseX, mouseY);
@@ -201,7 +213,7 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.dragged != null) {
-            if (this.ghostTarget != null && this.dragged instanceof BlockWidget blockWidget) {
+            if (ghostTargetParent != null && this.dragged instanceof BlockWidget blockWidget) {
                 blockWidget.setBottomChild(this.ghostTarget.getChild());
                 this.ghostTarget.setChild(blockWidget);
             }
@@ -272,6 +284,12 @@ public class GraphicalEditor extends AbstractWidget {
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
         }
+
+        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+            if (!(this.widget instanceof BlockWidget blockWidget))
+                return null;
+            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
+        }
     }
 
     private class GhostBlockWidget extends BlockWidget {
@@ -289,6 +307,19 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public int getHeight() {
             return dragged.getHeight();
+        }
+
+        @Override
+        public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+            return null;
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+            int height = getHeight();
+            graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
+            graphics.drawString(font, "ghost", renderX + 6, renderY + 7, 0, false);
+            super.render(graphics, font, renderX, renderY);
         }
 
         @Override

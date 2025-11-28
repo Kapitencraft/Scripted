@@ -63,6 +63,19 @@ public class LoopWidget extends BlockWidget {
     }
 
     @Override
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+        if (y < this.getHeadHeight())
+            return this;
+        y -= this.getHeadHeight();
+        if (this.body != null && y < this.body.getHeightWithChildren())
+            return this.body.getGhostBlockWidgetTarget(x, y);
+        if (y < 16)
+            return this;
+        y -= 16;
+        return this.getChild().getGhostBlockWidgetTarget(x, y);
+    }
+
+    @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getWidth(font))

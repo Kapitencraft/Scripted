@@ -39,8 +39,31 @@ public abstract class BlockWidget implements CodeWidget, Removable {
         return result.setRemoved();
     }
 
-    public interface Builder<T extends BlockWidget> {
+    public int getHeightWithChildren() {
+        int height = this.getHeight();
+        BlockWidget widget = this.getChild();
+        while (widget != null) {
+            height += widget.getHeight();
+            widget = widget.getChild();
+        }
+        return height;
+    }
 
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+        if (y < this.getHeight()) {
+            return this;
+        }
+        if (this.child != null)
+            return this.child.getGhostBlockWidgetTarget(x, y - getHeight());
+        return null;
+    }
+
+    public void insertChildMiddle(BlockWidget widget) {
+        widget.setChild(this.child);
+        this.setChild(widget);
+    }
+
+    public interface Builder<T extends BlockWidget> {
         T build();
     }
 }

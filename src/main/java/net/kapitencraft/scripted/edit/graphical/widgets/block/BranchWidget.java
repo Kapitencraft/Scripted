@@ -52,6 +52,28 @@ public class BranchWidget extends BlockWidget {
     }
 
     @Override
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+        if (y < getHeadHeight())
+            return this;
+
+        y -= getHeadHeight();
+        if (y < getBranchHeight())
+            return this.conditionBody.getGhostBlockWidgetTarget(x, y);
+
+        y -= getBranchHeight();
+        if (y < getElseHeadHeight())
+            return this;
+        y -= getElseHeadHeight();
+        if (y < 16)
+            return this;
+        return null;
+    }
+
+    private int getBranchHeight() {
+        return this.conditionBody.getHeightWithChildren();
+    }
+
+    @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headWidth = getWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, 22);
