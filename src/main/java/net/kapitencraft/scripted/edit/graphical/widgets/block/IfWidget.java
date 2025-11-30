@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -10,23 +12,44 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
-public class BranchWidget extends BlockWidget {
+public class IfWidget extends BlockWidget {
+    public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
+            commonFields(i).and(
+                    CodeWidget.CODEC.listOf().fieldOf("head").forGetter(w -> w.head)
+            ).and(
+                    BlockWidget.CODEC.optionalFieldOf("condition_body").forGetter(w -> Optional.ofNullable(w.conditionBody))
+            ).and(
+                    CodeWidget.CODEC.listOf().fieldOf("else_head").forGetter(w -> w.elseHead)
+            ).and(
+                    BlockWidget.CODEC.optionalFieldOf("else_body").forGetter(w -> Optional.ofNullable(w.elseBody))
+            ).apply(i, IfWidget::new)
+    );
+
     private final List<CodeWidget> head;
-    private BlockWidget conditionBody;
+    private @Nullable BlockWidget conditionBody;
     private final List<CodeWidget> elseHead;
-    private BlockWidget elseBody;
+    private @Nullable BlockWidget elseBody;
 
-    public BranchWidget(List<CodeWidget> head, List<CodeWidget> elseHead) {
+    public IfWidget(List<CodeWidget> head, List<CodeWidget> elseHead) {
         this.head = head;
         this.elseHead = elseHead;
     }
 
-    private BranchWidget(BlockWidget child, List<CodeWidget> head, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody) {
+    private IfWidget(BlockWidget child, List<CodeWidget> head, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody) {
         this(head, elseHead);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
         this.setChild(child);
+    }
+
+    public IfWidget(Optional<BlockWidget> child, List<CodeWidget> headWidgets, Optional<BlockWidget> conditionBody, List<CodeWidget> elseWidgets, Optional<BlockWidget> elseBody) {
+        child.ifPresent(this::setChild);
+        this.head = headWidgets;
+        this.conditionBody = conditionBody.orElse(null);
+        this.elseHead = elseWidgets;
+        this.elseBody = elseBody.orElse(null);
     }
 
     public static Builder builder() {
@@ -35,7 +58,7 @@ public class BranchWidget extends BlockWidget {
 
     @Override
     public Type getType() {
-        return null;
+        return Type.IF;
     }
 
     @Override
@@ -120,7 +143,7 @@ public class BranchWidget extends BlockWidget {
         return null;
     }
 
-    public static class Builder implements BlockWidget.Builder<BranchWidget> {
+    public static class Builder implements BlockWidget.Builder<IfWidget> {
         private final List<CodeWidget> head = new ArrayList<>(),
                 elseHead = new ArrayList<>();
         private BlockWidget child, branch, elseBranch;
@@ -150,9 +173,9 @@ public class BranchWidget extends BlockWidget {
         }
 
         @Override
-        public BranchWidget build() {
+        public IfWidget build() {
             boolean hasElse = this.elseBranch != null || !this.elseHead.isEmpty();
-            return new BranchWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null);
+            return new IfWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null);
         }
     }
 }

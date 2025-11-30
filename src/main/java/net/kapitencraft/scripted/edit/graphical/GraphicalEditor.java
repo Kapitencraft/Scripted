@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.*;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
 import net.minecraft.client.gui.Font;
@@ -9,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -19,8 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GraphicalEditor extends AbstractWidget {
+    private final Registry<SelectionTab> tabs;
+
     private CodeWidget dragged;
-    private final GhostBlockWidget ghostTarget = new GhostBlockWidget();
+    private final GhostBlockWidget ghostElement = new GhostBlockWidget();
+    private CodeElement ghostTargetElement;
     private BlockWidget ghostTargetParent;
     private int draggedOffsetX, draggedOffsetY;
 
@@ -28,8 +33,9 @@ public class GraphicalEditor extends AbstractWidget {
     private float scrollX, scrollY, scale = 1;
     private final List<CodeElement> elements = new ArrayList<>();
 
-    public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font) {
+    public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
         super(pX, pY, pWidth, pHeight, pMessage);
+        this.tabs = tabs;
         this.font = font;
 
         this.elements.add(
@@ -49,7 +55,7 @@ public class GraphicalEditor extends AbstractWidget {
                                                         .withHead(new TextWidget("while x"))
                                                         .setBody(BodyWidget.text("enclosed"))
                                                         .setChild(BodyWidget.text("after enclosure")
-                                                                .setChild(BranchWidget.builder()
+                                                                .setChild(IfWidget.builder()
                                                                         .headExpr(new TextWidget("if something"))
                                                                         .withBranch(BodyWidget.text("branch"))
                                                                         .elseHeadExpr(new TextWidget("else"))
@@ -61,10 +67,13 @@ public class GraphicalEditor extends AbstractWidget {
                         ).build()
                 )
         );
+
+
     }
 
     @Override
     protected void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
+
         pGuiGraphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight());
         PoseStack pose = pGuiGraphics.pose();
         {
@@ -196,15 +205,17 @@ public class GraphicalEditor extends AbstractWidget {
             for (CodeElement element : elements) {
                 if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
                     if (widget != ghostTargetParent) {
-                        widget.insertChildMiddle(ghostTarget);
+                        widget.insertChildMiddle(ghostElement);
                         ghostTargetParent = widget;
+                        ghostTargetElement = element;
                     }
                     return;
                 }
             }
             if (this.ghostTargetParent != null) {
-                ghostTargetParent.setChild(ghostTarget.getChild());
+                ghostTargetParent.setChild(ghostElement.getChild());
                 ghostTargetParent = null;
+                ghostTargetElement = null;
             }
         }
         super.mouseMoved(mouseX, mouseY);
@@ -214,13 +225,18 @@ public class GraphicalEditor extends AbstractWidget {
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.dragged != null) {
             if (ghostTargetParent != null && this.dragged instanceof BlockWidget blockWidget) {
-                blockWidget.setBottomChild(this.ghostTarget.getChild());
-                this.ghostTarget.setChild(blockWidget);
+                blockWidget.setBottomChild(this.ghostElement.getChild());
+                this.ghostTargetParent.setChild(blockWidget);
+                this.ghostTargetParent = null;
+                this.ghostTargetElement.recalculateSize();
+                this.ghostTargetElement = null;
+            } else {
+                int uiX = (int) (mouseX / scale - scrollX) - getX();
+                int uiY = (int) (mouseY / scale - scrollY) - getY();
+                this.elements.addFirst(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
             }
-            int uiX = (int) (mouseX / scale - scrollX) - getX();
-            int uiY = (int) (mouseY / scale - scrollY) - getY();
-            this.elements.addFirst(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
             this.dragged = null;
+            return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }

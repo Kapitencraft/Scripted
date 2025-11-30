@@ -1,11 +1,21 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BodyWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.util.StringRepresentable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 public interface CodeWidget {
+    Codec<CodeWidget> CODEC = Type.CODEC.dispatch(CodeWidget::getType, Type::getEntryCodec);
 
     Type getType();
 
@@ -15,14 +25,33 @@ public interface CodeWidget {
 
     int getHeight();
 
-    enum Type {
-        START,
-        TEXT,
-        BODY,
-        VAR_BOOL,
-        VAR_PRIMITIVE,
-        VAR_OTHER,
-        END
+    //lambda necessary to ensure
+    enum Type implements StringRepresentable {
+        HEAD(() -> HeadWidget.CODEC),
+        TEXT(() -> TextWidget.CODEC),
+        LOOP(() ->  LoopWidget.CODEC),
+        IF(() -> IfWidget.CODEC),
+        BODY(() -> BodyWidget.CODEC),
+        EXPR(() -> ExprWidget.CODEC),
+        METHOD(() -> MethodWidget.CODEC),
+        SELECTION(() -> SelectionWidget.CODEC);
+
+        public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
+
+        private final Supplier<MapCodec<? extends CodeWidget>> entryCodec;
+
+        Type(Supplier<MapCodec<? extends CodeWidget>> entryCodec) {
+            this.entryCodec = entryCodec;
+        }
+
+        @Override
+        public @NotNull String getSerializedName() {
+            return this.name().toLowerCase();
+        }
+
+        public MapCodec<? extends CodeWidget> getEntryCodec() {
+            return entryCodec.get();
+        }
     }
 
     static int getHeightFromList(List<CodeWidget> widgets) {

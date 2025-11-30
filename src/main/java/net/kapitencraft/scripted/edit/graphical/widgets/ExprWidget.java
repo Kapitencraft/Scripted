@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.minecraft.client.gui.Font;
@@ -9,6 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ExprWidget implements CodeWidget, Removable {
+    public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            ExprType.CODEC.fieldOf("expr_type").forGetter(w -> w.type),
+            CodeWidget.CODEC.listOf().fieldOf("children").forGetter(w -> w.children)
+    ).apply(i, ExprWidget::new));
+
     private final ExprType type;
     private final List<CodeWidget> children;
 
@@ -19,7 +26,7 @@ public class ExprWidget implements CodeWidget, Removable {
 
     @Override
     public Type getType() {
-        return null;
+        return Type.EXPR;
     }
 
     @Override

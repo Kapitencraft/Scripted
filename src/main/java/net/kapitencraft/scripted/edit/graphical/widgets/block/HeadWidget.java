@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -11,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HeadWidget extends BlockWidget {
+    public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            CodeWidget.CODEC.listOf().fieldOf("expr").forGetter(w -> w.expr)
+    ).apply(i, HeadWidget::new));
+
     private final List<CodeWidget> expr;
 
     public HeadWidget(List<CodeWidget> expr) {
@@ -24,7 +30,7 @@ public class HeadWidget extends BlockWidget {
 
     @Override
     public Type getType() {
-        return null;
+        return Type.HEAD;
     }
 
     @Override

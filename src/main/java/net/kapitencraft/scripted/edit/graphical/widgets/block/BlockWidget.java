@@ -1,12 +1,31 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.datafixers.Products;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.Removable;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
+import java.util.Optional;
+import java.util.function.Function;
+
 public abstract class BlockWidget implements CodeWidget, Removable {
+    public static final Codec<BlockWidget> CODEC = CodeWidget.CODEC.comapFlatMap(c ->
+            c instanceof BlockWidget bw ? DataResult.success(bw) :
+                    DataResult.error(() -> "code widget not block: " + c.getType().getSerializedName()),
+            Function.identity()
+    );
+
+    protected static <T extends BlockWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<BlockWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
+        return instance.group(
+                CODEC.optionalFieldOf("child")
+                        .forGetter(w  -> Optional.ofNullable(w.getChild())));
+    }
+
     private BlockWidget child;
 
     public void setChild(BlockWidget child) {

@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -10,8 +12,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class LoopWidget extends BlockWidget {
+    public static final MapCodec<LoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
+            BlockWidget.commonFields(i).and(
+                    CodeWidget.CODEC.listOf().fieldOf("head").forGetter(w -> w.head)
+            ).and(
+                    BlockWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
+            ).apply(i, LoopWidget::new)
+    );
+
     private final List<CodeWidget> head;
     private @Nullable BlockWidget body;
 
@@ -26,9 +37,15 @@ public class LoopWidget extends BlockWidget {
         this.setChild(child);
     }
 
+    public LoopWidget(Optional<BlockWidget> blockWidget, List<CodeWidget> widgets, Optional<BlockWidget> body) {
+        blockWidget.ifPresent(this::setChild);
+        this.head = widgets;
+        this.body = body.orElse(null);
+    }
+
     @Override
     public Type getType() {
-        return null;
+        return Type.LOOP;
     }
 
     @Override

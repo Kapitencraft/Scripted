@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.IRenderable;
@@ -11,8 +13,15 @@ import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class BodyWidget extends BlockWidget {
+    public static final MapCodec<BodyWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
+            commonFields(i).and(
+                    CodeWidget.CODEC.listOf().fieldOf("expr").forGetter(w -> w.expr)
+            ).apply(i, BodyWidget::new)
+    );
+
     private final List<CodeWidget> expr;
 
     public BodyWidget(IRenderable renderable) {
@@ -32,13 +41,18 @@ public class BodyWidget extends BlockWidget {
         this.setChild(child);
     }
 
+    public BodyWidget(Optional<BlockWidget> child, List<CodeWidget> widgets) {
+        child.ifPresent(this::setChild);
+        this.expr = widgets;
+    }
+
     public static Builder text(String enclosed) {
         return builder().withExpr(new TextWidget(enclosed));
     }
 
     @Override
     public Type getType() {
-        return null;
+        return Type.BODY;
     }
 
     @Override
