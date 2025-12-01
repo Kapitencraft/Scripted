@@ -5,11 +5,13 @@ import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.*;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
+import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -31,6 +33,7 @@ public class GraphicalEditor extends AbstractWidget {
 
     private final Font font;
     private float scrollX, scrollY, scale = 1;
+    private float selectionScroll;
     private final List<CodeElement> elements = new ArrayList<>();
 
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
@@ -128,6 +131,35 @@ public class GraphicalEditor extends AbstractWidget {
         }
         pose.popPose();
         //endregion
+
+        pose.pushPose();
+        pose.translate(getX() + 1, getY() + 1, 0);
+        pose.scale(.5f, .5f, 1);
+        Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
+        for (int i = 0; i < tabs.length; i++) {
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tabs[i].getKey().location())), 0, i * 10, -1, false);
+        }
+        pose.popPose();
+
+        pGuiGraphics.enableScissor(this.getX() + 30, this.getY(), this.getX() + 70, this.getY() + this.getHeight());
+        pose.pushPose();
+        pose.translate(getX() + 40, getY(), 0);
+        pose.scale(0.5f, 0.5f, 1);
+        pose.translate(0, this.selectionScroll, 0);
+        int y = 1;
+        for (Holder<SelectionTab> tab : tabs) {
+            SelectionTab value = tab.value();
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, 0, false);
+            y += 10;
+            for (int i1 = 0; i1 < value.widgets().size(); i1++) {
+                CodeWidget widget = value.widgets().get(i1);
+                widget.render(pGuiGraphics, font, 0, y);
+                y += widget.getHeight();
+                y += 5;
+            }
+        }
+        pose.popPose();
+        pGuiGraphics.disableScissor();
     }
 
     @Override

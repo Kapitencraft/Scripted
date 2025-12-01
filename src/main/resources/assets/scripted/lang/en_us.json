@@ -13,5 +13,7 @@
   "var_types.scripted.data_storage": "DataStorage",
   "var_types.scripted.item_stack": "ItemStack",
   "var_types.scripted.var_type": "VarType",
-  "scripted.edit": "Save..."
+  "scripted.edit": "Save...",
+
+  "selection_tab.scripted.operators": "Operators"
 }
