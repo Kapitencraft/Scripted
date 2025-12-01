@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.IRenderable;
+import net.kapitencraft.scripted.edit.graphical.code.Code;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.TextWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -24,7 +24,7 @@ public class BodyWidget extends BlockWidget {
 
     private final List<CodeWidget> expr;
 
-    public BodyWidget(IRenderable renderable) {
+    public BodyWidget(Code renderable) {
         this.expr = RenderHelper.decompileVisualText(renderable);
     }
 

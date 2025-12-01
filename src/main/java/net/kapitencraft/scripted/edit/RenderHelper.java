@@ -1,8 +1,7 @@
 package net.kapitencraft.scripted.edit;
 
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.IRenderable;
 import net.kapitencraft.scripted.edit.graphical.RenderMap;
+import net.kapitencraft.scripted.edit.graphical.code.Code;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.TextWidget;
 import net.minecraft.client.gui.Font;
@@ -18,7 +17,7 @@ public interface RenderHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("%\\{([a-zA-Z0-9_]+)}%"); //oooh pattern :pog:
 
-    static List<CodeWidget> decompileVisualText(IRenderable renderable) {
+    static List<CodeWidget> decompileVisualText(Code renderable) {
         RenderMap map = renderable.getParamData();
         List<CodeWidget> list = new ArrayList<>();
         String inst = Language.getInstance().getOrDefault(renderable.translationKey());
@@ -33,14 +32,6 @@ public interface RenderHelper {
             list.addAll(decompileVisualText(map.getParam(name)));
         }
         return list;
-    }
-
-    static void renderStmtList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> statements) {
-        for (CodeWidget widget : statements) {
-            widget.render(graphics, font, renderX, renderY);
-            int height = widget.getHeight();
-            renderY += height;
-        }
     }
 
     static void renderExprList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> children) {

@@ -25,7 +25,8 @@ public interface CodeWidget {
 
     int getHeight();
 
-    //lambda necessary to ensure
+    //TODO convert back to code representation before saving
+    //lambda necessary to ensure load order doesn't create cycle
     enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         TEXT(() -> TextWidget.CODEC),

@@ -1,0 +1,14 @@
+{
+  "§assign_add": "increase %{var}% by %{value}%",
+  "§assign_sub": "remove %{value}% from %{var}%",
+  "§assign_mul": "scale %{var}% with %{value}%",
+  "§assign_div": "divide %{var}% by %{value}%",
+  "§if": "if %{condition} do",
+  "§while": "while %{condition}% do",
+  "§for": "for %{var}% from %{min}% to %{max}% each %{interval}% do",
+  "§return": "return %{value}%",
+  "§break": "break this loop",
+  "§continue": "continue with next loop iteration",
+  "§else_if": "else if %{condition} do",
+  "§else": "otherwise do"
+}
