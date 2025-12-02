@@ -43,12 +43,16 @@ public class GraphicalEditor extends AbstractWidget {
 
         this.elements.add(
                 new CodeElement(HeadWidget.builder()
-                        .withExpr(new TextWidget("First Method omg"))
+                        .setTranslationKey("scripted.code.head.test")
                         .setChild(
                                 BodyWidget.text("ABCDEFGHIJKLMNOP")
                                         .setChild(BodyWidget.builder()
                                                 .withExpr(new TextWidget("Scripted!"))
-                                                .withExpr(new ExprWidget(ExprType.BOOLEAN, List.of(
+                                                .withExpr(ExprWidget.builder()
+                                                        .setTranslationKey("scripted.code.expr.test0")
+                                                        .setType(ExprType.BOOLEAN)
+                                                        .withParam("")
+    new ExprWidget(ExprType.BOOLEAN, List.of(
                                                         new TextWidget("A"),
                                                         new ExprWidget(ExprType.OTHER, List.of(
                                                                 new TextWidget("abcdef")
@@ -59,7 +63,7 @@ public class GraphicalEditor extends AbstractWidget {
                                                         .setBody(BodyWidget.text("enclosed"))
                                                         .setChild(BodyWidget.text("after enclosure")
                                                                 .setChild(IfWidget.builder()
-                                                                        .headExpr(new TextWidget("if something"))
+                                                                        .setCondition(new TextWidget("if something"))
                                                                         .withBranch(BodyWidget.text("branch"))
                                                                         .elseHeadExpr(new TextWidget("else"))
                                                                         .withElseBranch(BodyWidget.text("else branch"))

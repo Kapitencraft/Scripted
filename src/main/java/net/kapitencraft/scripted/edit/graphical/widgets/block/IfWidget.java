@@ -1,10 +1,13 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,43 +15,44 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class IfWidget extends BlockWidget {
     public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
-                    CodeWidget.CODEC.listOf().fieldOf("head").forGetter(w -> w.head)
+                    CodeWidget.CODEC.fieldOf("head").forGetter(w -> w.condition)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("condition_body").forGetter(w -> Optional.ofNullable(w.conditionBody))
             ).and(
-                    CodeWidget.CODEC.listOf().fieldOf("else_head").forGetter(w -> w.elseHead)
+                    Codec.BOOL.optionalFieldOf("show_else", true).forGetter(w -> w.elseVisible)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("else_body").forGetter(w -> Optional.ofNullable(w.elseBody))
             ).apply(i, IfWidget::new)
     );
 
-    private final List<CodeWidget> head;
+    private final CodeWidget condition;
+    private boolean elseVisible;
     private @Nullable BlockWidget conditionBody;
-    private final List<CodeWidget> elseHead;
     private @Nullable BlockWidget elseBody;
 
-    public IfWidget(List<CodeWidget> head, List<CodeWidget> elseHead) {
-        this.head = head;
-        this.elseHead = elseHead;
+    public IfWidget(CodeWidget condition, List<CodeWidget> elseHead) {
+        this.condition = condition;
     }
 
-    private IfWidget(BlockWidget child, List<CodeWidget> head, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody) {
-        this(head, elseHead);
+    private IfWidget(BlockWidget child, CodeWidget condition, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody, boolean showElse) {
+        this(condition, elseHead);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
         this.setChild(child);
+        this.elseVisible = showElse;
     }
 
-    public IfWidget(Optional<BlockWidget> child, List<CodeWidget> headWidgets, Optional<BlockWidget> conditionBody, List<CodeWidget> elseWidgets, Optional<BlockWidget> elseBody) {
+    public IfWidget(Optional<BlockWidget> child, CodeWidget headWidgets, Optional<BlockWidget> conditionBody, boolean elseVisible, Optional<BlockWidget> elseBody) {
         child.ifPresent(this::setChild);
-        this.head = headWidgets;
+        this.condition = headWidgets;
+        this.elseVisible = elseVisible;
         this.conditionBody = conditionBody.orElse(null);
-        this.elseHead = elseWidgets;
         this.elseBody = elseBody.orElse(null);
     }
 
@@ -80,7 +84,7 @@ public class IfWidget extends BlockWidget {
             return this;
 
         y -= getHeadHeight();
-        if (y < getBranchHeight())
+        if (y < getBranchHeight() && this.conditionBody != null)
             return this.conditionBody.getGhostBlockWidgetTarget(x, y);
 
         y -= getBranchHeight();
@@ -100,17 +104,17 @@ public class IfWidget extends BlockWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headWidth = getWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, 22);
-        RenderHelper.renderExprList(graphics, font, renderX + 6, renderY + 7, head);
+        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 7, "§if", Map.of("condition", condition));
         int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeight() : 10;
         int headHeight = getHeadHeight();
         if (this.conditionBody != null)
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
-        if (elseHead != null) {
+        if (elseVisible) {
             graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, 22);
             int elseHeadHeight = getHeadHeight();
             int elseBodyHeight = this.elseBody != null ? this.elseBody.getHeight() : 10;
-            RenderHelper.renderExprList(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + 7, elseHead);
+            RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + 7, "§else", Map.of());
             if (this.elseBody != null) {
                 this.elseBody.render(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + elseHeadHeight);
             }
@@ -123,19 +127,19 @@ public class IfWidget extends BlockWidget {
     }
 
     private int getHeadHeight() {
-        return Math.max(19, this.head.stream().mapToInt(CodeWidget::getHeight).max().orElse(19));
+        return Math.max(19, this.condition.getHeight());
     }
 
     private int getElseHeadHeight() {
-        return Math.max(19, this.head.stream().mapToInt(CodeWidget::getHeight).max().orElse(19));
+        return Math.max(19, this.condition.getHeight());
     }
 
     private int getHeadWidth(Font font) {
-        return this.head.stream().mapToInt(w -> w.getWidth(font)).sum();
+        return RenderHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
     }
 
     private int getElseHeadWidth(Font font) {
-        return this.elseHead.stream().mapToInt(w -> w.getWidth(font)).sum();
+        return RenderHelper.getVisualTextWidth(font, "§else", Map.of());
     }
 
     @Override
@@ -144,16 +148,22 @@ public class IfWidget extends BlockWidget {
     }
 
     public static class Builder implements BlockWidget.Builder<IfWidget> {
-        private final List<CodeWidget> head = new ArrayList<>(),
-                elseHead = new ArrayList<>();
+        private CodeWidget head = new ParamWidget(ExprType.BOOLEAN);
+        private boolean showElse = true;
+        private final List<CodeWidget> elseHead = new ArrayList<>();
         private BlockWidget child, branch, elseBranch;
-        public Builder headExpr(CodeWidget head) {
-            this.head.add(head);
+        public Builder setCondition(CodeWidget head) {
+            this.head = head;
             return this;
         }
 
         public Builder elseHeadExpr(CodeWidget elseHead) {
             this.elseHead.add(elseHead);
+            return this;
+        }
+
+        public Builder hideElse() {
+            this.showElse = false;
             return this;
         }
 
@@ -169,13 +179,14 @@ public class IfWidget extends BlockWidget {
 
         public Builder withElseBranch(BlockWidget.Builder<?> builder) {
             this.elseBranch = builder.build();
+            this.showElse = true;
             return this;
         }
 
         @Override
         public IfWidget build() {
             boolean hasElse = this.elseBranch != null || !this.elseHead.isEmpty();
-            return new IfWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null);
+            return new IfWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null, showElse);
         }
     }
 }

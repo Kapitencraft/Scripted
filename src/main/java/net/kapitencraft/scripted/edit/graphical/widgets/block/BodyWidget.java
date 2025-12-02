@@ -24,10 +24,6 @@ public class BodyWidget extends BlockWidget {
 
     private final List<CodeWidget> expr;
 
-    public BodyWidget(Code renderable) {
-        this.expr = RenderHelper.decompileVisualText(renderable);
-    }
-
     public BodyWidget(List<CodeWidget> expr) {
         this.expr = expr;
     }
@@ -70,7 +66,7 @@ public class BodyWidget extends BlockWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(19, 9 + CodeWidget.getHeightFromList(this.expr));
+        return Math.max(19, 9 + CodeWidget.getHeightFromArgs(this.expr));
     }
 
     public static Builder builder() {

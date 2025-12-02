@@ -27,6 +27,7 @@ public record WidgetFetchResult(boolean removed, int x, int y, CodeWidget widget
             if (x < widgetWidth) {
                 if (widget instanceof Removable removable) {
                     WidgetFetchResult result = removable.fetchAndRemoveHovered(x, y, font);
+                    if (result == null) return null;
                     if (remove && !result.removed()) {
                         expr.remove(i); //assuming it was removed directly from this expr
                     }

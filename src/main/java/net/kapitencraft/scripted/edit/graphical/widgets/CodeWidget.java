@@ -12,6 +12,7 @@ import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 public interface CodeWidget {
@@ -34,7 +35,6 @@ public interface CodeWidget {
         IF(() -> IfWidget.CODEC),
         BODY(() -> BodyWidget.CODEC),
         EXPR(() -> ExprWidget.CODEC),
-        METHOD(() -> MethodWidget.CODEC),
         SELECTION(() -> SelectionWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
@@ -55,11 +55,15 @@ public interface CodeWidget {
         }
     }
 
-    static int getHeightFromList(List<CodeWidget> widgets) {
-        return widgets.stream().mapToInt(CodeWidget::getHeight).max().orElse(0);
+    static int getHeightFromArgs(Map<String, CodeWidget> widgets) {
+        return widgets.values().stream().mapToInt(CodeWidget::getHeight).max().orElse(0);
     }
 
     static int getWidthFromList(Font font, List<CodeWidget> widgets) {
         return widgets.stream().mapToInt(w -> w.getWidth(font)).sum();
+    }
+
+    interface Builder<T extends CodeWidget> {
+        T build();
     }
 }
