@@ -30,7 +30,7 @@
   "§break": "break this loop",
   "§continue": "continue with next loop iteration",
   "§else_if": "else if %{condition} do",
-  "§else": "otherwise do",
+  "§else": "else do",
 
   "scripted.code.head.test": "First Method OMG"
 }
