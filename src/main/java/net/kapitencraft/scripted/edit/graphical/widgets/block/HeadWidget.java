@@ -39,7 +39,7 @@ public class HeadWidget extends BlockWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, renderX, renderY, getWidth(font), 3 + getHeight());
-        RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 15, this.expr);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 15, this.translationKey, this.children);
         super.render(graphics, font, renderX, renderY);
     }
 
@@ -50,7 +50,7 @@ public class HeadWidget extends BlockWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(27, 17 + CodeWidget.getHeightFromArgs(this.expr));
+        return Math.max(27, 17 + CodeWidget.getHeightFromArgs(this.children));
     }
 
     public static Builder builder() {

@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BodyWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.VarModWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
@@ -33,7 +33,7 @@ public interface CodeWidget {
         TEXT(() -> TextWidget.CODEC),
         LOOP(() ->  LoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),
-        BODY(() -> BodyWidget.CODEC),
+        BODY(() -> VarModWidget.CODEC),
         EXPR(() -> ExprWidget.CODEC),
         SELECTION(() -> SelectionWidget.CODEC);
 

@@ -81,6 +81,10 @@ public class ExprWidget implements CodeWidget, Removable {
             return this;
         }
 
+        public Builder withParam(String argName, CodeWidget.Builder<?> builder) {
+            return this.withParam(argName, builder.build());
+        }
+
         @Override
         public ExprWidget build() {
             return new ExprWidget(type, translationKey, args);

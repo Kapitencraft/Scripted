@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.widgets.TextWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BodyWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.VarModWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
 import net.kapitencraft.scripted.registry.ModRegistries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -17,7 +17,7 @@ public class SelectionTabs {
 
     public static void bootstrap(BootstrapContext<SelectionTab> context) {
         context.register(OPERATORS, new SelectionTab.Builder()
-                .withEntry(BodyWidget.text("a test"))
+                .withEntry(VarModWidget.text("a test"))
                         .withEntry(LoopWidget.builder().withHead(new TextWidget("looooooop")))
                 .build()
         );
