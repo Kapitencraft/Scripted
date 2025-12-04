@@ -45,8 +45,9 @@ public class GraphicalEditor extends AbstractWidget {
                 new CodeElement(HeadWidget.builder()
                         .setTranslationKey("scripted.code.head.test")
                         .setChild(
-                                VarModWidget.builder()
-                                                .setTranslationKey("scripted.code.expr.test2")
+                                MethodStmtWidget.builder()
+                                        .setSignature("Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D")
+                                        .withArgument("vec3", new GetVarWidget("position"))
                                         .setChild(VarModWidget.builder()
                                                 .setExpr(ExprWidget.builder()
                                                         .setTranslationKey("scripted.code.expr.test0")
@@ -54,16 +55,18 @@ public class GraphicalEditor extends AbstractWidget {
                                                         .withParam("arg0", ExprWidget.builder()
                                                                 .setTranslationKey("scripted.code.expr.test1")
                                                         )
-                                                ).setChild(LoopWidget.builder()
-                                                        .withHead(new TextWidget("while x"))
-                                                        .setBody(VarModWidget.text("enclosed"))
-                                                        .setChild(VarModWidget.text("after enclosure")
-                                                                .setChild(IfWidget.builder()
-                                                                        .setCondition(new TextWidget("if something"))
-                                                                        .withBranch(VarModWidget.text("branch"))
-                                                                        .elseHeadExpr(new TextWidget("else"))
-                                                                        .withElseBranch(VarModWidget.text("else branch"))
-                                                                )
+                                                ).setChild(WhileLoopWidget.builder()
+                                                        .setCondition(new TextWidget("while x"))
+                                                        .setBody(MethodStmtWidget.builder()
+                                                                .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;")
+                                                        )
+                                                        .setChild(IfWidget.builder()
+                                                                .setCondition(new TextWidget("if something"))
+                                                                .withBranch(MethodStmtWidget.builder()
+                                                                        .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
+                                                                .elseHeadExpr(new TextWidget("else"))
+                                                                .withElseBranch(MethodStmtWidget.builder()
+                                                                        .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
                                                         )
                                                 )
                                         ).build()
@@ -104,7 +107,7 @@ public class GraphicalEditor extends AbstractWidget {
         //0 = scale * (translate + aPos)
         //0 = translate + aPos | -translate
         //-translate = aPos
-        int minX =  -(int)scrollX;
+        int minX = -(int) scrollX;
         int minY = -(int) scrollY;
         //width = scale * (translate + aPos) | /scale
         //width / scale = translate + aPos | - translate

@@ -2,10 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.VarModWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.LoopWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -15,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface CodeWidget {
+public interface CodeWidget extends Removable {
     Codec<CodeWidget> CODEC = Type.CODEC.dispatch(CodeWidget::getType, Type::getEntryCodec);
 
     Type getType();
@@ -31,10 +28,12 @@ public interface CodeWidget {
     enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         TEXT(() -> TextWidget.CODEC),
-        LOOP(() ->  LoopWidget.CODEC),
+        WHILE_LOOP(() ->  WhileLoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),
         BODY(() -> VarModWidget.CODEC),
         EXPR(() -> ExprWidget.CODEC),
+        METHOD_STMT(() -> MethodStmtWidget.CODEC),
+        GET_VAR(() -> GetVarWidget.CODEC),
         SELECTION(() -> SelectionWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);

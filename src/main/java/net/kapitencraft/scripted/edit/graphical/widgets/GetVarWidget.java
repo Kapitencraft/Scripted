@@ -7,35 +7,35 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 
-public class TextWidget implements CodeWidget {
-    public static final MapCodec<TextWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.STRING.fieldOf("text").forGetter(w -> w.text)
-    ).apply(i, TextWidget::new));
+public class GetVarWidget implements CodeWidget {
+    public static final MapCodec<GetVarWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Codec.STRING.fieldOf("name").forGetter(w -> w.name)
+    ).apply(i, GetVarWidget::new));
 
-    private final String text;
+    private final String name;
 
-    public TextWidget(String text) {
-        this.text = text;
+    public GetVarWidget(String name) {
+        this.name = name;
     }
 
     @Override
     public Type getType() {
-        return Type.TEXT;
+        return Type.GET_VAR;
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.drawString(font, text, renderX, renderY, 0, false);
+
     }
 
     @Override
     public int getWidth(Font font) {
-        return font.width(this.text) + 1;
+        return 0;
     }
 
     @Override
     public int getHeight() {
-        return 10;
+        return 0;
     }
 
     @Override

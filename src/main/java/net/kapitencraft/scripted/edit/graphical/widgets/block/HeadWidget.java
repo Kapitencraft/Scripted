@@ -62,7 +62,7 @@ public class HeadWidget extends BlockWidget {
         if (y < 8) return WidgetFetchResult.notRemoved(this, x, y);
         if (y > this.getHeight()) return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
-            return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr, false);
+            return WidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.children, false);
         return null;
     }
 

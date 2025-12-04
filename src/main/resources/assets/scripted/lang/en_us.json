@@ -19,6 +19,7 @@
 
 
 
+
   "§assign": "set %{var}% to %{value}%",
   "§assign_add": "increase %{var}% by %{value}%",
   "§assign_sub": "remove %{value}% from %{var}%",
@@ -32,9 +33,14 @@
   "§continue": "continue with next loop iteration",
   "§else_if": "else if %{condition} do",
   "§else": "else do",
+  "§get": "get variable %{var}%",
 
   "scripted.code.head.test": "First Method OMG",
   "scripted.code.expr.test0": "a test with expr %{arg0}%",
   "scripted.code.expr.test1": "Some Expression",
-  "scripted.code.expr.test2": ""
+  "scripted.code.expr.test2": "",
+
+  "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D": "calculate dot product with %{vec}%",
+  "Lnet/minecraft/world/phys/Vec3;cross(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;": "calculate cross product with %{vec}%",
+  "Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;": "then normalize"
 }

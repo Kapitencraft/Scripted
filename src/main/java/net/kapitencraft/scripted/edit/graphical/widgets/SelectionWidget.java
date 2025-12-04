@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -38,5 +39,10 @@ public class SelectionWidget implements CodeWidget {
     @Override
     public int getHeight() {
         return 10;
+    }
+
+    @Override
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        return null;
     }
 }

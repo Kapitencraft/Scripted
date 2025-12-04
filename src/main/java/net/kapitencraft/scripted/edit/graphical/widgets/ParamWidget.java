@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets;
 import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.Nullable;
 
 public class ParamWidget implements CodeWidget {
     private final ExprType type;
@@ -29,5 +30,10 @@ public class ParamWidget implements CodeWidget {
     @Override
     public int getHeight() {
         return 12;
+    }
+
+    @Override
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        return null;
     }
 }

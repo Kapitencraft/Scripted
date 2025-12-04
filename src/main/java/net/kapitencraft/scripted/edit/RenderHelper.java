@@ -61,6 +61,5 @@ public interface RenderHelper {
         String subElement = inst.substring(j);
         width += font.width(subElement);
         return width;
-
     }
 }

@@ -4,55 +4,56 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-public class LoopWidget extends BlockWidget {
-    public static final MapCodec<LoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
+public class WhileLoopWidget extends BlockWidget {
+    public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             BlockWidget.commonFields(i).and(
-                    CodeWidget.CODEC.listOf().fieldOf("head").forGetter(w -> w.head)
+                    CodeWidget.CODEC.fieldOf("condition").forGetter(w -> w.condition)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
-            ).apply(i, LoopWidget::new)
+            ).apply(i, WhileLoopWidget::new)
     );
 
-    private final List<CodeWidget> head;
+    private final CodeWidget condition;
     private @Nullable BlockWidget body;
 
-    public LoopWidget(List<CodeWidget> head, @Nullable BlockWidget body) {
-        this.head = head;
+    public WhileLoopWidget(CodeWidget condition, @Nullable BlockWidget body) {
+        this.condition = condition;
         this.body = body;
     }
 
-    private LoopWidget(BlockWidget child, List<CodeWidget> head, @Nullable BlockWidget body) {
-        this.head = head;
+    private WhileLoopWidget(BlockWidget child, CodeWidget head, @Nullable BlockWidget body) {
+        this.condition = head;
         this.body = body;
         this.setChild(child);
     }
 
-    public LoopWidget(Optional<BlockWidget> blockWidget, List<CodeWidget> widgets, Optional<BlockWidget> body) {
+    public WhileLoopWidget(Optional<BlockWidget> blockWidget, CodeWidget widgets, Optional<BlockWidget> body) {
         blockWidget.ifPresent(this::setChild);
-        this.head = widgets;
+        this.condition = widgets;
         this.body = body.orElse(null);
     }
 
     @Override
     public Type getType() {
-        return Type.LOOP;
+        return Type.WHILE_LOOP;
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int loopWidth = 6 + getHeadWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, 22);
-        RenderHelper.renderExprList(graphics, font, renderX + 4, renderY + 7, head);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, "§while", Map.of("condition", this.condition));
         int bodyHeight = this.body != null ? this.body.getHeight() : 10;
         if (this.body != null)
             this.body.render(graphics, font, renderX + 6, renderY + getHeadHeight());
@@ -62,11 +63,11 @@ public class LoopWidget extends BlockWidget {
     }
 
     private int getHeadHeight() {
-        return Math.max(19, this.head.stream().mapToInt(CodeWidget::getHeight).max().orElse(19));
+        return Math.max(19, this.condition.getHeight());
     }
 
     private int getHeadWidth(Font font) {
-        return this.head.stream().mapToInt(w -> w.getWidth(font)).sum();
+        return this.condition.getWidth(font);
     }
 
     @Override
@@ -96,7 +97,7 @@ public class LoopWidget extends BlockWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getWidth(font))
-                return WidgetFetchResult.fromExprList(4, x, y, font, this, this.head);
+                //return WidgetFetchResult.fromExprList(4, x, y, font, this, this, this.head); TODO
             return null;
         }
         else if (y > this.getHeight()) {
@@ -116,9 +117,9 @@ public class LoopWidget extends BlockWidget {
         return new Builder();
     }
 
-    public static class Builder implements BlockWidget.Builder<LoopWidget> {
+    public static class Builder implements BlockWidget.Builder<WhileLoopWidget> {
         private BlockWidget child;
-        private final List<CodeWidget> head = new ArrayList<>();
+        private CodeWidget condition = new ParamWidget(ExprType.BOOLEAN);
         private BlockWidget body;
 
         public Builder setBody(BlockWidget.Builder<?> widget) {
@@ -131,14 +132,14 @@ public class LoopWidget extends BlockWidget {
             return this;
         }
 
-        public Builder withHead(CodeWidget widget) {
-            this.head.add(widget);
+        public Builder setCondition(CodeWidget widget) {
+            this.condition = widget;
             return this;
         }
 
         @Override
-        public LoopWidget build() {
-            return new LoopWidget(child, head, body);
+        public WhileLoopWidget build() {
+            return new WhileLoopWidget(child, condition, body);
         }
     }
 }

@@ -58,7 +58,7 @@ public class ExprWidget implements CodeWidget, Removable {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
-        return WidgetFetchResult.fromExprList(6, x, y, font, this, this.args);
+        return WidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
     } //TODO fix offset
 
     public static class Builder implements CodeWidget.Builder<ExprWidget> {
