@@ -4,16 +4,16 @@ import com.mojang.serialization.Codec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 
-public enum ExprType implements StringRepresentable {
+public enum ExprCategory implements StringRepresentable {
     NUMBER(CodeWidgetSprites.NUMBER_EXPR),
     BOOLEAN(CodeWidgetSprites.BOOL_EXPR),
     OTHER(CodeWidgetSprites.GENERIC_EXPR);
 
     private final ResourceLocation spriteLocation;
 
-    public static final Codec<ExprType> CODEC = StringRepresentable.fromEnum(ExprType::values);
+    public static final Codec<ExprCategory> CODEC = StringRepresentable.fromEnum(ExprCategory::values);
 
-    ExprType(ResourceLocation spriteLocation) {
+    ExprCategory(ResourceLocation spriteLocation) {
         this.spriteLocation = spriteLocation;
     }
 

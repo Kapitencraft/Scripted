@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 public interface CodeWidget extends Removable {
     Codec<CodeWidget> CODEC = Type.CODEC.dispatch(CodeWidget::getType, Type::getEntryCodec);
 
-    Type getType();
+    @NotNull Type getType();
 
     void render(GuiGraphics graphics, Font font, int renderX, int renderY);
 
@@ -23,11 +23,13 @@ public interface CodeWidget extends Removable {
 
     int getHeight();
 
+    CodeWidget copy();
+
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
     enum Type implements StringRepresentable {
+        PARAM(() -> ParamWidget.CODEC),
         HEAD(() -> HeadWidget.CODEC),
-        TEXT(() -> TextWidget.CODEC),
         WHILE_LOOP(() ->  WhileLoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),
         BODY(() -> VarModWidget.CODEC),

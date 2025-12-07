@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class GetVarWidget implements CodeWidget {
@@ -19,13 +20,18 @@ public class GetVarWidget implements CodeWidget {
     }
 
     @Override
-    public Type getType() {
+    public @NotNull Type getType() {
         return Type.GET_VAR;
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
 
+    }
+
+    @Override
+    public CodeWidget copy() {
+        return new GetVarWidget(this.name);
     }
 
     @Override

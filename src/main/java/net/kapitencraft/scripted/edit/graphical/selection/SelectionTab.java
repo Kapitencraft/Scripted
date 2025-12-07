@@ -11,6 +11,10 @@ import java.util.List;
 public record SelectionTab(List<CodeWidget> widgets) {
     public static final Codec<SelectionTab> CODEC = CodeWidget.CODEC.listOf().xmap(SelectionTab::new, SelectionTab::widgets);
 
+    public static SelectionTab.Builder builder() {
+        return new Builder();
+    }
+
     public static class Builder {
         private final List<CodeWidget> widgets = new ArrayList<>();
 

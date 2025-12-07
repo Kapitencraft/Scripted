@@ -9,6 +9,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.Removable;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -49,6 +50,13 @@ public abstract class BlockWidget implements CodeWidget, Removable {
     public BlockWidget getChild() {
         return child;
     }
+
+    protected @Nullable BlockWidget getChildCopy() {
+        return this.getChild() != null ? this.getChild() : null;
+    }
+
+    @Override
+    public abstract BlockWidget copy();
 
     protected WidgetFetchResult fetchChildRemoveHovered(int x, int y, Font font) {
         WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);

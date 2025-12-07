@@ -4,7 +4,6 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
 
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 
@@ -39,7 +38,7 @@ public record WidgetFetchResult(boolean removed, int x, int y, CodeWidget widget
             if (x < widget.getWidth(font)) {
                 WidgetFetchResult result = widget.fetchAndRemoveHovered(x, y, font);
                 if (result == null)
-                    return null;
+                    return WidgetFetchResult.notRemoved(self, x, y);
                 if (!result.removed())
                     expr.remove(name);
                 return result.setRemoved();

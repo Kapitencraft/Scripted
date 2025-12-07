@@ -5,27 +5,27 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ExprType;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 public class IfWidget extends BlockWidget {
     public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
-                    CodeWidget.CODEC.fieldOf("head").forGetter(w -> w.condition)
+                    CodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("condition_body").forGetter(w -> Optional.ofNullable(w.conditionBody))
             ).and(
                     Codec.BOOL.optionalFieldOf("show_else", true).forGetter(w -> w.elseVisible)
+            ).and(
+                    CodeWidget.CODEC.optionalFieldOf("else_condition", ParamWidget.CONDITION).forGetter(w -> w.elseCondition)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("else_body").forGetter(w -> Optional.ofNullable(w.elseBody))
             ).apply(i, IfWidget::new)
@@ -34,21 +34,24 @@ public class IfWidget extends BlockWidget {
     private final CodeWidget condition;
     private boolean elseVisible;
     private @Nullable BlockWidget conditionBody;
+    private final CodeWidget elseCondition;
     private @Nullable BlockWidget elseBody;
 
-    public IfWidget(CodeWidget condition, List<CodeWidget> elseHead) {
+    public IfWidget(CodeWidget condition, CodeWidget elseCondition) {
         this.condition = condition;
+        this.elseCondition = elseCondition;
     }
 
-    private IfWidget(BlockWidget child, CodeWidget condition, BlockWidget conditionBody, List<CodeWidget> elseHead, BlockWidget elseBody, boolean showElse) {
-        this(condition, elseHead);
+    private IfWidget(BlockWidget child, CodeWidget condition, BlockWidget conditionBody, CodeWidget elseCondition, BlockWidget elseBody, boolean showElse) {
+        this(condition, elseCondition);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
         this.setChild(child);
         this.elseVisible = showElse;
     }
 
-    public IfWidget(Optional<BlockWidget> child, CodeWidget headWidgets, Optional<BlockWidget> conditionBody, boolean elseVisible, Optional<BlockWidget> elseBody) {
+    public IfWidget(Optional<BlockWidget> child, CodeWidget headWidgets, Optional<BlockWidget> conditionBody, boolean elseVisible, CodeWidget elseCondition, Optional<BlockWidget> elseBody) {
+        this.elseCondition = elseCondition;
         child.ifPresent(this::setChild);
         this.condition = headWidgets;
         this.elseVisible = elseVisible;
@@ -56,12 +59,24 @@ public class IfWidget extends BlockWidget {
         this.elseBody = elseBody.orElse(null);
     }
 
+    @Override
+    public BlockWidget copy() {
+        return new IfWidget(
+                this.getChildCopy(),
+                this.condition.copy(),
+                this.conditionBody != null ? this.conditionBody.copy() : null,
+                this.elseCondition.copy(),
+                this.elseBody != null ? this.elseBody.copy() : null,
+                this.elseVisible
+        );
+    }
+
     public static Builder builder() {
         return new Builder();
     }
 
     @Override
-    public Type getType() {
+    public @NotNull Type getType() {
         return Type.IF;
     }
 
@@ -73,9 +88,10 @@ public class IfWidget extends BlockWidget {
     @Override
     public int getHeight() {
         return getHeadHeight() +
-                getElseHeadHeight() +
                 (this.conditionBody != null ? this.conditionBody.getHeight() : 10) +
-                (this.elseBody != null ? this.elseBody.getHeight() : 10);
+                (this.elseBody != null ? this.elseBody.getHeight() : 10) +
+                (this.elseVisible ? this.getElseHeadHeight() : 0) +
+                16;
     }
 
     @Override
@@ -97,7 +113,7 @@ public class IfWidget extends BlockWidget {
     }
 
     private int getBranchHeight() {
-        return this.conditionBody.getHeightWithChildren();
+        return this.conditionBody == null ? 10 : this.conditionBody.getHeightWithChildren();
     }
 
     @Override
@@ -144,22 +160,25 @@ public class IfWidget extends BlockWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        if (y < this.getHeadHeight()) {
+            return WidgetFetchResult.notRemoved(this, x, y);
+        }
         return null;
     }
 
     public static class Builder implements BlockWidget.Builder<IfWidget> {
-        private CodeWidget head = new ParamWidget(ExprType.BOOLEAN);
+        private CodeWidget condition = ParamWidget.CONDITION,
+            elseCondition = ParamWidget.CONDITION;
         private boolean showElse = true;
-        private final List<CodeWidget> elseHead = new ArrayList<>();
         private BlockWidget child, branch, elseBranch;
+
         public Builder setCondition(CodeWidget head) {
-            this.head = head;
+            this.condition = head;
             return this;
         }
 
-        public Builder elseHeadExpr(CodeWidget elseHead) {
-            this.elseHead.add(elseHead);
-            return this;
+        public Builder setCondition(CodeWidget.Builder<?> builder) {
+            return this.setCondition(builder.build());
         }
 
         public Builder hideElse() {
@@ -183,10 +202,15 @@ public class IfWidget extends BlockWidget {
             return this;
         }
 
+        public Builder setElseCondition(CodeWidget.Builder<?> builder) {
+            this.elseCondition = builder.build();
+            this.showElse = true;
+            return this;
+        }
+
         @Override
         public IfWidget build() {
-            boolean hasElse = this.elseBranch != null || !this.elseHead.isEmpty();
-            return new IfWidget(child, head, branch, hasElse ? elseHead : null, hasElse ? elseBranch : null, showElse);
+            return new IfWidget(child, condition, branch, elseCondition, showElse ? elseBranch : null, showElse);
         }
     }
 }

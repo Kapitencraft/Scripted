@@ -5,12 +5,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ExprType;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.Optional;
@@ -40,7 +41,16 @@ public class VarModWidget extends BlockWidget {
     }
 
     @Override
-    public Type getType() {
+    public BlockWidget copy() {
+        return new VarModWidget(
+                getChildCopy(),
+                this.varName,
+                this.expr.copy()
+        );
+    }
+
+    @Override
+    public @NotNull Type getType() {
         return Type.BODY;
     }
 
@@ -76,7 +86,7 @@ public class VarModWidget extends BlockWidget {
     public static class Builder implements BlockWidget.Builder<VarModWidget> {
         private BlockWidget child;
         private String varName;
-        private CodeWidget expr = new ParamWidget(ExprType.NUMBER);
+        private CodeWidget expr = new ParamWidget(ExprCategory.NUMBER);
 
         @Override
         public VarModWidget build() {

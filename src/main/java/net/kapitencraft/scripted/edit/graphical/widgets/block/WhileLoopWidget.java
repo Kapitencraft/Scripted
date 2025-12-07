@@ -4,12 +4,13 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ExprType;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -18,7 +19,7 @@ import java.util.Optional;
 public class WhileLoopWidget extends BlockWidget {
     public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             BlockWidget.commonFields(i).and(
-                    CodeWidget.CODEC.fieldOf("condition").forGetter(w -> w.condition)
+                    CodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
                     BlockWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
             ).apply(i, WhileLoopWidget::new)
@@ -45,7 +46,16 @@ public class WhileLoopWidget extends BlockWidget {
     }
 
     @Override
-    public Type getType() {
+    public BlockWidget copy() {
+        return new WhileLoopWidget(
+                this.getChildCopy(),
+                this.condition.copy(),
+                this.body != null ? this.body.copy() : null
+        );
+    }
+
+    @Override
+    public @NotNull Type getType() {
         return Type.WHILE_LOOP;
     }
 
@@ -67,7 +77,7 @@ public class WhileLoopWidget extends BlockWidget {
     }
 
     private int getHeadWidth(Font font) {
-        return this.condition.getWidth(font);
+        return RenderHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
     }
 
     @Override
@@ -97,7 +107,7 @@ public class WhileLoopWidget extends BlockWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getWidth(font))
-                //return WidgetFetchResult.fromExprList(4, x, y, font, this, this, this.head); TODO
+                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
             return null;
         }
         else if (y > this.getHeight()) {
@@ -119,7 +129,7 @@ public class WhileLoopWidget extends BlockWidget {
 
     public static class Builder implements BlockWidget.Builder<WhileLoopWidget> {
         private BlockWidget child;
-        private CodeWidget condition = new ParamWidget(ExprType.BOOLEAN);
+        private CodeWidget condition = new ParamWidget(ExprCategory.BOOLEAN);
         private BlockWidget body;
 
         public Builder setBody(BlockWidget.Builder<?> widget) {
@@ -134,6 +144,11 @@ public class WhileLoopWidget extends BlockWidget {
 
         public Builder setCondition(CodeWidget widget) {
             this.condition = widget;
+            return this;
+        }
+
+        public Builder setCondition(CodeWidget.Builder<?> builder) {
+            this.condition = builder.build();
             return this;
         }
 

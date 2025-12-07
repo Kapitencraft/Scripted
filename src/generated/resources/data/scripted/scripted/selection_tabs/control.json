@@ -1,0 +1,16 @@
+[
+  {
+    "type": "if",
+    "show_else": false
+  },
+  {
+    "type": "if"
+  },
+  {
+    "type": "while_loop",
+    "condition": {
+      "type": "param",
+      "category": "boolean"
+    }
+  }
+]

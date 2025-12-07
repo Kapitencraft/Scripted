@@ -51,20 +51,31 @@ public class GraphicalEditor extends AbstractWidget {
                                         .setChild(VarModWidget.builder()
                                                 .setExpr(ExprWidget.builder()
                                                         .setTranslationKey("scripted.code.expr.test0")
-                                                        .setType(ExprType.BOOLEAN)
+                                                        .setType(ExprCategory.BOOLEAN)
                                                         .withParam("arg0", ExprWidget.builder()
                                                                 .setTranslationKey("scripted.code.expr.test1")
                                                         )
                                                 ).setChild(WhileLoopWidget.builder()
-                                                        .setCondition(new TextWidget("while x"))
+                                                        .setCondition(ExprWidget.builder()
+                                                                .setTranslationKey("scripted.code.expr.test0")
+                                                                .setType(ExprCategory.NUMBER)
+                                                                .withParam("arg0", ExprWidget.builder()
+                                                                        .setTranslationKey("scripted.code.expr.test1")
+                                                                )
+                                                        )
                                                         .setBody(MethodStmtWidget.builder()
                                                                 .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;")
                                                         )
                                                         .setChild(IfWidget.builder()
-                                                                .setCondition(new TextWidget("if something"))
+                                                                .setCondition(ExprWidget.builder()
+                                                                        .setTranslationKey("scripted.code.expr.test0")
+                                                                        .setType(ExprCategory.NUMBER)
+                                                                        .withParam("arg0", ExprWidget.builder()
+                                                                                .setTranslationKey("scripted.code.expr.test1")
+                                                                        )
+                                                                )
                                                                 .withBranch(MethodStmtWidget.builder()
                                                                         .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
-                                                                .elseHeadExpr(new TextWidget("else"))
                                                                 .withElseBranch(MethodStmtWidget.builder()
                                                                         .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
                                                         )
@@ -73,8 +84,6 @@ public class GraphicalEditor extends AbstractWidget {
                         ).build()
                 )
         );
-
-
     }
 
     @Override
@@ -137,17 +146,17 @@ public class GraphicalEditor extends AbstractWidget {
 
         pose.pushPose();
         pose.translate(getX() + 1, getY() + 1, 0);
-        pose.scale(.5f, .5f, 1);
+        pose.scale(.75f, .75f, 1);
         Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
         for (int i = 0; i < tabs.length; i++) {
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tabs[i].getKey().location())), 0, i * 10, -1, false);
         }
         pose.popPose();
 
-        pGuiGraphics.enableScissor(this.getX() + 30, this.getY(), this.getX() + 70, this.getY() + this.getHeight());
+        pGuiGraphics.enableScissor(this.getX() + 50, this.getY(), this.getX() + 105, this.getY() + this.getHeight());
         pose.pushPose();
-        pose.translate(getX() + 40, getY(), 0);
-        pose.scale(0.5f, 0.5f, 1);
+        pose.translate(getX() + 60, getY(), 0);
+        pose.scale(0.75f, 0.75f, 1);
         pose.translate(0, this.selectionScroll, 0);
         int y = 1;
         for (Holder<SelectionTab> tab : tabs) {
@@ -208,6 +217,9 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (isPoolAreaHovered(mouseX, mouseY)) {
+            this.attemptGetWidgetFromPool(mouseX - this.getX() - 60, mouseY - this.getY());
+        }
         int posX = (int) (mouseX / scale - scrollX) - getX();
         int posY = (int) (mouseY / scale - scrollY) - getY();
         for (int i = 0; i < this.elements.size(); i++) {
@@ -229,6 +241,35 @@ public class GraphicalEditor extends AbstractWidget {
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    private void attemptGetWidgetFromPool(double x, double mouseY) {
+        int uX = (int) x;
+        //vPos = .75 * (translate + aPos) | / (3 / 4)
+        //vPos * (4 / 3) = translate + aPos | - translate
+        //vPos * (4 / 3) + translate = aPos
+        int uY = (int) mouseY * 4 / 3 + (int) selectionScroll;
+        Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
+        for (Holder<SelectionTab> tab : tabs) {
+            SelectionTab value = tab.value();
+            uY -= 10;
+            for (int i1 = 0; i1 < value.widgets().size(); i1++) {
+                CodeWidget widget = value.widgets().get(i1);
+                if (uY > 0 && uY < widget.getHeight()) {
+                    this.dragged = widget.copy();
+                    this.draggedOffsetX = -uX;
+                    this.draggedOffsetY = uY;
+                    return;
+                }
+                uY -= widget.getHeight();
+                uY -= 5;
+            }
+        }
+    }
+
+    private boolean isPoolAreaHovered(double mouseX, double mouseY) {
+        return mouseX > this.getX() + 60 && mouseX < this.getX() + 105 &&
+                mouseY > this.getY() && mouseY < this.getY() + this.getHeight();
     }
 
     @Override
@@ -265,7 +306,7 @@ public class GraphicalEditor extends AbstractWidget {
                 this.ghostTargetParent = null;
                 this.ghostTargetElement.recalculateSize();
                 this.ghostTargetElement = null;
-            } else {
+            } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
                 this.elements.addFirst(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
@@ -346,7 +387,7 @@ public class GraphicalEditor extends AbstractWidget {
     private class GhostBlockWidget extends BlockWidget {
 
         @Override
-        public Type getType() {
+        public @NotNull Type getType() {
             return null;
         }
 
@@ -376,6 +417,11 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
             return null;
+        }
+
+        @Override
+        public BlockWidget copy() {
+            throw new IllegalAccessError("attempting to copy ghost widget");
         }
     }
 }

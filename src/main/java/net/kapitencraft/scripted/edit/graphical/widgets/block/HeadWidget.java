@@ -9,8 +9,11 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 public class HeadWidget extends BlockWidget {
     public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -32,7 +35,15 @@ public class HeadWidget extends BlockWidget {
     }
 
     @Override
-    public Type getType() {
+    public BlockWidget copy() {
+        return new HeadWidget(
+                getChildCopy(),
+                this.translationKey
+        );
+    }
+
+    @Override
+    public @NotNull Type getType() {
         return Type.HEAD;
     }
 

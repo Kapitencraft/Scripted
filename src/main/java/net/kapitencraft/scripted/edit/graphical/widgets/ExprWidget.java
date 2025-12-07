@@ -4,27 +4,26 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.ExprType;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class ExprWidget implements CodeWidget, Removable {
     public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExprType.CODEC.fieldOf("exprType").forGetter(w -> w.type),
+            ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
             Codec.unboundedMap(Codec.STRING, CodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
     ).apply(i, ExprWidget::new));
 
-    private final ExprType type;
+    private final ExprCategory type;
     private final String translationKey;
     private final Map<String, CodeWidget> args = new HashMap<>();
 
-    public ExprWidget(ExprType type, String translationKey, Map<String, CodeWidget> args) {
+    public ExprWidget(ExprCategory type, String translationKey, Map<String, CodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
@@ -35,8 +34,13 @@ public class ExprWidget implements CodeWidget, Removable {
     }
 
     @Override
-    public Type getType() {
+    public @NotNull Type getType() {
         return Type.EXPR;
+    }
+
+    @Override
+    public CodeWidget copy() {
+        return new ExprWidget(this.type, this.translationKey, this.args);
     }
 
     @Override
@@ -62,7 +66,7 @@ public class ExprWidget implements CodeWidget, Removable {
     } //TODO fix offset
 
     public static class Builder implements CodeWidget.Builder<ExprWidget> {
-        private ExprType type;
+        private ExprCategory type;
         private String translationKey;
         private final Map<String, CodeWidget> args = new HashMap<>();
 
@@ -71,7 +75,7 @@ public class ExprWidget implements CodeWidget, Removable {
             return this;
         }
 
-        public Builder setType(ExprType type) {
+        public Builder setType(ExprCategory type) {
             this.type = type;
             return this;
         }

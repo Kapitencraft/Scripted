@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -21,8 +22,21 @@ public class SelectionWidget implements CodeWidget {
         this.entries = entries;
     }
 
+    private SelectionWidget(List<String> entries, int index) {
+        this(entries);
+        this.index = index;
+    }
+
     @Override
-    public Type getType() {
+    public CodeWidget copy() {
+        return new SelectionWidget(
+                this.entries,
+                this.index
+        );
+    }
+
+    @Override
+    public @NotNull Type getType() {
         return Type.SELECTION;
     }
 

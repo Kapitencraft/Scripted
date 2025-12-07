@@ -5,10 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
@@ -25,18 +25,27 @@ public class MethodStmtWidget extends BlockWidget {
     );
 
     private final String signature;
-    private final Map<String, CodeWidget> arguments;
+    private final Map<String, CodeWidget> arguments = new HashMap<>();
 
     public MethodStmtWidget(Optional<BlockWidget> child, String signature, Map<String, CodeWidget> arguments) {
         this.signature = signature;
-        this.arguments = arguments;
+        this.arguments.putAll(arguments);
         child.ifPresent(this::setChild);
     }
 
     public MethodStmtWidget(BlockWidget child, String sig, Map<String, CodeWidget> arguments) {
         this.setChild(child);
         this.signature = sig;
-        this.arguments = arguments;
+        this.arguments.putAll(arguments);
+    }
+
+    @Override
+    public BlockWidget copy() {
+        return new MethodStmtWidget(
+                this.getChildCopy(),
+                this.signature,
+                this.arguments
+        );
     }
 
     public static Builder builder() {
@@ -44,7 +53,7 @@ public class MethodStmtWidget extends BlockWidget {
     }
 
     @Override
-    public Type getType() {
+    public @NotNull Type getType() {
         return Type.METHOD_STMT;
     }
 
