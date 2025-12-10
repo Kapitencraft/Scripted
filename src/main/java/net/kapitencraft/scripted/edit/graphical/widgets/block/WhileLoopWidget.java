@@ -129,7 +129,7 @@ public class WhileLoopWidget extends BlockWidget {
 
     public static class Builder implements BlockWidget.Builder<WhileLoopWidget> {
         private BlockWidget child;
-        private CodeWidget condition = new ParamWidget(ExprCategory.BOOLEAN);
+        private CodeWidget condition = ParamWidget.CONDITION;
         private BlockWidget body;
 
         public Builder setBody(BlockWidget.Builder<?> widget) {
