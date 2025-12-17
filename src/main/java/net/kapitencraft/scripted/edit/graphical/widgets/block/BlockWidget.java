@@ -76,12 +76,14 @@ public abstract class BlockWidget implements CodeWidget, Removable {
         return height;
     }
 
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
-        if (y < this.getHeight()) {
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+        if (y < 0)
+            return null;
+        if (y < this.getHeight() + 10 && x > -5 && x < 30) {
             return this;
         }
         if (this.child != null)
-            return this.child.getGhostBlockWidgetTarget(x, y - getHeight());
+            return this.child.getGhostBlockWidgetTarget(x, y - getHeight(), font);
         return null;
     }
 

@@ -91,16 +91,17 @@ public class WhileLoopWidget extends BlockWidget {
     }
 
     @Override
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
-        if (y < this.getHeadHeight())
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+        if (y < 0) return null;
+        if (y < this.getHeadHeight() + 10 && x > -5 && x < 40)
             return this;
         y -= this.getHeadHeight();
         if (this.body != null && y < this.body.getHeightWithChildren())
-            return this.body.getGhostBlockWidgetTarget(x, y);
+            return this.body.getGhostBlockWidgetTarget(x, y, font);
         if (y < 16)
             return this;
         y -= 16;
-        return this.getChild().getGhostBlockWidgetTarget(x, y);
+        return this.getChild().getGhostBlockWidgetTarget(x, y, font);
     }
 
     @Override

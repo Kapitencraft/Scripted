@@ -97,7 +97,7 @@ public class GraphicalEditor extends AbstractWidget {
             pose.pushPose();
             pose.scale(scale, scale, 1);
 
-            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/deepslate_tiles.png");
+            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/black_wool.png");
             int i = Mth.floor(this.scrollX);
             int j = Mth.floor(this.scrollY);
             int k = i % 16;
@@ -274,12 +274,12 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (dragged != null && dragged instanceof BlockWidget) {
+        if (dragged != null && dragged instanceof BlockWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             BlockWidget widget;
             for (CodeElement element : elements) {
-                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
+                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY, font)) != null) {
                     if (widget != ghostTargetParent) {
                         widget.insertChildMiddle(ghostElement);
                         ghostTargetParent = widget;
@@ -377,10 +377,10 @@ public class GraphicalEditor extends AbstractWidget {
             this.height = calculateWidgetHeight();
         }
 
-        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY, Font font) {
             if (!(this.widget instanceof BlockWidget blockWidget))
                 return null;
-            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
+            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font);
         }
     }
 
@@ -402,7 +402,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+        public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
             return null;
         }
 

@@ -32,7 +32,7 @@ public interface RenderHelper {
         String subElement = inst.substring(j);
         graphics.drawString(font, subElement, x, y, 0, false);
         x += font.width(subElement);
-        return x;
+        return x + 1;
     }
 
     @Deprecated

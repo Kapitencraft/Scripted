@@ -95,13 +95,14 @@ public class IfWidget extends BlockWidget {
     }
 
     @Override
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
-        if (y < getHeadHeight())
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+        if (y < 0) return null;
+        if (y < getHeadHeight() + 10 && x > -5 && x < 30)
             return this;
 
         y -= getHeadHeight();
         if (y < getBranchHeight() && this.conditionBody != null)
-            return this.conditionBody.getGhostBlockWidgetTarget(x, y);
+            return this.conditionBody.getGhostBlockWidgetTarget(x, y, font);
 
         y -= getBranchHeight();
         if (y < getElseHeadHeight())
