@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
@@ -60,6 +61,8 @@ public class MethodStmtWidget extends BlockWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
 
+        int height = getHeight();
+        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, signature, arguments);
     }
 
@@ -70,7 +73,7 @@ public class MethodStmtWidget extends BlockWidget {
 
     @Override
     public int getHeight() {
-        return CodeWidget.getHeightFromArgs(this.arguments) + 4;
+        return Math.max(19, CodeWidget.getHeightFromArgs(this.arguments) + 4);
     }
 
     @Override

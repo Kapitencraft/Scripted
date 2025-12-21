@@ -89,20 +89,25 @@ public class IfWidget extends BlockWidget {
     public int getHeight() {
         return getHeadHeight() +
                 (this.conditionBody != null ? this.conditionBody.getHeight() : 10) +
-                (this.elseBody != null ? this.elseBody.getHeight() : 10) +
-                (this.elseVisible ? this.getElseHeadHeight() : 0) +
-                16;
+                (this.elseVisible ? this.getElseHeadHeight() +
+                        (this.elseBody != null ? this.elseBody.getHeight() : 10) : 0) +
+                13;
     }
 
     @Override
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0) return null;
         if (y < getHeadHeight() + 10 && x > -5 && x < 30)
             return this;
 
         y -= getHeadHeight();
-        if (y < getBranchHeight() && this.conditionBody != null)
-            return this.conditionBody.getGhostBlockWidgetTarget(x, y, font);
+        if (y < getBranchHeight()) {
+            if (this.conditionBody != null)
+                return this.conditionBody.getGhostBlockWidgetTarget(x, y);
+            if (x > 1 && x < 36 && y < 15)
+                return this;
+        }
+
 
         y -= getBranchHeight();
         if (y < getElseHeadHeight())
@@ -120,14 +125,19 @@ public class IfWidget extends BlockWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headWidth = getWidth(font);
+        //head
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, 22);
         RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 7, "§if", Map.of("condition", condition));
+
+        //body
         int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeight() : 10;
         int headHeight = getHeadHeight();
         if (this.conditionBody != null)
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
+
         if (elseVisible) {
+            //else
             graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, 22);
             int elseHeadHeight = getHeadHeight();
             int elseBodyHeight = this.elseBody != null ? this.elseBody.getHeight() : 10;
@@ -136,8 +146,10 @@ public class IfWidget extends BlockWidget {
                 this.elseBody.render(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + elseHeadHeight);
             }
             graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + 3, 6, elseBodyHeight - 3);
+            //end
             graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + elseBodyHeight, headWidth, 16);
         } else {
+            //end
             graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight, headWidth, 16);
         }
         super.render(graphics, font, renderX, renderY);

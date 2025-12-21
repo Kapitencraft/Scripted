@@ -3,7 +3,10 @@ package net.kapitencraft.scripted.edit.graphical;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
-import net.kapitencraft.scripted.edit.graphical.widgets.*;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.GetVarWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
@@ -161,7 +164,7 @@ public class GraphicalEditor extends AbstractWidget {
         int y = 1;
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();
-            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, 0, false);
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
             y += 10;
             for (int i1 = 0; i1 < value.widgets().size(); i1++) {
                 CodeWidget widget = value.widgets().get(i1);
@@ -176,6 +179,9 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (isPoolAreaHovered(mouseX, mouseY)) {
+            selectionScroll += (float) scrollY;
+        }
         if (Screen.hasControlDown()) {
             /*
             relativeMouseX = (mouseX - wX)
@@ -258,7 +264,7 @@ public class GraphicalEditor extends AbstractWidget {
                 if (uY > 0 && uY < widget.getHeight()) {
                     this.dragged = widget.copy();
                     this.draggedOffsetX = -uX;
-                    this.draggedOffsetY = uY;
+                    this.draggedOffsetY = -uY;
                     return;
                 }
                 uY -= widget.getHeight();
@@ -279,7 +285,8 @@ public class GraphicalEditor extends AbstractWidget {
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             BlockWidget widget;
             for (CodeElement element : elements) {
-                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY, font)) != null) {
+                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
+                    //TODO add insert at other positions
                     if (widget != ghostTargetParent) {
                         widget.insertChildMiddle(ghostElement);
                         ghostTargetParent = widget;
@@ -369,7 +376,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
-            return ((Removable) this.widget).fetchAndRemoveHovered(posX - x, posY - y, font);
+            return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
         }
 
         public void recalculateSize() {
@@ -377,10 +384,10 @@ public class GraphicalEditor extends AbstractWidget {
             this.height = calculateWidgetHeight();
         }
 
-        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY, Font font) {
+        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY) {
             if (!(this.widget instanceof BlockWidget blockWidget))
                 return null;
-            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font);
+            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
         }
     }
 
@@ -402,7 +409,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+        public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
             return null;
         }
 
