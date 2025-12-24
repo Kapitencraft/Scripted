@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ExprWidget;
@@ -31,7 +32,8 @@ public class GraphicalEditor extends AbstractWidget {
     private CodeWidget dragged;
     private final GhostBlockWidget ghostElement = new GhostBlockWidget();
     private CodeElement ghostTargetElement;
-    private BlockWidget ghostTargetParent;
+    private GhostInserter ghostInserter;
+    private GhostInserter inserter;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -283,21 +285,22 @@ public class GraphicalEditor extends AbstractWidget {
         if (dragged != null && dragged instanceof BlockWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
-            BlockWidget widget;
+            GhostInserter inserter;
             for (CodeElement element : elements) {
-                if ((widget = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
-                    //TODO add insert at other positions
-                    if (widget != ghostTargetParent) {
-                        widget.insertChildMiddle(ghostElement);
-                        ghostTargetParent = widget;
+                if ((inserter = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
+                    if (!inserter.equals(ghostInserter)) {
+                        if (ghostInserter != null)
+                            ghostInserter.insert(ghostElement.getChild());
+                        inserter.insertChildMiddle(ghostElement);
+                        ghostInserter = inserter;
                         ghostTargetElement = element;
                     }
                     return;
                 }
             }
-            if (this.ghostTargetParent != null) {
-                ghostTargetParent.setChild(ghostElement.getChild());
-                ghostTargetParent = null;
+            if (this.ghostInserter != null) {
+                ghostInserter.insert(this.ghostElement.getChild());
+                ghostInserter = null;
                 ghostTargetElement = null;
             }
         }
@@ -307,10 +310,10 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.dragged != null) {
-            if (ghostTargetParent != null && this.dragged instanceof BlockWidget blockWidget) {
+            if (ghostInserter != null && this.dragged instanceof BlockWidget blockWidget) {
                 blockWidget.setBottomChild(this.ghostElement.getChild());
-                this.ghostTargetParent.setChild(blockWidget);
-                this.ghostTargetParent = null;
+                this.ghostInserter.insert(blockWidget);
+                this.ghostInserter = null;
                 this.ghostTargetElement.recalculateSize();
                 this.ghostTargetElement = null;
             } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
@@ -384,7 +387,7 @@ public class GraphicalEditor extends AbstractWidget {
             this.height = calculateWidgetHeight();
         }
 
-        public BlockWidget getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+        public GhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
             if (!(this.widget instanceof BlockWidget blockWidget))
                 return null;
             return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
@@ -409,7 +412,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+        public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
             return null;
         }
 

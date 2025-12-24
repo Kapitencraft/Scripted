@@ -78,7 +78,7 @@ public class MethodStmtWidget extends BlockWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return null;
+        return x < this.getWidth(font) ? WidgetFetchResult.notRemoved(this, x, y) : null;
     }
 
     public static class Builder implements BlockWidget.Builder<MethodStmtWidget> {

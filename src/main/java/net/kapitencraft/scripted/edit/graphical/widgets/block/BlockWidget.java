@@ -4,6 +4,8 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.ghost.ChildGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.Removable;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -47,7 +49,7 @@ public abstract class BlockWidget implements CodeWidget, Removable {
             this.child.render(graphics, font, renderX, renderY + getHeight());
     }
 
-    public BlockWidget getChild() {
+    public @Nullable BlockWidget getChild() {
         return child;
     }
 
@@ -76,11 +78,11 @@ public abstract class BlockWidget implements CodeWidget, Removable {
         return height;
     }
 
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+    public @Nullable GhostInserter getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0)
             return null;
-        if (y < this.getHeight() + 10 && x > -5 && x < 30) {
-            return this;
+        if (y < this.getHeight() + 10 && x > -10 && x < 30) {
+            return new ChildGhostInserter(this);
         }
         if (this.child != null)
             return this.child.getGhostBlockWidgetTarget(x, y - getHeight());

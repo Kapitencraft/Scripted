@@ -4,7 +4,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import net.kapitencraft.scripted.edit.graphical.ghost.ChildGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.WhileBodyGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -90,18 +92,29 @@ public class WhileLoopWidget extends BlockWidget {
         return getHeadHeight() + (this.body != null ? this.body.getHeight() : 19) + 13;
     }
 
+    public void setBody(BlockWidget target) {
+        this.body = target;
+    }
+
+    public void insertBodyMiddle(BlockWidget widget) {
+        widget.setChild(this.body);
+        this.body = widget;
+    }
+
     @Override
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0) return null;
-        if (y < this.getHeadHeight() + 10 && x > -5 && x < 40)
-            return this;
+        if (y < this.getHeadHeight() + 10 && x > -10 && x < 40)
+            return new WhileBodyGhostInserter(this);
         y -= this.getHeadHeight();
         if (this.body != null && y < this.body.getHeightWithChildren())
-            return this.body.getGhostBlockWidgetTarget(x, y, font);
+            return this.body.getGhostBlockWidgetTarget(x, y);
         if (y < 16)
-            return this;
+            return new ChildGhostInserter(this);
         y -= 16;
-        return this.getChild().getGhostBlockWidgetTarget(x, y, font);
+        if (this.getChild() != null)
+            return this.getChild().getGhostBlockWidgetTarget(x, y);
+        return null;
     }
 
     @Override

@@ -5,6 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ghost.ChildGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.IfBodyGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.ghost.IfElseBodyGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -88,38 +92,47 @@ public class IfWidget extends BlockWidget {
     @Override
     public int getHeight() {
         return getHeadHeight() +
-                (this.conditionBody != null ? this.conditionBody.getHeight() : 10) +
+                this.getBranchHeight() +
                 (this.elseVisible ? this.getElseHeadHeight() +
                         (this.elseBody != null ? this.elseBody.getHeight() : 10) : 0) +
                 13;
     }
 
     @Override
-    public BlockWidget getGhostBlockWidgetTarget(int x, int y) {
+    public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0) return null;
-        if (y < getHeadHeight() + 10 && x > -5 && x < 30)
-            return this;
+        if (y < getHeadHeight() + 10 && x > -10 && x < 30)
+            return new IfBodyGhostInserter(this);
 
         y -= getHeadHeight();
         if (y < getBranchHeight()) {
             if (this.conditionBody != null)
                 return this.conditionBody.getGhostBlockWidgetTarget(x, y);
-            if (x > 1 && x < 36 && y < 15)
-                return this;
+            if (x > -4 && x < 36 && y < 15)
+                return new IfBodyGhostInserter(this);
         }
+        y -= this.getBranchHeight();
 
-
-        y -= getBranchHeight();
-        if (y < getElseHeadHeight())
-            return this;
-        y -= getElseHeadHeight();
-        if (y < 16)
-            return this;
+        if (elseVisible) {
+            y -= getBranchHeight();
+            if (y < getElseHeadHeight())
+                return new IfElseBodyGhostInserter(this);
+            y -= getElseHeadHeight();
+            if (y < 16)
+                return new ChildGhostInserter(this);
+        }
+        if (y < 23 && x > -10 && x < 30) {
+            return new ChildGhostInserter(this);
+        }
         return null;
     }
 
     private int getBranchHeight() {
         return this.conditionBody == null ? 10 : this.conditionBody.getHeightWithChildren();
+    }
+
+    private int getElseBranchHeight() {
+        return this.elseBody == null ? 10 : this.elseBody.getHeightWithChildren();
     }
 
     @Override
@@ -171,12 +184,66 @@ public class IfWidget extends BlockWidget {
         return RenderHelper.getVisualTextWidth(font, "§else", Map.of());
     }
 
+
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             return WidgetFetchResult.notRemoved(this, x, y);
         }
+
+        if (y - this.getHeadHeight() < getBranchHeight()) {
+            if (x < 6)
+                return WidgetFetchResult.notRemoved(this, x, y);
+            if (this.conditionBody != null) {
+                WidgetFetchResult result = this.conditionBody.fetchAndRemoveHovered(x - 6, y - this.getHeadHeight(), font);
+                if (result == null) return null;
+                if (!result.removed())
+                    this.conditionBody = null;
+                return result.setRemoved();
+            }
+            return null;
+        }
+        if (elseVisible) {
+            if (y - this.getHeadHeight() - this.getBranchHeight() < this.getElseHeadHeight()) {
+                if (x < this.getElseHeadWidth(font))
+                    return WidgetFetchResult.notRemoved(this, x, y);
+                return null;
+            }
+            if (y - this.getHeadHeight() - this.getBranchHeight() - this.getElseHeadHeight() < this.getElseBranchHeight()) {
+                if (x < 6)
+                    return WidgetFetchResult.notRemoved(this, x, y);
+                if (elseBody != null) {
+                    WidgetFetchResult result = this.elseBody.fetchAndRemoveHovered(x - 6,
+                            y - this.getHeadHeight() - this.getBranchHeight() - this.getElseHeadHeight(), font);
+                    if (result == null) return null;
+                    if (!result.removed())
+                        this.elseBody = null;
+                    return result.setRemoved();
+                }
+                return null;
+            }
+        }
+        if (y > this.getHeight())
+            return this.fetchChildRemoveHovered(x, y - getHeight(), font);
         return null;
+    }
+
+    public void setBody(@Nullable BlockWidget conditionBody) {
+        this.conditionBody = conditionBody;
+    }
+
+    public void setElseBody(@Nullable BlockWidget elseBody) {
+        this.elseBody = elseBody;
+    }
+
+    public void insertBodyMiddle(BlockWidget widget) {
+        widget.setChild(this.conditionBody);
+        this.conditionBody = widget;
+    }
+
+    public void insertElseMiddle(BlockWidget widget) {
+        widget.setChild(this.elseBody);
+        this.elseBody = widget;
     }
 
     public static class Builder implements BlockWidget.Builder<IfWidget> {
