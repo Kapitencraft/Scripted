@@ -46,7 +46,7 @@ public class IfWidget extends BlockWidget {
         this.elseCondition = elseCondition;
     }
 
-    private IfWidget(BlockWidget child, CodeWidget condition, BlockWidget conditionBody, CodeWidget elseCondition, BlockWidget elseBody, boolean showElse) {
+    private IfWidget(BlockWidget child, CodeWidget condition, @Nullable BlockWidget conditionBody, CodeWidget elseCondition, @Nullable BlockWidget elseBody, boolean showElse) {
         this(condition, elseCondition);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
@@ -248,7 +248,7 @@ public class IfWidget extends BlockWidget {
 
     public static class Builder implements BlockWidget.Builder<IfWidget> {
         private CodeWidget condition = ParamWidget.CONDITION,
-            elseCondition = ParamWidget.CONDITION;
+                elseCondition = ParamWidget.CONDITION;
         private boolean showElse = true;
         private BlockWidget child, branch, elseBranch;
 
