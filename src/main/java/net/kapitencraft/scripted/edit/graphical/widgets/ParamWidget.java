@@ -11,6 +11,8 @@ public class ParamWidget implements CodeWidget {
     public static final MapCodec<ParamWidget> CODEC = ExprCategory.CODEC.xmap(ParamWidget::new, w -> w.exprCategory).fieldOf("category");
 
     public static final ParamWidget CONDITION = new ParamWidget(ExprCategory.BOOLEAN);
+    public static final CodeWidget OBJ = new ParamWidget(ExprCategory.OTHER);
+    public static final CodeWidget NUM = new ParamWidget(ExprCategory.NUMBER);
 
     private final ExprCategory exprCategory;
 

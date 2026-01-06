@@ -2,13 +2,12 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
-import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.GetVarWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,8 +31,7 @@ public class GraphicalEditor extends AbstractWidget {
     private CodeWidget dragged;
     private final GhostBlockWidget ghostElement = new GhostBlockWidget();
     private CodeElement ghostTargetElement;
-    private GhostInserter ghostInserter;
-    private GhostInserter inserter;
+    private BlockGhostInserter blockGhostInserter;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -49,44 +47,45 @@ public class GraphicalEditor extends AbstractWidget {
         this.elements.add(
                 new CodeElement(HeadWidget.builder()
                         .setTranslationKey("scripted.code.head.test")
-                        .setChild(
-                                MethodStmtWidget.builder()
-                                        .setSignature("Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D")
-                                        .withArgument("vec3", new GetVarWidget("position"))
-                                        .setChild(VarModWidget.builder()
-                                                .setExpr(ExprWidget.builder()
-                                                        .setTranslationKey("scripted.code.expr.test0")
-                                                        .setType(ExprCategory.BOOLEAN)
-                                                        .withParam("arg0", ExprWidget.builder()
-                                                                .setTranslationKey("scripted.code.expr.test1")
-                                                        )
-                                                ).setChild(WhileLoopWidget.builder()
-                                                        .setCondition(ExprWidget.builder()
-                                                                .setTranslationKey("scripted.code.expr.test0")
-                                                                .setType(ExprCategory.NUMBER)
-                                                                .withParam("arg0", ExprWidget.builder()
-                                                                        .setTranslationKey("scripted.code.expr.test1")
-                                                                )
-                                                        )
-                                                        .setBody(MethodStmtWidget.builder()
-                                                                .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;")
-                                                        )
-                                                        .setChild(IfWidget.builder()
-                                                                .setCondition(ExprWidget.builder()
-                                                                        .setTranslationKey("scripted.code.expr.test0")
-                                                                        .setType(ExprCategory.NUMBER)
-                                                                        .withParam("arg0", ExprWidget.builder()
-                                                                                .setTranslationKey("scripted.code.expr.test1")
-                                                                        )
-                                                                )
-                                                                .withBranch(MethodStmtWidget.builder()
-                                                                        .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
-                                                                .withElseBranch(MethodStmtWidget.builder()
-                                                                        .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
-                                                        )
-                                                )
-                                        ).build()
-                        ).build()
+                        //.setChild(
+                        //        MethodStmtWidget.builder()
+                        //                .setSignature("Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D")
+                        //                .withArgument("vec3", new GetVarWidget("position"))
+                        //                .setChild(VarModWidget.builder()
+                        //                        .setExpr(ExprWidget.builder()
+                        //                                .setTranslationKey("scripted.code.expr.test0")
+                        //                                .setType(ExprCategory.BOOLEAN)
+                        //                                .withParam("arg0", ExprWidget.builder()
+                        //                                        .setTranslationKey("scripted.code.expr.test1")
+                        //                                )
+                        //                        ).setChild(WhileLoopWidget.builder()
+                        //                                .setCondition(ExprWidget.builder()
+                        //                                        .setTranslationKey("scripted.code.expr.test0")
+                        //                                        .setType(ExprCategory.NUMBER)
+                        //                                        .withParam("arg0", ExprWidget.builder()
+                        //                                                .setTranslationKey("scripted.code.expr.test1")
+                        //                                        )
+                        //                                )
+                        //                                .setBody(MethodStmtWidget.builder()
+                        //                                        .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;")
+                        //                                )
+                        //                                .setChild(IfWidget.builder()
+                        //                                        .setCondition(ExprWidget.builder()
+                        //                                                .setTranslationKey("scripted.code.expr.test0")
+                        //                                                .setType(ExprCategory.NUMBER)
+                        //                                                .withParam("arg0", ExprWidget.builder()
+                        //                                                        .setTranslationKey("scripted.code.expr.test1")
+                        //                                                )
+                        //                                        )
+                        //                                        .withBranch(MethodStmtWidget.builder()
+                        //                                                .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
+                        //                                        .withElseBranch(MethodStmtWidget.builder()
+                        //                                                .setSignature("Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"))
+                        //                                )
+                        //                        )
+                        //                ).build()
+                        //)
+                        .build()
                 )
         );
     }
@@ -172,7 +171,7 @@ public class GraphicalEditor extends AbstractWidget {
                 CodeWidget widget = value.widgets().get(i1);
                 widget.render(pGuiGraphics, font, 0, y);
                 y += widget.getHeight();
-                y += 5;
+                y += 10;
             }
         }
         pose.popPose();
@@ -270,7 +269,7 @@ public class GraphicalEditor extends AbstractWidget {
                     return;
                 }
                 uY -= widget.getHeight();
-                uY -= 5;
+                uY -= 10;
             }
         }
     }
@@ -285,22 +284,22 @@ public class GraphicalEditor extends AbstractWidget {
         if (dragged != null && dragged instanceof BlockWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
-            GhostInserter inserter;
+            BlockGhostInserter inserter;
             for (CodeElement element : elements) {
                 if ((inserter = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
-                    if (!inserter.equals(ghostInserter)) {
-                        if (ghostInserter != null)
-                            ghostInserter.insert(ghostElement.getChild());
+                    if (!inserter.equals(blockGhostInserter)) {
+                        if (blockGhostInserter != null)
+                            blockGhostInserter.insert(ghostElement.getChild());
                         inserter.insertChildMiddle(ghostElement);
-                        ghostInserter = inserter;
+                        blockGhostInserter = inserter;
                         ghostTargetElement = element;
                     }
                     return;
                 }
             }
-            if (this.ghostInserter != null) {
-                ghostInserter.insert(this.ghostElement.getChild());
-                ghostInserter = null;
+            if (this.blockGhostInserter != null) {
+                blockGhostInserter.insert(this.ghostElement.getChild());
+                blockGhostInserter = null;
                 ghostTargetElement = null;
             }
         }
@@ -310,10 +309,10 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
         if (this.dragged != null) {
-            if (ghostInserter != null && this.dragged instanceof BlockWidget blockWidget) {
+            if (blockGhostInserter != null && this.dragged instanceof BlockWidget blockWidget) {
                 blockWidget.setBottomChild(this.ghostElement.getChild());
-                this.ghostInserter.insert(blockWidget);
-                this.ghostInserter = null;
+                this.blockGhostInserter.insert(blockWidget);
+                this.blockGhostInserter = null;
                 this.ghostTargetElement.recalculateSize();
                 this.ghostTargetElement = null;
             } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
@@ -387,7 +386,7 @@ public class GraphicalEditor extends AbstractWidget {
             this.height = calculateWidgetHeight();
         }
 
-        public GhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+        public BlockGhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
             if (!(this.widget instanceof BlockWidget blockWidget))
                 return null;
             return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
@@ -412,7 +411,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
+        public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
             return null;
         }
 

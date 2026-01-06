@@ -14,9 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 public class HeadWidget extends BlockWidget {
     public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            BlockWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
             Codec.unboundedMap(Codec.STRING, CodeWidget.CODEC).fieldOf("children").forGetter(w -> w.children)
     ).apply(i, HeadWidget::new));
@@ -24,9 +26,16 @@ public class HeadWidget extends BlockWidget {
     private final String translationKey;
     private final Map<String, CodeWidget> children = new HashMap<>();
 
-    public HeadWidget(String translationKey, Map<String, CodeWidget> map) {
+    public HeadWidget(Optional<BlockWidget> child, String translationKey, Map<String, CodeWidget> map) {
         this.translationKey = translationKey;
         this.children.putAll(map);
+        child.ifPresent(this::setChild);
+    }
+
+    public HeadWidget(BlockWidget child, String translationKey, Map<String, CodeWidget> map) {
+        this.translationKey = translationKey;
+        this.children.putAll(map);
+        this.setChild(child);
     }
 
     public HeadWidget(BlockWidget widget, String translationKey) {
@@ -99,7 +108,7 @@ public class HeadWidget extends BlockWidget {
 
         @Override
         public HeadWidget build() {
-            return new HeadWidget(Objects.requireNonNull(translationKey, "missing translation key!"), expr);
+            return new HeadWidget(child, Objects.requireNonNull(translationKey, "missing translation key!"), expr);
         }
     }
 }

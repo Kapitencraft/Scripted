@@ -1,8 +1,8 @@
-package net.kapitencraft.scripted.edit.graphical.ghost;
+package net.kapitencraft.scripted.edit.graphical.inserter.block;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
 
-public interface GhostInserter {
+public interface BlockGhostInserter {
 
     void insert(BlockWidget target);
 

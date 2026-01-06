@@ -5,10 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ghost.ChildGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.ghost.IfBodyGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.ghost.IfElseBodyGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.IfBodyBlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.IfElseBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -35,10 +35,10 @@ public class IfWidget extends BlockWidget {
             ).apply(i, IfWidget::new)
     );
 
-    private final CodeWidget condition;
+    private CodeWidget condition;
     private boolean elseVisible;
     private @Nullable BlockWidget conditionBody;
-    private final CodeWidget elseCondition;
+    private CodeWidget elseCondition;
     private @Nullable BlockWidget elseBody;
 
     public IfWidget(CodeWidget condition, CodeWidget elseCondition) {
@@ -99,30 +99,30 @@ public class IfWidget extends BlockWidget {
     }
 
     @Override
-    public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
+    public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0) return null;
         if (y < getHeadHeight() + 10 && x > -10 && x < 30)
-            return new IfBodyGhostInserter(this);
+            return new IfBodyBlockGhostInserter(this);
 
         y -= getHeadHeight();
         if (y < getBranchHeight()) {
             if (this.conditionBody != null)
                 return this.conditionBody.getGhostBlockWidgetTarget(x, y);
             if (x > -4 && x < 36 && y < 15)
-                return new IfBodyGhostInserter(this);
+                return new IfBodyBlockGhostInserter(this);
         }
         y -= this.getBranchHeight();
 
         if (elseVisible) {
             y -= getBranchHeight();
-            if (y < getElseHeadHeight())
-                return new IfElseBodyGhostInserter(this);
+            if (x > -4 && x < 36 && y < getElseHeadHeight())
+                return new IfElseBodyBlockGhostInserter(this);
             y -= getElseHeadHeight();
-            if (y < 16)
-                return new ChildGhostInserter(this);
+            if (x > -10 && x < 30 && y < 16)
+                return new ChildBlockGhostInserter(this);
         }
         if (y < 23 && x > -10 && x < 30) {
-            return new ChildGhostInserter(this);
+            return new ChildBlockGhostInserter(this);
         }
         return null;
     }
@@ -143,7 +143,7 @@ public class IfWidget extends BlockWidget {
         RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 7, "§if", Map.of("condition", condition));
 
         //body
-        int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeight() : 10;
+        int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeightWithChildren() : 10;
         int headHeight = getHeadHeight();
         if (this.conditionBody != null)
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
@@ -244,6 +244,14 @@ public class IfWidget extends BlockWidget {
     public void insertElseMiddle(BlockWidget widget) {
         widget.setChild(this.elseBody);
         this.elseBody = widget;
+    }
+
+    public void setCondition(CodeWidget target) {
+        this.condition = target;
+    }
+
+    public void setElseCondition(CodeWidget target) {
+        this.elseCondition = target;
     }
 
     public static class Builder implements BlockWidget.Builder<IfWidget> {

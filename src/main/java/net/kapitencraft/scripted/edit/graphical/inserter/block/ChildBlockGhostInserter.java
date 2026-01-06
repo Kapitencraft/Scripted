@@ -1,11 +1,11 @@
-package net.kapitencraft.scripted.edit.graphical.ghost;
+package net.kapitencraft.scripted.edit.graphical.inserter.block;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
 
-public class ChildGhostInserter implements GhostInserter {
+public class ChildBlockGhostInserter implements BlockGhostInserter {
     private final BlockWidget owner;
 
-    public ChildGhostInserter(BlockWidget owner) {
+    public ChildBlockGhostInserter(BlockWidget owner) {
         this.owner = owner;
     }
 
@@ -21,6 +21,6 @@ public class ChildGhostInserter implements GhostInserter {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ChildGhostInserter cGI && cGI.owner == this.owner;
+        return obj instanceof ChildBlockGhostInserter cGI && cGI.owner == this.owner;
     }
 }

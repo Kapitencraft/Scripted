@@ -1,12 +1,12 @@
-package net.kapitencraft.scripted.edit.graphical.ghost;
+package net.kapitencraft.scripted.edit.graphical.inserter.block;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.WhileLoopWidget;
 
-public class WhileBodyGhostInserter implements GhostInserter {
+public class WhileBodyBlockGhostInserter implements BlockGhostInserter {
     private final WhileLoopWidget owner;
 
-    public WhileBodyGhostInserter(WhileLoopWidget owner) {
+    public WhileBodyBlockGhostInserter(WhileLoopWidget owner) {
         this.owner = owner;
     }
 
@@ -22,6 +22,6 @@ public class WhileBodyGhostInserter implements GhostInserter {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof WhileBodyGhostInserter bGH && bGH.owner == this.owner;
+        return obj instanceof WhileBodyBlockGhostInserter bGH && bGH.owner == this.owner;
     }
 }

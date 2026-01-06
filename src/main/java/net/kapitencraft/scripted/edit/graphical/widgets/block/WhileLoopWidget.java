@@ -4,9 +4,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.ghost.ChildGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.ghost.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.ghost.WhileBodyGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.block.WhileBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
@@ -27,7 +27,7 @@ public class WhileLoopWidget extends BlockWidget {
             ).apply(i, WhileLoopWidget::new)
     );
 
-    private final CodeWidget condition;
+    private CodeWidget condition;
     private @Nullable BlockWidget body;
 
     public WhileLoopWidget(CodeWidget condition, @Nullable BlockWidget body) {
@@ -66,7 +66,7 @@ public class WhileLoopWidget extends BlockWidget {
         int loopWidth = 6 + getHeadWidth(font);
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, 22);
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, "§while", Map.of("condition", this.condition));
-        int bodyHeight = this.body != null ? this.body.getHeight() : 10;
+        int bodyHeight = getBranchHeight();
         if (this.body != null)
             this.body.render(graphics, font, renderX + 6, renderY + getHeadHeight());
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + getHeadHeight() + 3, 6, bodyHeight - 3);
@@ -76,6 +76,10 @@ public class WhileLoopWidget extends BlockWidget {
 
     private int getHeadHeight() {
         return Math.max(19, this.condition.getHeight());
+    }
+
+    private int getBranchHeight() {
+        return this.body != null ? this.body.getHeightWithChildren() : 10;
     }
 
     private int getHeadWidth(Font font) {
@@ -89,10 +93,11 @@ public class WhileLoopWidget extends BlockWidget {
 
     @Override
     public int getHeight() {
-        return getHeadHeight() + (this.body != null ? this.body.getHeight() : 19) + 13;
+        return getHeadHeight() +
+                getBranchHeight() + 13;
     }
 
-    public void setBody(BlockWidget target) {
+    public void setBody(@Nullable BlockWidget target) {
         this.body = target;
     }
 
@@ -102,15 +107,15 @@ public class WhileLoopWidget extends BlockWidget {
     }
 
     @Override
-    public GhostInserter getGhostBlockWidgetTarget(int x, int y) {
+    public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
         if (y < 0) return null;
         if (y < this.getHeadHeight() + 10 && x > -10 && x < 40)
-            return new WhileBodyGhostInserter(this);
+            return new WhileBodyBlockGhostInserter(this);
         y -= this.getHeadHeight();
         if (this.body != null && y < this.body.getHeightWithChildren())
             return this.body.getGhostBlockWidgetTarget(x, y);
         if (y < 16)
-            return new ChildGhostInserter(this);
+            return new ChildBlockGhostInserter(this);
         y -= 16;
         if (this.getChild() != null)
             return this.getChild().getGhostBlockWidgetTarget(x, y);
@@ -139,6 +144,10 @@ public class WhileLoopWidget extends BlockWidget {
 
     public static Builder builder() {
         return new Builder();
+    }
+
+    public void setCondition(CodeWidget target) {
+        this.condition = target;
     }
 
     public static class Builder implements BlockWidget.Builder<WhileLoopWidget> {

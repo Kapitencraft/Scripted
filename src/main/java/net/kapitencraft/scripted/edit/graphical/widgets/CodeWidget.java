@@ -36,7 +36,8 @@ public interface CodeWidget extends Removable {
         EXPR(() -> ExprWidget.CODEC),
         METHOD_STMT(() -> MethodStmtWidget.CODEC),
         GET_VAR(() -> GetVarWidget.CODEC),
-        SELECTION(() -> SelectionWidget.CODEC);
+        LIST_SELECTION(() -> ListSelectionWidget.CODEC),
+        SELECT_BLOCK(() -> BlockSelectWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
