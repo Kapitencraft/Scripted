@@ -1,8 +1,9 @@
-package net.kapitencraft.scripted.edit.graphical.widgets;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;

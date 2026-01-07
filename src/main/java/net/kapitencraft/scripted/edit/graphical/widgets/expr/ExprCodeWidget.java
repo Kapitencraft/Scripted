@@ -1,8 +1,9 @@
-package net.kapitencraft.scripted.edit.graphical.widgets;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.*;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockRemovable;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -12,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface ExprCodeWidget extends Removable {
+public interface ExprCodeWidget extends BlockRemovable, CodeWidget {
     Codec<ExprCodeWidget> CODEC = Type.CODEC.dispatch(ExprCodeWidget::getType, Type::getEntryCodec);
 
     @NotNull Type getType();

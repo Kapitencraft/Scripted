@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.inserter.expr;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.WhileLoopWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 
 public class WhileConditionInserter implements ExprGhostInserter {
     private final WhileLoopWidget owner;

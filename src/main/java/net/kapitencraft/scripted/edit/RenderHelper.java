@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.locale.Language;

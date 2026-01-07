@@ -2,11 +2,11 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.widgets.BlockSelectWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.WhileLoopWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.BlockSelectWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.registry.ModRegistries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;

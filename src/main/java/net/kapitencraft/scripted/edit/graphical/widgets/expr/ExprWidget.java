@@ -1,10 +1,12 @@
-package net.kapitencraft.scripted.edit.graphical.widgets;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockRemovable;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExprWidget implements ExprCodeWidget, Removable {
+public class ExprWidget implements ExprCodeWidget, BlockRemovable {
     public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),

@@ -1,8 +1,10 @@
-package net.kapitencraft.scripted.edit.graphical.widgets;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.client.UsefulTextures;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -42,18 +44,22 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        UsefulTextures.renderSlotBackground(graphics, renderX, renderY - 4);
-        graphics.renderItem(this.stack, renderX, renderY - 4);
+        PoseStack pose = graphics.pose();
+        pose.translate(renderX, renderY - 4, 0);
+        pose.scale(.5f, .5f, 1);
+        UsefulTextures.renderSlotBackground(graphics, 0, 0);
+        graphics.renderItem(this.stack, 0, 0);
+        pose.popPose();
     }
 
     @Override
     public int getWidth(Font font) {
-        return 19;
+        return 9;
     }
 
     @Override
     public int getHeight() {
-        return 18;
+        return 9;
     }
 
     @Override

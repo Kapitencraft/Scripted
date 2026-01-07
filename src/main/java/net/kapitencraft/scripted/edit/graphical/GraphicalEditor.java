@@ -2,10 +2,10 @@ package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
-import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
 import net.minecraft.Util;
@@ -28,7 +28,7 @@ import java.util.List;
 public class GraphicalEditor extends AbstractWidget {
     private final Registry<SelectionTab> tabs;
 
-    private BlockCodeWidget draggedBlock;
+    private CodeWidget draggedWidget;
     private final GhostBlockWidget ghostElement = new GhostBlockWidget();
     private BlockCodeElement ghostTargetElement;
     private BlockGhostInserter blockGhostInserter;
@@ -142,8 +142,8 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
-        if (this.draggedBlock != null) {
-            this.draggedBlock.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
+        if (this.draggedWidget != null) {
+            this.draggedWidget.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
         }
         pose.popPose();
         //endregion
@@ -167,8 +167,8 @@ public class GraphicalEditor extends AbstractWidget {
             SelectionTab value = tab.value();
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
             y += 10;
-            for (int i1 = 0; i1 < value.widgets().size(); i1++) {
-                ExprCodeWidget widget = value.widgets().get(i1);
+            for (int i1 = 0; i1 < value.size(); i1++) {
+                CodeWidget widget = value.get(i1);
                 widget.render(pGuiGraphics, font, 0, y);
                 y += widget.getHeight();
                 y += 10;
@@ -240,7 +240,7 @@ public class GraphicalEditor extends AbstractWidget {
                 if (result.widget() != element.widget) {
                     element.recalculateSize();
                 }
-                this.draggedBlock = result.widget();
+                this.draggedWidget = result.widget();
                 this.draggedOffsetX = -result.x();
                 this.draggedOffsetY = -result.y();
                 if (!result.removed())
@@ -261,10 +261,10 @@ public class GraphicalEditor extends AbstractWidget {
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();
             uY -= 10;
-            for (int i1 = 0; i1 < value.widgets().size(); i1++) {
-                ExprCodeWidget widget = value.widgets().get(i1);
+            for (int i1 = 0; i1 < value.size(); i1++) {
+                CodeWidget widget = value.get(i1);
                 if (uY > 0 && uY < widget.getHeight()) {
-                    this.draggedBlock = widget.copy();
+                    this.draggedWidget = widget.copy();
                     this.draggedOffsetX = -uX;
                     this.draggedOffsetY = -uY;
                     return;
@@ -282,7 +282,7 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (draggedBlock != null && draggedBlock instanceof BlockCodeWidget && !isPoolAreaHovered(mouseX, mouseY)) {
+        if (draggedWidget != null && draggedWidget instanceof BlockCodeWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             BlockGhostInserter inserter;
@@ -309,8 +309,8 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (this.draggedBlock != null) {
-            if (blockGhostInserter != null && this.draggedBlock instanceof BlockCodeWidget blockWidget) {
+        if (this.draggedWidget != null) {
+            if (blockGhostInserter != null && this.draggedWidget instanceof BlockCodeWidget blockWidget) {
                 blockWidget.setBottomChild(this.ghostElement.getChild());
                 this.blockGhostInserter.insert(blockWidget);
                 this.blockGhostInserter = null;
@@ -319,9 +319,10 @@ public class GraphicalEditor extends AbstractWidget {
             } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
-                this.elements.addFirst(new BlockCodeElement(this.draggedBlock, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
+
+                this.elements.addFirst(new BlockCodeElement(this.draggedWidget, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
             }
-            this.draggedBlock = null;
+            this.draggedWidget = null;
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
@@ -403,12 +404,12 @@ public class GraphicalEditor extends AbstractWidget {
 
         @Override
         public int getWidth(Font font) {
-            return draggedBlock.getWidth(font);
+            return draggedWidget.getWidth(font);
         }
 
         @Override
         public int getHeight() {
-            return draggedBlock.getHeight();
+            return draggedWidget.getHeight();
         }
 
         @Override

@@ -4,9 +4,11 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockRemovable;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.widgets.*;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -16,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class BlockCodeWidget implements Removable {
+public abstract class BlockCodeWidget implements BlockRemovable, CodeWidget {
     public static final Codec<BlockCodeWidget> CODEC = Type.CODEC.dispatch(BlockCodeWidget::getType, Type::getEntryCodec);
 
     protected static <T extends BlockCodeWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<BlockCodeWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
@@ -44,11 +46,11 @@ public abstract class BlockCodeWidget implements Removable {
             this.child.render(graphics, font, renderX, renderY + getHeight());
     }
 
-    abstract @NotNull Type getType();
+    protected abstract @NotNull Type getType();
 
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
-    enum Type implements StringRepresentable {
+    protected enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         WHILE_LOOP(() ->  WhileLoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),

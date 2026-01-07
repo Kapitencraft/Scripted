@@ -1,7 +1,8 @@
-package net.kapitencraft.scripted.edit.graphical.widgets;
+package net.kapitencraft.scripted.edit.graphical.fetch;
 
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
 
@@ -17,11 +18,7 @@ public record BlockWidgetFetchResult(boolean removed, int x, int y, BlockCodeWid
         return new BlockWidgetFetchResult(true, this.x, this.y, this.widget);
     }
 
-    public static BlockWidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, ExprCodeWidget self, String translation, Map<String, ExprCodeWidget> args) {
-        return fromExprList(minWidth, x, y, font, self, translation, args, true);
-    }
-
-    public static BlockWidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, BlockCodeWidget self, String translation, Map<String, ExprCodeWidget> expr, boolean remove) {
+    public static BlockWidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, BlockCodeWidget self, String translation, Map<String, ExprCodeWidget> expr) {
         if (x < minWidth) return BlockWidgetFetchResult.notRemoved(self, x, y);
         x -= minWidth;
         String inst = Language.getInstance().getOrDefault(translation);
