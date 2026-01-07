@@ -7,10 +7,6 @@
     "type": "if"
   },
   {
-    "type": "while_loop",
-    "condition": {
-      "type": "param",
-      "category": "boolean"
-    }
+    "type": "while_loop"
   }
 ]

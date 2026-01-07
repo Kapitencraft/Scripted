@@ -7,9 +7,9 @@ import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.WhileBodyBlockGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -18,37 +18,37 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Map;
 import java.util.Optional;
 
-public class WhileLoopWidget extends BlockWidget {
+public class WhileLoopWidget extends BlockCodeWidget {
     public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
-            BlockWidget.commonFields(i).and(
-                    CodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
+            BlockCodeWidget.commonFields(i).and(
+                    ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
-                    BlockWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
+                    BlockCodeWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
             ).apply(i, WhileLoopWidget::new)
     );
 
-    private CodeWidget condition;
-    private @Nullable BlockWidget body;
+    private ExprCodeWidget condition;
+    private @Nullable BlockCodeWidget body;
 
-    public WhileLoopWidget(CodeWidget condition, @Nullable BlockWidget body) {
+    public WhileLoopWidget(ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
         this.condition = condition;
         this.body = body;
     }
 
-    private WhileLoopWidget(BlockWidget child, CodeWidget head, @Nullable BlockWidget body) {
+    private WhileLoopWidget(BlockCodeWidget child, ExprCodeWidget head, @Nullable BlockCodeWidget body) {
         this.condition = head;
         this.body = body;
         this.setChild(child);
     }
 
-    public WhileLoopWidget(Optional<BlockWidget> blockWidget, CodeWidget widgets, Optional<BlockWidget> body) {
+    public WhileLoopWidget(Optional<BlockCodeWidget> blockWidget, ExprCodeWidget widgets, Optional<BlockCodeWidget> body) {
         blockWidget.ifPresent(this::setChild);
         this.condition = widgets;
         this.body = body.orElse(null);
     }
 
     @Override
-    public BlockWidget copy() {
+    public BlockCodeWidget copy() {
         return new WhileLoopWidget(
                 this.getChildCopy(),
                 this.condition.copy(),
@@ -97,11 +97,11 @@ public class WhileLoopWidget extends BlockWidget {
                 getBranchHeight() + 13;
     }
 
-    public void setBody(@Nullable BlockWidget target) {
+    public void setBody(@Nullable BlockCodeWidget target) {
         this.body = target;
     }
 
-    public void insertBodyMiddle(BlockWidget widget) {
+    public void insertBodyMiddle(BlockCodeWidget widget) {
         widget.setChild(this.body);
         this.body = widget;
     }
@@ -123,54 +123,54 @@ public class WhileLoopWidget extends BlockWidget {
     }
 
     @Override
-    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getWidth(font))
-                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
+                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
             return null;
         }
         else if (y > this.getHeight()) {
             return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         } else if (this.body != null) {
-            WidgetFetchResult result = this.body.fetchAndRemoveHovered(x, y - this.getHeadHeight(), font);
+            BlockWidgetFetchResult result = this.body.fetchAndRemoveHovered(x, y - this.getHeadHeight(), font);
             if (result == null) return null;
             if (!result.removed()) {
                 this.body = null;
             }
             return result.setRemoved();
         }
-        return WidgetFetchResult.notRemoved(this, x, y);
+        return BlockWidgetFetchResult.notRemoved(this, x, y);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public void setCondition(CodeWidget target) {
+    public void setCondition(ExprCodeWidget target) {
         this.condition = target;
     }
 
-    public static class Builder implements BlockWidget.Builder<WhileLoopWidget> {
-        private BlockWidget child;
-        private CodeWidget condition = ParamWidget.CONDITION;
-        private BlockWidget body;
+    public static class Builder implements BlockCodeWidget.Builder<WhileLoopWidget> {
+        private BlockCodeWidget child;
+        private ExprCodeWidget condition = ParamWidget.CONDITION;
+        private BlockCodeWidget body;
 
-        public Builder setBody(BlockWidget.Builder<?> widget) {
+        public Builder setBody(BlockCodeWidget.Builder<?> widget) {
             this.body = widget.build();
             return this;
         }
 
-        public Builder setChild(BlockWidget.Builder<?> widget) {
+        public Builder setChild(BlockCodeWidget.Builder<?> widget) {
             this.child = widget.build();
             return this;
         }
 
-        public Builder setCondition(CodeWidget widget) {
+        public Builder setCondition(ExprCodeWidget widget) {
             this.condition = widget;
             return this;
         }
 
-        public Builder setCondition(CodeWidget.Builder<?> builder) {
+        public Builder setCondition(ExprCodeWidget.Builder<?> builder) {
             this.condition = builder.build();
             return this;
         }

@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.locale.Language;
@@ -14,7 +14,7 @@ public interface RenderHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("%\\{([a-zA-Z0-9_]+)}%"); //oooh pattern :pog:
 
-    static int renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, Map<String, CodeWidget> entries) {
+    static int renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, Map<String, ExprCodeWidget> entries) {
         String inst = Language.getInstance().getOrDefault(key);
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
         int j, l;
@@ -25,7 +25,7 @@ public interface RenderHelper {
             graphics.drawString(font, subElement, x, y, 0, false);
             x += font.width(subElement);
             String name = matcher.group(1);
-            CodeWidget widget = entries.get(name);
+            ExprCodeWidget widget = entries.get(name);
             widget.render(graphics, font, x, y);
             x += widget.getWidth(font);
         }
@@ -36,15 +36,15 @@ public interface RenderHelper {
     }
 
     @Deprecated
-    static void renderExprList(GuiGraphics graphics, Font font, int renderX, int renderY, List<CodeWidget> children) {
+    static void renderExprList(GuiGraphics graphics, Font font, int renderX, int renderY, List<ExprCodeWidget> children) {
         int i = 0;
-        for (CodeWidget child : children) {
+        for (ExprCodeWidget child : children) {
             child.render(graphics, font, renderX + i, renderY);
             i += child.getWidth(font);
         }
     }
 
-    static int getVisualTextWidth(Font font, String key, Map<String, CodeWidget> map) {
+    static int getVisualTextWidth(Font font, String key, Map<String, ExprCodeWidget> map) {
         String inst = Language.getInstance().getOrDefault(key);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -55,7 +55,7 @@ public interface RenderHelper {
             String subElement = inst.substring(j, k);
             width += font.width(subElement);
             String name = matcher.group(1);
-            CodeWidget widget = map.get(name);
+            ExprCodeWidget widget = map.get(name);
             width += widget.getWidth(font);
         }
         String subElement = inst.substring(j);

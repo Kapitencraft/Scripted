@@ -8,7 +8,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class GetVarWidget implements CodeWidget {
+public class GetVarWidget implements ExprCodeWidget {
     public static final MapCodec<GetVarWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("name").forGetter(w -> w.name)
     ).apply(i, GetVarWidget::new));
@@ -30,7 +30,7 @@ public class GetVarWidget implements CodeWidget {
     }
 
     @Override
-    public CodeWidget copy() {
+    public ExprCodeWidget copy() {
         return new GetVarWidget(this.name);
     }
 
@@ -45,7 +45,7 @@ public class GetVarWidget implements CodeWidget {
     }
 
     @Override
-    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
     }
 }

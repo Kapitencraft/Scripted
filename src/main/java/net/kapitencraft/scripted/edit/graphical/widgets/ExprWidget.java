@@ -12,18 +12,18 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExprWidget implements CodeWidget, Removable {
+public class ExprWidget implements ExprCodeWidget, Removable {
     public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, CodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
+            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
     ).apply(i, ExprWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
-    private final Map<String, CodeWidget> args = new HashMap<>();
+    private final Map<String, ExprCodeWidget> args = new HashMap<>();
 
-    public ExprWidget(ExprCategory type, String translationKey, Map<String, CodeWidget> args) {
+    public ExprWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
@@ -39,13 +39,13 @@ public class ExprWidget implements CodeWidget, Removable {
     }
 
     @Override
-    public CodeWidget copy() {
+    public ExprCodeWidget copy() {
         return new ExprWidget(this.type, this.translationKey, this.args);
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - getHeight() / 2 + 4, getWidth(font), getHeight());
+        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - getHeight() / 2 + 3, getWidth(font), getHeight());
         RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY, this.translationKey, this.args);
     }
 
@@ -56,19 +56,19 @@ public class ExprWidget implements CodeWidget, Removable {
 
     @Override
     public int getHeight() {
-        return CodeWidget.getHeightFromArgs(this.args) + 4;
+        return Math.max(19, ExprCodeWidget.getHeightFromArgs(this.args) + 4);
     }
 
     @Override
-    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
-        return WidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
+        return BlockWidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
     } //TODO fix offset
 
-    public static class Builder implements CodeWidget.Builder<ExprWidget> {
+    public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {
         private ExprCategory type;
         private String translationKey;
-        private final Map<String, CodeWidget> args = new HashMap<>();
+        private final Map<String, ExprCodeWidget> args = new HashMap<>();
 
         public Builder setTranslationKey(String translationKey) {
             this.translationKey = translationKey;
@@ -80,12 +80,12 @@ public class ExprWidget implements CodeWidget, Removable {
             return this;
         }
 
-        public Builder withParam(String argName, CodeWidget entry) {
+        public Builder withParam(String argName, ExprCodeWidget entry) {
             this.args.put(argName, entry);
             return this;
         }
 
-        public Builder withParam(String argName, CodeWidget.Builder<?> builder) {
+        public Builder withParam(String argName, ExprCodeWidget.Builder<?> builder) {
             return this.withParam(argName, builder.build());
         }
 

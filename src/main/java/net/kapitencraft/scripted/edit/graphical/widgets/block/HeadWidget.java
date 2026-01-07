@@ -5,8 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -16,35 +16,35 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public class HeadWidget extends BlockWidget {
+public class HeadWidget extends BlockCodeWidget {
     public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            BlockWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
+            BlockCodeWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, CodeWidget.CODEC).fieldOf("children").forGetter(w -> w.children)
+            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("children").forGetter(w -> w.children)
     ).apply(i, HeadWidget::new));
 
     private final String translationKey;
-    private final Map<String, CodeWidget> children = new HashMap<>();
+    private final Map<String, ExprCodeWidget> children = new HashMap<>();
 
-    public HeadWidget(Optional<BlockWidget> child, String translationKey, Map<String, CodeWidget> map) {
+    public HeadWidget(Optional<BlockCodeWidget> child, String translationKey, Map<String, ExprCodeWidget> map) {
         this.translationKey = translationKey;
         this.children.putAll(map);
         child.ifPresent(this::setChild);
     }
 
-    public HeadWidget(BlockWidget child, String translationKey, Map<String, CodeWidget> map) {
+    public HeadWidget(BlockCodeWidget child, String translationKey, Map<String, ExprCodeWidget> map) {
         this.translationKey = translationKey;
         this.children.putAll(map);
         this.setChild(child);
     }
 
-    public HeadWidget(BlockWidget widget, String translationKey) {
+    public HeadWidget(BlockCodeWidget widget, String translationKey) {
         this.translationKey = translationKey;
         this.setChild(widget);
     }
 
     @Override
-    public BlockWidget copy() {
+    public BlockCodeWidget copy() {
         return new HeadWidget(
                 getChildCopy(),
                 this.translationKey
@@ -70,7 +70,7 @@ public class HeadWidget extends BlockWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(27, 17 + CodeWidget.getHeightFromArgs(this.children));
+        return Math.max(27, 17 + ExprCodeWidget.getHeightFromArgs(this.children));
     }
 
     public static Builder builder() {
@@ -78,20 +78,20 @@ public class HeadWidget extends BlockWidget {
     }
 
     @Override
-    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        if (y < 8) return WidgetFetchResult.notRemoved(this, x, y);
+    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        if (y < 8) return BlockWidgetFetchResult.notRemoved(this, x, y);
         if (y > this.getHeight()) return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
-            return WidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.children, false);
+            return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.children, false);
         return null;
     }
 
-    public static class Builder implements BlockWidget.Builder<HeadWidget> {
+    public static class Builder implements BlockCodeWidget.Builder<HeadWidget> {
         private String translationKey;
-        private final Map<String, CodeWidget> expr = new HashMap<>();
-        private BlockWidget child;
+        private final Map<String, ExprCodeWidget> expr = new HashMap<>();
+        private BlockCodeWidget child;
 
-        public Builder withExpr(String argName, CodeWidget widget) {
+        public Builder withExpr(String argName, ExprCodeWidget widget) {
             expr.put(argName, widget);
             return this;
         }
@@ -101,7 +101,7 @@ public class HeadWidget extends BlockWidget {
             return this;
         }
 
-        public Builder setChild(BlockWidget widget) {
+        public Builder setChild(BlockCodeWidget widget) {
             this.child = widget;
             return this;
         }

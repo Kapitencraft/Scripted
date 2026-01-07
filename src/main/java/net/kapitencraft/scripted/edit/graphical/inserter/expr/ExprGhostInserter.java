@@ -1,10 +1,10 @@
 package net.kapitencraft.scripted.edit.graphical.inserter.expr;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 
 public interface ExprGhostInserter {
 
-    void insert(CodeWidget target);
+    void insert(ExprCodeWidget target);
 
     boolean equals(Object other);
 }

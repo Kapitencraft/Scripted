@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.inserter.block;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
 
 public class IfBodyBlockGhostInserter implements BlockGhostInserter {
@@ -11,12 +11,12 @@ public class IfBodyBlockGhostInserter implements BlockGhostInserter {
     }
 
     @Override
-    public void insert(BlockWidget target) {
+    public void insert(BlockCodeWidget target) {
         this.owner.setBody(target);
     }
 
     @Override
-    public void insertChildMiddle(BlockWidget ghostElement) {
+    public void insertChildMiddle(BlockCodeWidget ghostElement) {
         this.owner.insertBodyMiddle(ghostElement);
     }
 

@@ -4,9 +4,9 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
@@ -28,16 +28,16 @@ import java.util.List;
 public class GraphicalEditor extends AbstractWidget {
     private final Registry<SelectionTab> tabs;
 
-    private CodeWidget dragged;
+    private BlockCodeWidget draggedBlock;
     private final GhostBlockWidget ghostElement = new GhostBlockWidget();
-    private CodeElement ghostTargetElement;
+    private BlockCodeElement ghostTargetElement;
     private BlockGhostInserter blockGhostInserter;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
     private float scrollX, scrollY, scale = 1;
     private float selectionScroll;
-    private final List<CodeElement> elements = new ArrayList<>();
+    private final List<BlockCodeElement> elements = new ArrayList<>();
 
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
         super(pX, pY, pWidth, pHeight, pMessage);
@@ -45,7 +45,7 @@ public class GraphicalEditor extends AbstractWidget {
         this.font = font;
 
         this.elements.add(
-                new CodeElement(HeadWidget.builder()
+                new BlockCodeElement(HeadWidget.builder()
                         .setTranslationKey("scripted.code.head.test")
                         //.setChild(
                         //        MethodStmtWidget.builder()
@@ -129,7 +129,7 @@ public class GraphicalEditor extends AbstractWidget {
         int maxY = (int) (getHeight() / scale - scrollY);
 
         for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
-            CodeElement element = this.elements.get(i);
+            BlockCodeElement element = this.elements.get(i);
             if (element.visible(minX, minY, maxX, maxY)) {
                 element.widget.render(pGuiGraphics, font, element.x, element.y);
             }
@@ -142,8 +142,8 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
-        if (this.dragged != null) {
-            this.dragged.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
+        if (this.draggedBlock != null) {
+            this.draggedBlock.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
         }
         pose.popPose();
         //endregion
@@ -168,7 +168,7 @@ public class GraphicalEditor extends AbstractWidget {
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
             y += 10;
             for (int i1 = 0; i1 < value.widgets().size(); i1++) {
-                CodeWidget widget = value.widgets().get(i1);
+                ExprCodeWidget widget = value.widgets().get(i1);
                 widget.render(pGuiGraphics, font, 0, y);
                 y += widget.getHeight();
                 y += 10;
@@ -181,7 +181,8 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (isPoolAreaHovered(mouseX, mouseY)) {
-            selectionScroll += (float) scrollY;
+            selectionScroll += (float) (scrollY * ClientModConfig.getScrollScale());
+            return true;
         }
         if (Screen.hasControlDown()) {
             /*
@@ -230,16 +231,16 @@ public class GraphicalEditor extends AbstractWidget {
         int posX = (int) (mouseX / scale - scrollX) - getX();
         int posY = (int) (mouseY / scale - scrollY) - getY();
         for (int i = 0; i < this.elements.size(); i++) {
-            CodeElement element = this.elements.get(i);
+            BlockCodeElement element = this.elements.get(i);
             if (element.hovered(posX, posY)) {
-                WidgetFetchResult result = element.fetchAndRemoveHoveredWidget(posX, posY, font);
+                BlockWidgetFetchResult result = element.fetchAndRemoveHoveredBlockWidget(posX, posY, font);
                 if (result == null) {
                     continue;
                 }
                 if (result.widget() != element.widget) {
                     element.recalculateSize();
                 }
-                this.dragged = result.widget();
+                this.draggedBlock = result.widget();
                 this.draggedOffsetX = -result.x();
                 this.draggedOffsetY = -result.y();
                 if (!result.removed())
@@ -261,9 +262,9 @@ public class GraphicalEditor extends AbstractWidget {
             SelectionTab value = tab.value();
             uY -= 10;
             for (int i1 = 0; i1 < value.widgets().size(); i1++) {
-                CodeWidget widget = value.widgets().get(i1);
+                ExprCodeWidget widget = value.widgets().get(i1);
                 if (uY > 0 && uY < widget.getHeight()) {
-                    this.dragged = widget.copy();
+                    this.draggedBlock = widget.copy();
                     this.draggedOffsetX = -uX;
                     this.draggedOffsetY = -uY;
                     return;
@@ -281,11 +282,11 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
-        if (dragged != null && dragged instanceof BlockWidget && !isPoolAreaHovered(mouseX, mouseY)) {
+        if (draggedBlock != null && draggedBlock instanceof BlockCodeWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             BlockGhostInserter inserter;
-            for (CodeElement element : elements) {
+            for (BlockCodeElement element : elements) {
                 if ((inserter = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
                     if (!inserter.equals(blockGhostInserter)) {
                         if (blockGhostInserter != null)
@@ -308,8 +309,8 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (this.dragged != null) {
-            if (blockGhostInserter != null && this.dragged instanceof BlockWidget blockWidget) {
+        if (this.draggedBlock != null) {
+            if (blockGhostInserter != null && this.draggedBlock instanceof BlockCodeWidget blockWidget) {
                 blockWidget.setBottomChild(this.ghostElement.getChild());
                 this.blockGhostInserter.insert(blockWidget);
                 this.blockGhostInserter = null;
@@ -318,26 +319,26 @@ public class GraphicalEditor extends AbstractWidget {
             } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
-                this.elements.addFirst(new CodeElement(this.dragged, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
+                this.elements.addFirst(new BlockCodeElement(this.draggedBlock, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
             }
-            this.dragged = null;
+            this.draggedBlock = null;
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    private class CodeElement {
+    private class BlockCodeElement {
         private final int x;
         private final int y;
         private int width;
         private int height;
-        private final CodeWidget widget;
+        private final BlockCodeWidget widget;
 
-        private CodeElement(CodeWidget widget) {
+        private BlockCodeElement(BlockCodeWidget widget) {
             this(widget, 100, 100);
         }
 
-        private CodeElement(CodeWidget widget, int x, int y) {
+        private BlockCodeElement(BlockCodeWidget widget, int x, int y) {
             this.widget = widget;
             this.recalculateSize();
             this.x = x;
@@ -346,7 +347,7 @@ public class GraphicalEditor extends AbstractWidget {
 
         private int calculateWidgetWidth() {
             int width = 0;
-            if (widget instanceof BlockWidget blockWidget) {
+            if (widget instanceof BlockCodeWidget blockWidget) {
                 do {
                     width += blockWidget.getWidth(font);
                     blockWidget = blockWidget.getChild();
@@ -358,7 +359,7 @@ public class GraphicalEditor extends AbstractWidget {
 
         private int calculateWidgetHeight() {
             int height = 0;
-            if (widget instanceof BlockWidget blockWidget) {
+            if (widget instanceof BlockCodeWidget blockWidget) {
                 do {
                     height += blockWidget.getHeight();
                     blockWidget = blockWidget.getChild();
@@ -377,7 +378,7 @@ public class GraphicalEditor extends AbstractWidget {
             return this.x + width > minX || this.y + height > minY || this.x < maxX || this.y < maxY;
         }
 
-        public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
+        public BlockWidgetFetchResult fetchAndRemoveHoveredBlockWidget(int posX, int posY, Font font) {
             return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
         }
 
@@ -387,13 +388,13 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         public BlockGhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
-            if (!(this.widget instanceof BlockWidget blockWidget))
+            if (!(this.widget instanceof BlockCodeWidget blockWidget))
                 return null;
             return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
         }
     }
 
-    private class GhostBlockWidget extends BlockWidget {
+    private class GhostBlockWidget extends BlockCodeWidget {
 
         @Override
         public @NotNull Type getType() {
@@ -402,12 +403,12 @@ public class GraphicalEditor extends AbstractWidget {
 
         @Override
         public int getWidth(Font font) {
-            return dragged.getWidth(font);
+            return draggedBlock.getWidth(font);
         }
 
         @Override
         public int getHeight() {
-            return dragged.getHeight();
+            return draggedBlock.getHeight();
         }
 
         @Override
@@ -424,12 +425,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
             return null;
         }
 
         @Override
-        public BlockWidget copy() {
+        public BlockCodeWidget copy() {
             throw new IllegalAccessError("attempting to copy ghost widget");
         }
     }

@@ -6,9 +6,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.BlockWidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -16,32 +16,32 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.Optional;
 
-public class VarModWidget extends BlockWidget {
+public class VarModWidget extends BlockCodeWidget {
     public static final MapCodec<VarModWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
                     Codec.STRING.fieldOf("name").forGetter(w -> w.varName)
             ).and(
-                    CodeWidget.CODEC.fieldOf("expr").forGetter(w -> w.expr)
+                    ExprCodeWidget.CODEC.fieldOf("expr").forGetter(w -> w.expr)
             ).apply(i, VarModWidget::new)
     );
 
     private final String varName;
-    private final CodeWidget expr;
+    private final ExprCodeWidget expr;
 
-    private VarModWidget(BlockWidget child, String varName, CodeWidget expr) {
+    private VarModWidget(BlockCodeWidget child, String varName, ExprCodeWidget expr) {
         this.expr = expr;
         this.setChild(child);
         this.varName = varName;
     }
 
-    public VarModWidget(Optional<BlockWidget> child, String varName, CodeWidget expr) {
+    public VarModWidget(Optional<BlockCodeWidget> child, String varName, ExprCodeWidget expr) {
         this.expr = expr;
         child.ifPresent(this::setChild);
         this.varName = varName;
     }
 
     @Override
-    public BlockWidget copy() {
+    public BlockCodeWidget copy() {
         return new VarModWidget(
                 getChildCopy(),
                 this.varName,
@@ -77,32 +77,32 @@ public class VarModWidget extends BlockWidget {
     }
 
     @Override
-    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y > this.getHeight()) return fetchChildRemoveHovered(x, y - this.getHeight(), font);
         //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
         return null;
     }
 
-    public static class Builder implements BlockWidget.Builder<VarModWidget> {
-        private BlockWidget child;
+    public static class Builder implements BlockCodeWidget.Builder<VarModWidget> {
+        private BlockCodeWidget child;
         private String varName;
-        private CodeWidget expr = new ParamWidget(ExprCategory.NUMBER);
+        private ExprCodeWidget expr = new ParamWidget(ExprCategory.NUMBER);
 
         @Override
         public VarModWidget build() {
             return new VarModWidget(child, varName, expr);
         }
 
-        public Builder setExpr(CodeWidget value) {
+        public Builder setExpr(ExprCodeWidget value) {
             this.expr = value;
             return this;
         }
 
-        public Builder setExpr(CodeWidget.Builder<?> builder) {
+        public Builder setExpr(ExprCodeWidget.Builder<?> builder) {
             return this.setExpr(builder.build());
         }
 
-        public Builder setChild(BlockWidget.Builder<?> builder) {
+        public Builder setChild(BlockCodeWidget.Builder<?> builder) {
             this.child = builder.build();
             return this;
         }

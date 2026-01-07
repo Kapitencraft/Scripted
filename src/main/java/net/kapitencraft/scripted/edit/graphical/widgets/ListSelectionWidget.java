@@ -10,7 +10,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class ListSelectionWidget implements CodeWidget {
+public class ListSelectionWidget implements ExprCodeWidget {
     public static final MapCodec<ListSelectionWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.listOf().fieldOf("entries").forGetter(w -> w.entries)
     ).apply(i, ListSelectionWidget::new));
@@ -28,7 +28,7 @@ public class ListSelectionWidget implements CodeWidget {
     }
 
     @Override
-    public CodeWidget copy() {
+    public ExprCodeWidget copy() {
         return new ListSelectionWidget(
                 this.entries,
                 this.index
@@ -56,7 +56,7 @@ public class ListSelectionWidget implements CodeWidget {
     }
 
     @Override
-    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
     }
 }

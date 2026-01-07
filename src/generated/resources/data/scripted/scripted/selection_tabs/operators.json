@@ -1,7 +1,0 @@
-[
-  {
-    "type": "method_stmt",
-    "args": {},
-    "signature": "Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;"
-  }
-]

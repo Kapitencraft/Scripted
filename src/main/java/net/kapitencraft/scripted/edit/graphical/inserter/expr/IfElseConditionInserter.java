@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.inserter.expr;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
 
 public class IfElseConditionInserter implements ExprGhostInserter {
@@ -11,7 +11,7 @@ public class IfElseConditionInserter implements ExprGhostInserter {
     }
 
     @Override
-    public void insert(CodeWidget target) {
+    public void insert(ExprCodeWidget target) {
         this.owner.setElseCondition(target);
     }
 

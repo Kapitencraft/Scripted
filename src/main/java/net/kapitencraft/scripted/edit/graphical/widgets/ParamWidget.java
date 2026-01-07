@@ -7,12 +7,12 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class ParamWidget implements CodeWidget {
+public class ParamWidget implements ExprCodeWidget {
     public static final MapCodec<ParamWidget> CODEC = ExprCategory.CODEC.xmap(ParamWidget::new, w -> w.exprCategory).fieldOf("category");
 
     public static final ParamWidget CONDITION = new ParamWidget(ExprCategory.BOOLEAN);
-    public static final CodeWidget OBJ = new ParamWidget(ExprCategory.OTHER);
-    public static final CodeWidget NUM = new ParamWidget(ExprCategory.NUMBER);
+    public static final ExprCodeWidget OBJ = new ParamWidget(ExprCategory.OTHER);
+    public static final ExprCodeWidget NUM = new ParamWidget(ExprCategory.NUMBER);
 
     private final ExprCategory exprCategory;
 
@@ -21,7 +21,7 @@ public class ParamWidget implements CodeWidget {
     }
 
     @Override
-    public CodeWidget copy() {
+    public ExprCodeWidget copy() {
         return this; //param widgets should be treated as singletons
     }
 
@@ -47,7 +47,7 @@ public class ParamWidget implements CodeWidget {
 
 
     @Override
-    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
     }
 }

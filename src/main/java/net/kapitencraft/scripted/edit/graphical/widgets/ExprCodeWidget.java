@@ -12,8 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface CodeWidget extends Removable {
-    Codec<CodeWidget> CODEC = Type.CODEC.dispatch(CodeWidget::getType, Type::getEntryCodec);
+public interface ExprCodeWidget extends Removable {
+    Codec<ExprCodeWidget> CODEC = Type.CODEC.dispatch(ExprCodeWidget::getType, Type::getEntryCodec);
 
     @NotNull Type getType();
 
@@ -23,27 +23,22 @@ public interface CodeWidget extends Removable {
 
     int getHeight();
 
-    CodeWidget copy();
+    ExprCodeWidget copy();
 
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
     enum Type implements StringRepresentable {
         PARAM(() -> ParamWidget.CODEC),
-        HEAD(() -> HeadWidget.CODEC),
-        WHILE_LOOP(() ->  WhileLoopWidget.CODEC),
-        IF(() -> IfWidget.CODEC),
-        BODY(() -> VarModWidget.CODEC),
         EXPR(() -> ExprWidget.CODEC),
-        METHOD_STMT(() -> MethodStmtWidget.CODEC),
         GET_VAR(() -> GetVarWidget.CODEC),
         LIST_SELECTION(() -> ListSelectionWidget.CODEC),
         SELECT_BLOCK(() -> BlockSelectWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
-        private final Supplier<MapCodec<? extends CodeWidget>> entryCodec;
+        private final Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec;
 
-        Type(Supplier<MapCodec<? extends CodeWidget>> entryCodec) {
+        Type(Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec) {
             this.entryCodec = entryCodec;
         }
 
@@ -52,20 +47,20 @@ public interface CodeWidget extends Removable {
             return this.name().toLowerCase();
         }
 
-        public MapCodec<? extends CodeWidget> getEntryCodec() {
+        public MapCodec<? extends ExprCodeWidget> getEntryCodec() {
             return entryCodec.get();
         }
     }
 
-    static int getHeightFromArgs(Map<String, CodeWidget> widgets) {
-        return widgets.values().stream().mapToInt(CodeWidget::getHeight).max().orElse(0);
+    static int getHeightFromArgs(Map<String, ExprCodeWidget> widgets) {
+        return widgets.values().stream().mapToInt(ExprCodeWidget::getHeight).max().orElse(0);
     }
 
-    static int getWidthFromList(Font font, List<CodeWidget> widgets) {
+    static int getWidthFromList(Font font, List<ExprCodeWidget> widgets) {
         return widgets.stream().mapToInt(w -> w.getWidth(font)).sum();
     }
 
-    interface Builder<T extends CodeWidget> {
+    interface Builder<T extends ExprCodeWidget> {
         T build();
     }
 }

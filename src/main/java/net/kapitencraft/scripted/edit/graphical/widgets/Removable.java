@@ -5,5 +5,5 @@ import org.jetbrains.annotations.Nullable;
 
 public interface Removable {
 
-    @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font);
+    @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font);
 }
