@@ -1,13 +1,15 @@
-package net.kapitencraft.scripted.edit.graphical;
+package net.kapitencraft.scripted.edit.graphical.core;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -37,7 +39,7 @@ public class GraphicalEditor extends AbstractWidget {
     private final Font font;
     private float scrollX, scrollY, scale = 1;
     private float selectionScroll;
-    private final List<BlockCodeElement> elements = new ArrayList<>();
+    private final List<CodeElement> elements = new ArrayList<>();
 
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
         super(pX, pY, pWidth, pHeight, pMessage);
@@ -129,9 +131,9 @@ public class GraphicalEditor extends AbstractWidget {
         int maxY = (int) (getHeight() / scale - scrollY);
 
         for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
-            BlockCodeElement element = this.elements.get(i);
+            CodeElement element = this.elements.get(i);
             if (element.visible(minX, minY, maxX, maxY)) {
-                element.widget.render(pGuiGraphics, font, element.x, element.y);
+                element.render(pGuiGraphics, font, element.x, element.y);
             }
         }
 
@@ -231,21 +233,23 @@ public class GraphicalEditor extends AbstractWidget {
         int posX = (int) (mouseX / scale - scrollX) - getX();
         int posY = (int) (mouseY / scale - scrollY) - getY();
         for (int i = 0; i < this.elements.size(); i++) {
-            BlockCodeElement element = this.elements.get(i);
+            CodeElement element = this.elements.get(i);
             if (element.hovered(posX, posY)) {
-                BlockWidgetFetchResult result = element.fetchAndRemoveHoveredBlockWidget(posX, posY, font);
-                if (result == null) {
-                    continue;
+                if (element instanceof BlockCodeElement bcW) {
+                    BlockWidgetFetchResult result = bcW.fetchAndRemoveHoveredBlockWidget(posX, posY, font);
+                    if (result == null) {
+                        continue;
+                    }
+                    if (result.widget() != bcW.widget) {
+                        element.recalculateSize();
+                    }
+                    this.draggedWidget = result.widget();
+                    this.draggedOffsetX = -result.x();
+                    this.draggedOffsetY = -result.y();
+                    if (!result.removed())
+                        this.elements.remove(i);
+                    return true;
                 }
-                if (result.widget() != element.widget) {
-                    element.recalculateSize();
-                }
-                this.draggedWidget = result.widget();
-                this.draggedOffsetX = -result.x();
-                this.draggedOffsetY = -result.y();
-                if (!result.removed())
-                    this.elements.remove(i);
-                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -286,7 +290,8 @@ public class GraphicalEditor extends AbstractWidget {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             BlockGhostInserter inserter;
-            for (BlockCodeElement element : elements) {
+            for (CodeElement element : elements) {
+
                 if ((inserter = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
                     if (!inserter.equals(blockGhostInserter)) {
                         if (blockGhostInserter != null)
@@ -320,7 +325,11 @@ public class GraphicalEditor extends AbstractWidget {
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
 
-                this.elements.addFirst(new BlockCodeElement(this.draggedWidget, uiX + this.draggedOffsetX, uiY + this.draggedOffsetY)); //add as first view and access
+                if (this.draggedWidget instanceof BlockCodeWidget bCW) {
+                    this.elements.addFirst(new BlockCodeElement(uiX + this.draggedOffsetX, uiY + this.draggedOffsetY, bCW)); //add as first view and access
+                } else {
+                    this.elements.addFirst(new ExprCodeElement(uiX + this.draggedOffsetX, uiY + this.draggedOffsetY, (ExprCodeWidget) this.draggedWidget));
+                }
             }
             this.draggedWidget = null;
             return true;
@@ -328,47 +337,20 @@ public class GraphicalEditor extends AbstractWidget {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    private class BlockCodeElement {
-        private final int x;
-        private final int y;
-        private int width;
-        private int height;
-        private final BlockCodeWidget widget;
+    private abstract static class CodeElement {
+        protected final int x;
+        protected final int y;
+        protected int width;
+        protected int height;
 
-        private BlockCodeElement(BlockCodeWidget widget) {
-            this(widget, 100, 100);
-        }
-
-        private BlockCodeElement(BlockCodeWidget widget, int x, int y) {
-            this.widget = widget;
-            this.recalculateSize();
+        private CodeElement(int x, int y) {
             this.x = x;
             this.y = y;
         }
 
-        private int calculateWidgetWidth() {
-            int width = 0;
-            if (widget instanceof BlockCodeWidget blockWidget) {
-                do {
-                    width += blockWidget.getWidth(font);
-                    blockWidget = blockWidget.getChild();
-                } while (blockWidget != null);
-            } else
-                width = this.widget.getWidth(font);
-            return width;
-        }
+        protected abstract int calculateWidgetWidth();
 
-        private int calculateWidgetHeight() {
-            int height = 0;
-            if (widget instanceof BlockCodeWidget blockWidget) {
-                do {
-                    height += blockWidget.getHeight();
-                    blockWidget = blockWidget.getChild();
-                } while (blockWidget != null);
-            } else
-                height = widget.getHeight();
-            return height;
-        }
+        protected abstract int calculateWidgetHeight();
 
         public boolean hovered(int mouseX, int mouseY) {
             return mouseX > this.x && mouseX < this.x + this.width &&
@@ -379,19 +361,86 @@ public class GraphicalEditor extends AbstractWidget {
             return this.x + width > minX || this.y + height > minY || this.x < maxX || this.y < maxY;
         }
 
-        public BlockWidgetFetchResult fetchAndRemoveHoveredBlockWidget(int posX, int posY, Font font) {
-            return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
-        }
-
         public void recalculateSize() {
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
         }
 
+        public abstract void render(GuiGraphics pGuiGraphics, Font font, int x, int y);
+    }
+
+    private class BlockCodeElement extends CodeElement {
+        private final @NotNull BlockCodeWidget widget;
+
+        private BlockCodeElement(@NotNull BlockCodeWidget widget) {
+            this(100, 100, widget);
+        }
+
+        private BlockCodeElement(int x, int y, @NotNull BlockCodeWidget widget) {
+            super(x, y);
+            this.widget = widget;
+            this.recalculateSize();
+        }
+
+        @Override
+        protected int calculateWidgetWidth() {
+            Integer width = null;
+            BlockCodeWidget blockWidget = this.widget;
+            do {
+                if (width == null || blockWidget.getWidth(font) > width) {
+                    width = blockWidget.getWidth(font);
+                }
+                blockWidget = blockWidget.getChild();
+            } while (blockWidget != null);
+            return width;
+        }
+
+        protected int calculateWidgetHeight() {
+            int height = 0;
+            BlockCodeWidget blockWidget = this.widget;
+            do {
+                height += blockWidget.getHeight();
+                blockWidget = blockWidget.getChild();
+            } while (blockWidget != null);
+            return height;
+        }
+
+        public BlockWidgetFetchResult fetchAndRemoveHoveredBlockWidget(int posX, int posY, Font font) {
+            return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
+        }
+
         public BlockGhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
-            if (!(this.widget instanceof BlockCodeWidget blockWidget))
-                return null;
-            return blockWidget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
+            return this.widget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
+        }
+
+        @Override
+        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
+            this.widget.render(pGuiGraphics, font, x, y);
+        }
+    }
+
+    private class ExprCodeElement extends CodeElement {
+        private final ExprCodeWidget widget;
+
+        private ExprCodeElement(int x, int y, ExprCodeWidget widget) {
+            super(x, y);
+            this.widget = widget;
+            this.recalculateSize();
+        }
+
+        @Override
+        protected int calculateWidgetWidth() {
+            return widget.getWidth(font);
+        }
+
+        @Override
+        protected int calculateWidgetHeight() {
+            return widget.getHeight();
+        }
+
+        @Override
+        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
+            this.widget.render(pGuiGraphics, font, x, y);
         }
     }
 

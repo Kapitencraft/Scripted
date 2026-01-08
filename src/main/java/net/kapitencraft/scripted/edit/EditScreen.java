@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit;
 
-import net.kapitencraft.scripted.edit.graphical.GraphicalEditor;
+import net.kapitencraft.scripted.edit.graphical.core.GraphicalEditor;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.registry.ModRegistries;
 import net.minecraft.client.gui.GuiGraphics;
