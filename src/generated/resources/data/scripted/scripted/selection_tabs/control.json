@@ -1,12 +1,21 @@
 [
   {
-    "type": "if",
-    "show_else": false
+    "type": "stmt",
+    "entry": {
+      "type": "if",
+      "show_else": false
+    }
   },
   {
-    "type": "if"
+    "type": "stmt",
+    "entry": {
+      "type": "if"
+    }
   },
   {
-    "type": "while_loop"
+    "type": "stmt",
+    "entry": {
+      "type": "while_loop"
+    }
   }
 ]

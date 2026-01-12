@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.inserter.block;
 
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.WhileLoopWidget;
 
@@ -11,8 +12,8 @@ public class WhileBodyBlockGhostInserter implements BlockGhostInserter {
     }
 
     @Override
-    public void insert(BlockCodeWidget target) {
-        this.owner.setBody(target);
+    public void insert(CodeWidget target) {
+        this.owner.setBody((BlockCodeWidget) target);
     }
 
     @Override

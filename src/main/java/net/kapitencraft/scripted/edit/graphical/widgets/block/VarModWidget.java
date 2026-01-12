@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
@@ -50,7 +50,7 @@ public class VarModWidget extends BlockCodeWidget {
     }
 
     @Override
-    public @NotNull Type getType() {
+    protected @NotNull Type getType() {
         return Type.BODY;
     }
 
@@ -77,7 +77,7 @@ public class VarModWidget extends BlockCodeWidget {
     }
 
     @Override
-    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y > this.getHeight()) return fetchChildRemoveHovered(x, y - this.getHeight(), font);
         //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
         return null;

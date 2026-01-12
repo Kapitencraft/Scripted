@@ -6,10 +6,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.IfBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.IfElseBodyBlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
@@ -99,15 +101,18 @@ public class IfWidget extends BlockCodeWidget {
     }
 
     @Override
-    public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
         if (y < 0) return null;
-        if (y < getHeadHeight() + 10 && x > -10 && x < 30)
+        if (y < getHeadHeight()) {
+            return ArgumentInserter.createSpecific(x, y, font, "§if", "condition", this::setCondition, this.condition);
+        }
+        y -= getHeadHeight();
+        if (y < 10 && x > -10 && x < 30)
             return new IfBodyBlockGhostInserter(this);
 
-        y -= getHeadHeight();
         if (y < getBranchHeight()) {
             if (this.conditionBody != null)
-                return this.conditionBody.getGhostBlockWidgetTarget(x, y);
+                return this.conditionBody.getGhostWidgetTarget(x, y, font);
             if (x > -4 && x < 36 && y < 15)
                 return new IfBodyBlockGhostInserter(this);
         }
@@ -186,7 +191,7 @@ public class IfWidget extends BlockCodeWidget {
 
 
     @Override
-    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             return BlockWidgetFetchResult.notRemoved(this, x, y);
         }
@@ -195,7 +200,7 @@ public class IfWidget extends BlockCodeWidget {
             if (x < 6)
                 return BlockWidgetFetchResult.notRemoved(this, x, y);
             if (this.conditionBody != null) {
-                BlockWidgetFetchResult result = this.conditionBody.fetchAndRemoveHovered(x - 6, y - this.getHeadHeight(), font);
+                WidgetFetchResult result = this.conditionBody.fetchAndRemoveHovered(x - 6, y - this.getHeadHeight(), font);
                 if (result == null) return null;
                 if (!result.removed())
                     this.conditionBody = null;
@@ -213,7 +218,7 @@ public class IfWidget extends BlockCodeWidget {
                 if (x < 6)
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 if (elseBody != null) {
-                    BlockWidgetFetchResult result = this.elseBody.fetchAndRemoveHovered(x - 6,
+                    WidgetFetchResult result = this.elseBody.fetchAndRemoveHovered(x - 6,
                             y - this.getHeadHeight() - this.getBranchHeight() - this.getElseHeadHeight(), font);
                     if (result == null) return null;
                     if (!result.removed())
@@ -246,8 +251,8 @@ public class IfWidget extends BlockCodeWidget {
         this.elseBody = widget;
     }
 
-    public void setCondition(ExprCodeWidget target) {
-        this.condition = target;
+    public void setCondition(@Nullable ExprCodeWidget target) {
+        this.condition = target == null ? ParamWidget.CONDITION : target;
     }
 
     public void setElseCondition(ExprCodeWidget target) {

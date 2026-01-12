@@ -54,7 +54,7 @@ public class MethodStmtWidget extends BlockCodeWidget {
     }
 
     @Override
-    public @NotNull Type getType() {
+    protected @NotNull Type getType() {
         return Type.METHOD_STMT;
     }
 

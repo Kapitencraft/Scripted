@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -32,8 +34,8 @@ public class GraphicalEditor extends AbstractWidget {
 
     private CodeWidget draggedWidget;
     private final GhostBlockWidget ghostElement = new GhostBlockWidget();
-    private BlockCodeElement ghostTargetElement;
-    private BlockGhostInserter blockGhostInserter;
+    private CodeElement ghostTargetElement;
+    private GhostInserter blockGhostInserter;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -97,9 +99,9 @@ public class GraphicalEditor extends AbstractWidget {
 
         pGuiGraphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight());
         PoseStack pose = pGuiGraphics.pose();
+        pose.pushPose();
+        pose.translate(this.getX(), this.getY(), 0);
         {
-            pose.pushPose();
-            pose.translate(this.getX(), this.getY(), 0);
             pose.pushPose();
             pose.scale(scale, scale, 1);
 
@@ -235,21 +237,19 @@ public class GraphicalEditor extends AbstractWidget {
         for (int i = 0; i < this.elements.size(); i++) {
             CodeElement element = this.elements.get(i);
             if (element.hovered(posX, posY)) {
-                if (element instanceof BlockCodeElement bcW) {
-                    BlockWidgetFetchResult result = bcW.fetchAndRemoveHoveredBlockWidget(posX, posY, font);
-                    if (result == null) {
-                        continue;
-                    }
-                    if (result.widget() != bcW.widget) {
-                        element.recalculateSize();
-                    }
-                    this.draggedWidget = result.widget();
-                    this.draggedOffsetX = -result.x();
-                    this.draggedOffsetY = -result.y();
-                    if (!result.removed())
-                        this.elements.remove(i);
-                    return true;
+                WidgetFetchResult result = element.fetchAndRemoveHoveredWidget(posX, posY, font);
+                if (result == null) {
+                    continue;
                 }
+                if (result.widget() != element.widget()) {
+                    element.recalculateSize();
+                }
+                this.draggedWidget = result.widget();
+                this.draggedOffsetX = -result.x();
+                this.draggedOffsetY = -result.y();
+                if (!result.removed())
+                    this.elements.remove(i);
+                return true;
             }
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -289,14 +289,14 @@ public class GraphicalEditor extends AbstractWidget {
         if (draggedWidget != null && draggedWidget instanceof BlockCodeWidget && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
-            BlockGhostInserter inserter;
+            GhostInserter inserter;
             for (CodeElement element : elements) {
-
                 if ((inserter = element.getGhostBlockWidget(draggedUiX, draggedUiY)) != null) {
                     if (!inserter.equals(blockGhostInserter)) {
                         if (blockGhostInserter != null)
                             blockGhostInserter.insert(ghostElement.getChild());
-                        inserter.insertChildMiddle(ghostElement);
+                        if (inserter instanceof BlockGhostInserter bGI)
+                            bGI.insertChildMiddle(ghostElement);
                         blockGhostInserter = inserter;
                         ghostTargetElement = element;
                     }
@@ -337,6 +337,7 @@ public class GraphicalEditor extends AbstractWidget {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    //region element
     private abstract static class CodeElement {
         protected final int x;
         protected final int y;
@@ -367,6 +368,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         public abstract void render(GuiGraphics pGuiGraphics, Font font, int x, int y);
+
+        public abstract @NotNull CodeWidget widget();
+
+        public abstract WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font);
+
+        public abstract GhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY);
     }
 
     private class BlockCodeElement extends CodeElement {
@@ -405,17 +412,22 @@ public class GraphicalEditor extends AbstractWidget {
             return height;
         }
 
-        public BlockWidgetFetchResult fetchAndRemoveHoveredBlockWidget(int posX, int posY, Font font) {
+        public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
             return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
         }
 
-        public BlockGhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
-            return this.widget.getGhostBlockWidgetTarget(draggedUiX - this.x, draggedUiY - this.y);
+        public GhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+            return this.widget.getGhostWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font);
         }
 
         @Override
         public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
             this.widget.render(pGuiGraphics, font, x, y);
+        }
+
+        @Override
+        public @NotNull CodeWidget widget() {
+            return this.widget;
         }
     }
 
@@ -442,10 +454,27 @@ public class GraphicalEditor extends AbstractWidget {
         public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
             this.widget.render(pGuiGraphics, font, x, y);
         }
-    }
 
+        @Override
+        public @NotNull CodeWidget widget() {
+            return this.widget;
+        }
+
+        @Override
+        public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
+            return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
+        }
+
+        public GhostInserter getGhostBlockWidget(int draggedUiX, int draggedUiY) {
+            return this.widget.getGhostWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font);
+        }
+    }
+    //endregion
+
+    //region ghost
     private class GhostBlockWidget extends BlockCodeWidget {
 
+        @SuppressWarnings("DataFlowIssue")
         @Override
         public @NotNull Type getType() {
             return null;
@@ -462,7 +491,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
+        public BlockGhostInserter getGhostWidgetTarget(int x, int y, Font font) {
             return null;
         }
 
@@ -482,6 +511,45 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public BlockCodeWidget copy() {
             throw new IllegalAccessError("attempting to copy ghost widget");
+        }
+    }
+
+    private class GhostExprWidget implements ExprCodeWidget {
+
+        @SuppressWarnings("DataFlowIssue")
+        @Override
+        public @NotNull Type getType() {
+            return null;
+        }
+
+        @Override
+        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+
+        }
+
+        @Override
+        public int getWidth(Font font) {
+            return draggedWidget.getWidth(font);
+        }
+
+        @Override
+        public int getHeight() {
+            return draggedWidget.getHeight();
+        }
+
+        @Override
+        public ExprCodeWidget copy() {
+            return null;
+        }
+
+        @Override
+        public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+            return null;
+        }
+
+        @Override
+        public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+            return null;
         }
     }
 }

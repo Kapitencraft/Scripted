@@ -3,7 +3,8 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -37,6 +38,11 @@ public class ListSelectionWidget implements ExprCodeWidget {
     }
 
     @Override
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+        return null;
+    }
+
+    @Override
     public @NotNull Type getType() {
         return Type.LIST_SELECTION;
     }
@@ -57,7 +63,7 @@ public class ListSelectionWidget implements ExprCodeWidget {
     }
 
     @Override
-    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
     }
 }

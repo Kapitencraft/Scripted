@@ -1,13 +1,16 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.block;
 
+import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.WhileBodyBlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
@@ -27,23 +30,26 @@ public class WhileLoopWidget extends BlockCodeWidget {
             ).apply(i, WhileLoopWidget::new)
     );
 
+    @NotNull
     private ExprCodeWidget condition;
     private @Nullable BlockCodeWidget body;
 
-    public WhileLoopWidget(ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
+    public WhileLoopWidget(@NotNull ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
         this.condition = condition;
         this.body = body;
     }
 
-    private WhileLoopWidget(BlockCodeWidget child, ExprCodeWidget head, @Nullable BlockCodeWidget body) {
-        this.condition = head;
+    private WhileLoopWidget(BlockCodeWidget child, @NotNull ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
+        Preconditions.checkNotNull(condition);
+        this.condition = condition;
         this.body = body;
         this.setChild(child);
     }
 
-    public WhileLoopWidget(Optional<BlockCodeWidget> blockWidget, ExprCodeWidget widgets, Optional<BlockCodeWidget> body) {
+    public WhileLoopWidget(Optional<BlockCodeWidget> blockWidget, @NotNull ExprCodeWidget condition, Optional<BlockCodeWidget> body) {
         blockWidget.ifPresent(this::setChild);
-        this.condition = widgets;
+        Preconditions.checkNotNull(condition);
+        this.condition = condition;
         this.body = body.orElse(null);
     }
 
@@ -57,7 +63,7 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public @NotNull Type getType() {
+    protected @NotNull Type getType() {
         return Type.WHILE_LOOP;
     }
 
@@ -107,32 +113,35 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
         if (y < 0) return null;
-        if (y < this.getHeadHeight() + 10 && x > -10 && x < 40)
-            return new WhileBodyBlockGhostInserter(this);
+        if (y < this.getHeadHeight()) {
+            return ArgumentInserter.createSpecific(x, y, font, "§while", "condition", this::setCondition, this.condition);
+        }
         y -= this.getHeadHeight();
+        if (y < 10 && x > -10 && x < 40)
+            return new WhileBodyBlockGhostInserter(this);
         if (this.body != null && y < this.body.getHeightWithChildren())
-            return this.body.getGhostBlockWidgetTarget(x, y);
-        if (y < 16)
-            return new ChildBlockGhostInserter(this);
+            return this.body.getGhostWidgetTarget(x, y, font);
+        y -= this.body != null ? this.body.getHeightWithChildren() : 10;
         y -= 16;
+        if (y < 10 && x > -10 && x < 40)
+            return new ChildBlockGhostInserter(this);
         if (this.getChild() != null)
-            return this.getChild().getGhostBlockWidgetTarget(x, y);
+            return this.getChild().getGhostWidgetTarget(x, y, font);
         return null;
     }
 
     @Override
-    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getWidth(font))
-                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
+                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
             return null;
-        }
-        else if (y > this.getHeight()) {
+        } else if (y > this.getHeight()) {
             return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         } else if (this.body != null) {
-            BlockWidgetFetchResult result = this.body.fetchAndRemoveHovered(x, y - this.getHeadHeight(), font);
+            WidgetFetchResult result = this.body.fetchAndRemoveHovered(x, y - this.getHeadHeight(), font);
             if (result == null) return null;
             if (!result.removed()) {
                 this.body = null;
@@ -146,8 +155,8 @@ public class WhileLoopWidget extends BlockCodeWidget {
         return new Builder();
     }
 
-    public void setCondition(ExprCodeWidget target) {
-        this.condition = target;
+    public void setCondition(@Nullable ExprCodeWidget target) {
+        this.condition = target == null ? ParamWidget.CONDITION : target;
     }
 
     public static class Builder implements BlockCodeWidget.Builder<WhileLoopWidget> {

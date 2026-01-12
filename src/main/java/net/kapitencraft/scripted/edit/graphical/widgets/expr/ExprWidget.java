@@ -5,8 +5,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockRemovable;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -14,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExprWidget implements ExprCodeWidget, BlockRemovable {
+public class ExprWidget implements ExprCodeWidget {
     public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
@@ -46,6 +47,11 @@ public class ExprWidget implements ExprCodeWidget, BlockRemovable {
     }
 
     @Override
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+        return null;
+    }
+
+    @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - getHeight() / 2 + 3, getWidth(font), getHeight());
         RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY, this.translationKey, this.args);
@@ -62,9 +68,9 @@ public class ExprWidget implements ExprCodeWidget, BlockRemovable {
     }
 
     @Override
-    public BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
-        return BlockWidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
+        return ExprWidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
     } //TODO fix offset
 
     public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {

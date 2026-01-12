@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 
@@ -12,4 +13,7 @@ public interface CodeWidget {
     int getWidth(Font font);
 
     CodeWidget copy();
+
+    //TODO
+    GhostInserter getGhostWidgetTarget(int x, int y, Font font);
 }

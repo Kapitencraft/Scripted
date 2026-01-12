@@ -4,9 +4,9 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockRemovable;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetRemoveFetcher;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.Font;
@@ -18,13 +18,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class BlockCodeWidget implements BlockRemovable, CodeWidget {
+public abstract class BlockCodeWidget implements WidgetRemoveFetcher, CodeWidget {
     public static final Codec<BlockCodeWidget> CODEC = Type.CODEC.dispatch(BlockCodeWidget::getType, Type::getEntryCodec);
 
     protected static <T extends BlockCodeWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<BlockCodeWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
         return instance.group(
                 CODEC.optionalFieldOf("child")
-                        .forGetter(w  -> Optional.ofNullable(w.getChild())));
+                        .forGetter(w -> Optional.ofNullable(w.getChild())));
     }
 
     private BlockCodeWidget child;
@@ -52,7 +52,7 @@ public abstract class BlockCodeWidget implements BlockRemovable, CodeWidget {
     //lambda necessary to ensure load order doesn't create cycle
     protected enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
-        WHILE_LOOP(() ->  WhileLoopWidget.CODEC),
+        WHILE_LOOP(() -> WhileLoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),
         BODY(() -> VarModWidget.CODEC),
         METHOD_STMT(() -> MethodStmtWidget.CODEC);
@@ -89,8 +89,8 @@ public abstract class BlockCodeWidget implements BlockRemovable, CodeWidget {
 
     public abstract BlockCodeWidget copy();
 
-    protected BlockWidgetFetchResult fetchChildRemoveHovered(int x, int y, Font font) {
-        BlockWidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
+    protected WidgetFetchResult fetchChildRemoveHovered(int x, int y, Font font) {
+        WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
         if (result == null) return null;
         if (!result.removed())
             this.setChild(null);
@@ -107,14 +107,14 @@ public abstract class BlockCodeWidget implements BlockRemovable, CodeWidget {
         return height;
     }
 
-    public @Nullable BlockGhostInserter getGhostBlockWidgetTarget(int x, int y) {
+    public @Nullable GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
         if (y < 0)
             return null;
         if (y < this.getHeight() + 10 && x > -10 && x < 30) {
             return new ChildBlockGhostInserter(this);
         }
         if (this.child != null)
-            return this.child.getGhostBlockWidgetTarget(x, y - getHeight());
+            return this.child.getGhostWidgetTarget(x, y - getHeight(), font);
         return null;
     }
 

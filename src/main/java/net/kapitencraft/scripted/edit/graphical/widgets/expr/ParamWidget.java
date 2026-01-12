@@ -2,7 +2,8 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -27,6 +28,11 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+        return null;
+    }
+
+    @Override
     public @NotNull Type getType() {
         return Type.PARAM;
     }
@@ -48,7 +54,7 @@ public class ParamWidget implements ExprCodeWidget {
 
 
     @Override
-    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
     }
 }
