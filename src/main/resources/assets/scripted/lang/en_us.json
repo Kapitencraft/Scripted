@@ -17,6 +17,7 @@
 
   "selection_tab.scripted.operators": "Operators",
   "selection_tab.scripted.control": "Control",
+  "selection_tab.scripted.world": "World",
 
   "§assign": "set {var} to {value}",
   "§assign_add": "increase {var} by {value}",
@@ -38,9 +39,13 @@
   "scripted.code.expr.test1": "Some Expression",
   "scripted.code.expr.test2": "",
 
+  "Lnet/minecraft/core/BlockPos;<init>(III)V": "position at {x} {y} {z}",
+  "Lnet/minecraft/world/phys/Vec3;x": "x value",
+  "Lnet/minecraft/world/phys/Vec3;y": "y value",
+  "Lnet/minecraft/world/phys/Vec3;z": "z value",
   "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D": "calculate dot product with {vec}",
   "Lnet/minecraft/world/phys/Vec3;cross(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;": "calculate cross product with {vec}",
   "Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;": "then normalize",
-  "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/Blockstate;": "BlockState at {pos}",
+  "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "BlockState at {pos}",
   "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z": "matches block {block}"
 }

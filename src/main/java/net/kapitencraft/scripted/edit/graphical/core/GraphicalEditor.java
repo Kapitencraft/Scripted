@@ -23,6 +23,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
@@ -101,10 +102,12 @@ public class GraphicalEditor extends AbstractWidget {
     @Override
     protected void renderWidget(GuiGraphics pGuiGraphics, int pMouseX, int pMouseY, float pPartialTick) {
 
-        pGuiGraphics.enableScissor(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight());
+        int x = getX();
+        int y = getY();
+        pGuiGraphics.enableScissor(x, y, x + this.getWidth(), y + this.getHeight());
         PoseStack pose = pGuiGraphics.pose();
         pose.pushPose();
-        pose.translate(this.getX(), this.getY(), 0);
+        pose.translate(x, y, 0);
         {
             pose.pushPose();
             pose.scale(scale, scale, 1);
@@ -157,29 +160,41 @@ public class GraphicalEditor extends AbstractWidget {
         //endregion
 
         pose.pushPose();
-        pose.translate(getX() + 1, getY() + 1, 0);
+        pose.translate(x + 1, y + 1, 0);
         pose.scale(.75f, .75f, 1);
         Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
         for (int i = 0; i < tabs.length; i++) {
-            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tabs[i].getKey().location())), 0, i * 10, -1, false);
+            Style style = Style.EMPTY;
+            if (pMouseX > x + 1 && pMouseX < x + 50 && pMouseY >= y + 10 * i + 1 && pMouseY <= y + 10 * i + 9) {
+                style = style.withBold(true);
+            }
+            pGuiGraphics.drawString(font,
+                    Component.translatable(
+                            Util.makeDescriptionId("selection_tab", tabs[i].getKey().location())
+                    ).withStyle(style),
+                    0,
+                    i * 10,
+                    -1,
+                    false
+            );
         }
         pose.popPose();
 
-        pGuiGraphics.enableScissor(this.getX() + 50, this.getY(), this.getX() + 105, this.getY() + this.getHeight());
+        pGuiGraphics.enableScissor(x + 50, y, x + 120, y + this.getHeight());
         pose.pushPose();
-        pose.translate(getX() + 60, getY(), 0);
+        pose.translate(x + 60, y, 0);
         pose.scale(0.75f, 0.75f, 1);
         pose.translate(0, this.selectionScroll, 0);
-        int y = 1;
+        int yO = 1;
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
-            y += 10;
+            yO += 10;
             for (int i1 = 0; i1 < value.size(); i1++) {
                 CodeWidget widget = value.get(i1);
-                widget.render(pGuiGraphics, font, 0, y);
-                y += widget.getHeight();
-                y += 10;
+                widget.render(pGuiGraphics, font, 0, yO);
+                yO += widget.getHeight();
+                yO += 10;
             }
         }
         pose.popPose();
@@ -284,7 +299,7 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private boolean isPoolAreaHovered(double mouseX, double mouseY) {
-        return mouseX > this.getX() + 60 && mouseX < this.getX() + 105 &&
+        return mouseX > this.getX() + 60 && mouseX < this.getX() + 120 &&
                 mouseY > this.getY() && mouseY < this.getY() + this.getHeight();
     }
 
@@ -348,7 +363,10 @@ public class GraphicalEditor extends AbstractWidget {
                 this.inserter = null;
                 this.ghostTargetElement.recalculateSize();
                 this.ghostTargetElement = null;
-            } else if (!isPoolAreaHovered(mouseX, mouseY)) { //if pool is hovered, delete the widget
+            } else if (
+                    !(mouseX > this.getX() && mouseX < this.getX() + 120 &&
+                    mouseY > this.getY() && mouseY < this.getY() + this.getHeight())
+            ) { //if pool is hovered, delete the widget
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
 
@@ -407,7 +425,7 @@ public class GraphicalEditor extends AbstractWidget {
         private final @NotNull BlockCodeWidget widget;
 
         private BlockCodeElement(@NotNull BlockCodeWidget widget) {
-            this(100, 100, widget);
+            this(150, 40, widget);
         }
 
         private BlockCodeElement(int x, int y, @NotNull BlockCodeWidget widget) {

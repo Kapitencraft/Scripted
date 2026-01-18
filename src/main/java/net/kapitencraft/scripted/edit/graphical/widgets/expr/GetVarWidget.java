@@ -15,9 +15,9 @@ public class GetVarWidget implements ExprCodeWidget {
             Codec.STRING.fieldOf("name").forGetter(w -> w.name)
     ).apply(i, GetVarWidget::new));
 
-    private final String name;
+    private final @Nullable String name;
 
-    public GetVarWidget(String name) {
+    public GetVarWidget(@Nullable String name) {
         this.name = name;
     }
 
@@ -38,7 +38,6 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        if (isBlock) return null;
         return null;
     }
 
@@ -49,7 +48,7 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return 0;
+        return 14;
     }
 
     @Override

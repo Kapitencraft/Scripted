@@ -56,7 +56,8 @@ public class ExprWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 5, this.translationKey, this.args);
+        int height = getHeight();
+        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class ExprWidget implements ExprCodeWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
         return ExprWidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
-    } //TODO fix offset
+    }
 
     public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {
         private ExprCategory type;

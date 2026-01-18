@@ -69,7 +69,7 @@ public class VarModWidget extends BlockCodeWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(19, 9 + 10);
+        return Math.max(18, this.expr.getHeight() + 4);
     }
 
     public static Builder builder() {
