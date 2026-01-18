@@ -25,7 +25,8 @@ public interface RenderHelper {
             x += font.width(subElement);
             String name = matcher.group(1);
             ExprCodeWidget widget = entries.get(name);
-            widget.render(graphics, font, x, y);
+
+            widget.render(graphics, font, x, y - (widget.getHeight() - 8) / 2);
             x += widget.getWidth(font);
         }
         String subElement = inst.substring(j);

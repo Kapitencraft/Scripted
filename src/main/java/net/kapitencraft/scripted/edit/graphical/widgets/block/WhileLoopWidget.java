@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.WhileBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
@@ -70,18 +71,19 @@ public class WhileLoopWidget extends BlockCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int loopWidth = 6 + getHeadWidth(font);
-        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, 22);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, "§while", Map.of("condition", this.condition));
+        int headHeight = getHeadHeight();
+        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, headHeight + 3);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 19) / 2, "§while", Map.of("condition", this.condition));
         int bodyHeight = getBranchHeight();
         if (this.body != null)
-            this.body.render(graphics, font, renderX + 6, renderY + getHeadHeight());
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + getHeadHeight() + 3, 6, bodyHeight - 3);
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + getHeadHeight() + bodyHeight, loopWidth, 16);
+            this.body.render(graphics, font, renderX + 6, renderY + headHeight);
+        graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
+        graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight, loopWidth, 16);
         super.render(graphics, font, renderX, renderY);
     }
 
     private int getHeadHeight() {
-        return Math.max(19, this.condition.getHeight());
+        return Math.max(18, this.condition.getHeight() + 4) + 2;
     }
 
     private int getBranchHeight() {
@@ -94,7 +96,13 @@ public class WhileLoopWidget extends BlockCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return getHeadWidth(font);
+        int width = 6 + getHeadWidth(font);
+        if (this.body != null) {
+            int i = this.body.getWidth(font) + 6;
+            if (i > width)
+                width = i;
+        }
+        return width;
     }
 
     @Override
@@ -113,31 +121,33 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         if (y < 0) return null;
-        if (y < this.getHeadHeight()) {
-            return ArgumentInserter.createSpecific(x, y, font, "§while", "condition", this::setCondition, this.condition);
+        if (!isBlock && y < this.getHeadHeight()) {
+            return ArgumentInserter.create(x, y, font, "§while", (s, widget) -> {
+                if (!"condition".equals(s))
+                    throw new IllegalArgumentException("unknown while argument: " + s);
+                this.setCondition(widget);
+            }, Map.of("condition", this.condition));
         }
         y -= this.getHeadHeight();
-        if (y < 10 && x > -10 && x < 40)
+        if (isBlock && y < 10 && x > -10 && x < 40)
             return new WhileBodyBlockGhostInserter(this);
         if (this.body != null && y < this.body.getHeightWithChildren())
-            return this.body.getGhostWidgetTarget(x, y, font);
+            return this.body.getGhostWidgetTarget(x - 6, y, font, isBlock);
         y -= this.body != null ? this.body.getHeightWithChildren() : 10;
         y -= 16;
-        if (y < 10 && x > -10 && x < 40)
+        if (isBlock && y < 10 && x > -10 && x < 40)
             return new ChildBlockGhostInserter(this);
         if (this.getChild() != null)
-            return this.getChild().getGhostWidgetTarget(x, y, font);
+            return this.getChild().getGhostWidgetTarget(x, y, font, isBlock);
         return null;
     }
 
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
-            if (x < this.getWidth(font))
-                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§while", Map.of("condition", this.condition));
-            return null;
+            return WidgetFetchResult.fromExprList(4, x, y, font, this, "§while", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
         } else if (y > this.getHeight()) {
             return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         } else if (this.body != null) {

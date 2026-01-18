@@ -48,7 +48,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
-        pose.translate(renderX, renderY - 2, 0);
+        pose.translate(renderX, renderY, 0);
         pose.scale(.75f, .75f, 1);
         UsefulTextures.renderSlotBackground(graphics, 0, 0);
         graphics.renderItem(this.stack, 0, 0);
@@ -62,7 +62,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return 14;
+        return 12;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         //will always be null
         return null;
     }

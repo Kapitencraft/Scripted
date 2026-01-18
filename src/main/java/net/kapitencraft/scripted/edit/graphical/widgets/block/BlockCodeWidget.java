@@ -107,14 +107,14 @@ public abstract class BlockCodeWidget implements WidgetRemoveFetcher, CodeWidget
         return height;
     }
 
-    public @Nullable GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public @Nullable GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         if (y < 0)
             return null;
-        if (y < this.getHeight() + 10 && x > -10 && x < 30) {
+        if (isBlock && y < this.getHeight() + 10 && x > -10 && x < 30) {
             return new ChildBlockGhostInserter(this);
         }
         if (this.child != null)
-            return this.child.getGhostWidgetTarget(x, y - getHeight(), font);
+            return this.child.getGhostWidgetTarget(x, y - getHeight(), font, isBlock);
         return null;
     }
 

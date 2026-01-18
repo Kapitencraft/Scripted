@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -83,7 +84,7 @@ public class HeadWidget extends BlockCodeWidget {
         if (y < 8) return BlockWidgetFetchResult.notRemoved(this, x, y);
         if (y > this.getHeight()) return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
-            return WidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.args);
+            return WidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, ArgumentStorage.create(this.args));
         return null;
     }
 

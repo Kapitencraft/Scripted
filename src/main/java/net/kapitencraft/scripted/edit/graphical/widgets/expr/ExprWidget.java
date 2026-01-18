@@ -8,6 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -47,14 +48,15 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
-        return null;
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
+        if (isBlock) return null;
+        return ArgumentInserter.create(x, y, font, translationKey, args::put, args);
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY - getHeight() / 2 + 3, getWidth(font), getHeight());
-        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY, this.translationKey, this.args);
+        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
+        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 5, this.translationKey, this.args);
     }
 
     @Override
@@ -64,7 +66,7 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return Math.max(19, ExprCodeWidget.getHeightFromArgs(this.args) + 4);
+        return Math.max(18, ExprCodeWidget.getHeightFromArgs(this.args) + 4);
     }
 
     @Override

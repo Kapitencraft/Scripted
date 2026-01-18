@@ -15,5 +15,5 @@ public interface CodeWidget {
     CodeWidget copy();
 
     //TODO
-    GhostInserter getGhostWidgetTarget(int x, int y, Font font);
+    GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock);
 }

@@ -37,7 +37,8 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
+        if (isBlock) return null;
         return null;
     }
 

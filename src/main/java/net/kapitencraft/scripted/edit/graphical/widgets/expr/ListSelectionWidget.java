@@ -38,7 +38,7 @@ public class ListSelectionWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         return null;
     }
 

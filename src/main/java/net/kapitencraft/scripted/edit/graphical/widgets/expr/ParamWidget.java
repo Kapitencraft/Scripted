@@ -28,7 +28,7 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         return null;
     }
 
@@ -39,7 +39,7 @@ public class ParamWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(exprCategory.getSpriteLocation(), renderX, renderY - 2, 14, 12);
+        graphics.blitSprite(exprCategory.getSpriteLocation(), renderX, renderY, 14, 12);
     }
 
     @Override

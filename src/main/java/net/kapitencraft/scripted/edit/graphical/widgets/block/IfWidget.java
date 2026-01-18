@@ -12,6 +12,7 @@ import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostIn
 import net.kapitencraft.scripted.edit.graphical.inserter.block.IfBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.IfElseBodyBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
@@ -88,45 +89,62 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return Math.max(6 + getHeadWidth(font), 6 + getElseHeadWidth(font));
+        int width = 6 + getHeadWidth(font);
+        int elseHeadWidth = getElseHeadWidth(font);
+        if (elseHeadWidth > width) width = elseHeadWidth;
+        if (this.conditionBody != null) {
+            int i = this.conditionBody.getWidth(font) + 6;
+            if (i > width)
+                width = i;
+        }
+        if (this.elseBody != null) {
+            int i = this.elseBody.getWidth(font) + 6;
+            if (i > width)
+                width = i;
+        }
+        return width;
     }
 
     @Override
     public int getHeight() {
         return getHeadHeight() +
                 this.getBranchHeight() +
-                (this.elseVisible ? this.getElseHeadHeight() +
-                        (this.elseBody != null ? this.elseBody.getHeight() : 10) : 0) +
-                13;
+                (this.elseVisible ? this.getElseHeadHeight() + getElseBranchHeight() : 0) +
+                13; //height of the bottom enclose part - 3 for the offset
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font) {
+    @Nullable
+    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         if (y < 0) return null;
-        if (y < getHeadHeight()) {
-            return ArgumentInserter.createSpecific(x, y, font, "§if", "condition", this::setCondition, this.condition);
+        if (!isBlock && y < getHeadHeight()) {
+            return ArgumentInserter.create(x, y, font, "§if", (s, widget) -> {
+                if (!"condition".equals(s))
+                    throw new IllegalArgumentException("unknown if argument: " + s);
+                this.setCondition(widget);
+            }, Map.of("condition", this.condition));
         }
         y -= getHeadHeight();
-        if (y < 10 && x > -10 && x < 30)
+        if (isBlock && y < 10 && x > -10 && x < 30)
             return new IfBodyBlockGhostInserter(this);
 
         if (y < getBranchHeight()) {
             if (this.conditionBody != null)
-                return this.conditionBody.getGhostWidgetTarget(x, y, font);
-            if (x > -4 && x < 36 && y < 15)
+                return this.conditionBody.getGhostWidgetTarget(x - 6, y, font, isBlock);
+            if (isBlock && x > -4 && x < 36 && y < 15)
                 return new IfBodyBlockGhostInserter(this);
         }
         y -= this.getBranchHeight();
 
         if (elseVisible) {
             y -= getBranchHeight();
-            if (x > -4 && x < 36 && y < getElseHeadHeight())
+            if (isBlock && x > -4 && x < 36 && y < getElseHeadHeight())
                 return new IfElseBodyBlockGhostInserter(this);
             y -= getElseHeadHeight();
-            if (x > -10 && x < 30 && y < 16)
+            if (isBlock && x > -10 && x < 30 && y < 16)
                 return new ChildBlockGhostInserter(this);
         }
-        if (y < 23 && x > -10 && x < 30) {
+        if (isBlock && y < 23 && x > -10 && x < 30) {
             return new ChildBlockGhostInserter(this);
         }
         return null;
@@ -142,23 +160,23 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int headWidth = getWidth(font);
+        int headWidth = getHeadWidth(font);
+        int headHeight = getHeadHeight();
         //head
-        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, 22);
-        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 7, "§if", Map.of("condition", condition));
+        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, headHeight + 3);
+        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 7 + (headHeight - 18) / 2, "§if", Map.of("condition", condition));
 
         //body
-        int bodyHeight = this.conditionBody != null ? this.conditionBody.getHeightWithChildren() : 10;
-        int headHeight = getHeadHeight();
+        int bodyHeight = getBranchHeight();
         if (this.conditionBody != null)
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
 
         if (elseVisible) {
             //else
-            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, 22);
-            int elseHeadHeight = getHeadHeight();
-            int elseBodyHeight = this.elseBody != null ? this.elseBody.getHeight() : 10;
+            int elseHeadHeight = getElseHeadHeight();
+            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, elseHeadHeight + 3);
+            int elseBodyHeight = getElseBranchHeight();
             RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + 7, "§else", Map.of());
             if (this.elseBody != null) {
                 this.elseBody.render(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + elseHeadHeight);
@@ -174,11 +192,11 @@ public class IfWidget extends BlockCodeWidget {
     }
 
     private int getHeadHeight() {
-        return Math.max(19, this.condition.getHeight());
+        return Math.max(18, this.condition.getHeight() + 4) + 2;
     }
 
     private int getElseHeadHeight() {
-        return Math.max(19, this.condition.getHeight());
+        return Math.max(18, this.elseCondition.getHeight() + 4);
     }
 
     private int getHeadWidth(Font font) {
@@ -189,11 +207,12 @@ public class IfWidget extends BlockCodeWidget {
         return RenderHelper.getVisualTextWidth(font, "§else", Map.of());
     }
 
-
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
-            return BlockWidgetFetchResult.notRemoved(this, x, y);
+            if (x < this.getHeadWidth(font))
+                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
+            return null;
         }
 
         if (y - this.getHeadHeight() < getBranchHeight()) {
