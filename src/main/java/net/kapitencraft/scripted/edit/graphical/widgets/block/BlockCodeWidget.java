@@ -4,6 +4,7 @@ import com.mojang.datafixers.Products;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetRemoveFetcher;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -121,6 +122,12 @@ public abstract class BlockCodeWidget implements WidgetRemoveFetcher, CodeWidget
     public void insertChildMiddle(BlockCodeWidget widget) {
         widget.setChild(this.child);
         this.setChild(widget);
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        if (this.child != null)
+            this.child.update(context);
     }
 
     public interface Builder<T extends BlockCodeWidget> {

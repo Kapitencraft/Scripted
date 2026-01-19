@@ -49,7 +49,7 @@ public interface SelectionTabs {
         );
         context.register(VARIABLES, SelectionTab.builder()
                 .withEntry(VarModWidget.builder().setExpr(ParamWidget.OBJ))
-                .withEntry(new GetVarWidget())
+                .withEntry(new GetVarWidget(null))
                 .build());
     }
 }

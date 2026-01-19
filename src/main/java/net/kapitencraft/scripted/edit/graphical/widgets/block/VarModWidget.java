@@ -58,7 +58,7 @@ public class VarModWidget extends BlockCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) >> 1, "§assign", Map.of("value", expr));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) >> 1, "§assign", Map.of("value", expr), context);
         super.render(graphics, font, renderX, renderY);
     }
 

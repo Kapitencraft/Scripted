@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
@@ -79,6 +80,12 @@ public class MethodStmtWidget extends BlockCodeWidget {
     @Override
     public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return x < this.getWidth(font) ? BlockWidgetFetchResult.notRemoved(this, x, y) : null;
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.arguments.values().forEach(c -> c.update(context));
+        super.update(context);
     }
 
     public static class Builder implements BlockCodeWidget.Builder<MethodStmtWidget> {

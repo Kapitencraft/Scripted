@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
@@ -12,6 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +53,13 @@ public class HeadWidget extends BlockCodeWidget {
                 getChildCopy(),
                 this.translationKey
         );
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        MethodContext nC = new MethodContext();
+        this.args.values().forEach(w -> w.update(nC));
+        super.update(nC);
     }
 
     @Override

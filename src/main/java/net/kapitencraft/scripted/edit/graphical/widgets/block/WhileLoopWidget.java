@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -198,5 +199,13 @@ public class WhileLoopWidget extends BlockCodeWidget {
         public WhileLoopWidget build() {
             return new WhileLoopWidget(child, condition, body);
         }
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.condition.update(context);
+        if (this.body != null)
+            this.body.update(context);
+        super.update(context);
     }
 }

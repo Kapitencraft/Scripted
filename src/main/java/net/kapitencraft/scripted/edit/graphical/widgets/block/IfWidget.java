@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -276,6 +277,19 @@ public class IfWidget extends BlockCodeWidget {
 
     public void setElseCondition(ExprCodeWidget target) {
         this.elseCondition = target;
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.condition.update(context);
+        if (this.conditionBody != null)
+            this.conditionBody.update(context);
+        if (this.elseVisible) {
+            this.elseCondition.update(context);
+            if (this.elseBody != null)
+                this.elseBody.update(context);
+        }
+        super.update(context);
     }
 
     public static class Builder implements BlockCodeWidget.Builder<IfWidget> {

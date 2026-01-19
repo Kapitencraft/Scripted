@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
@@ -10,12 +11,19 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
+
 public class GetVarWidget implements ExprCodeWidget {
     public static final MapCodec<GetVarWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.STRING.fieldOf("name").forGetter(w -> w.name)
-    ).apply(i, GetVarWidget::new));
+            Codec.STRING.optionalFieldOf("name").forGetter(w -> Optional.ofNullable(w.name))
+    ).apply(i, GetVarWidget::fromCodec));
+
+    private static GetVarWidget fromCodec(Optional<String> s) {
+        return new GetVarWidget(s.orElse(null));
+    }
 
     private final @Nullable String name;
+    private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget();
 
     public GetVarWidget(@Nullable String name) {
         this.name = name;
@@ -54,5 +62,10 @@ public class GetVarWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.nameSelector.update(context);
     }
 }

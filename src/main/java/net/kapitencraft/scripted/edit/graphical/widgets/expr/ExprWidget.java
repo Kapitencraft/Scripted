@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -12,6 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,5 +106,10 @@ public class ExprWidget implements ExprCodeWidget {
         public ExprWidget build() {
             return new ExprWidget(type, translationKey, args);
         }
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.args.values().forEach(c -> c.update(context));
     }
 }
