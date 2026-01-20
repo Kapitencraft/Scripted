@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.core;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.config.ClientModConfig;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -432,6 +433,11 @@ public class GraphicalEditor extends AbstractWidget {
             super(x, y);
             this.widget = widget;
             this.recalculateSize();
+            this.update();
+        }
+
+        private void update() {
+            this.widget.update(null); //expect head widget to create context
         }
 
         @Override
@@ -592,6 +598,11 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
             return null;
+        }
+
+        @Override
+        public void update(@Nullable MethodContext context) {
+
         }
 
         @Override

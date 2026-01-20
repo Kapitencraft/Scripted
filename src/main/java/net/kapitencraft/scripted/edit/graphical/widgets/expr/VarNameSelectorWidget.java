@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class VarNameSelectorWidget implements ExprCodeWidget {
-    private Status status;
+    private @NotNull Status status = Status.UNKNOWN;
     private @Nullable String selected;
 
     @Override
@@ -20,12 +20,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        String toRender;
-        if (status == Status.UNKNOWN)
-            toRender = "???";
-        else
-            toRender = selected;
-        graphics.drawString(font, toRender, renderX, renderY, 0);
+        graphics.drawString(font, getVisualSelected(), renderX, renderY, 0);
     }
 
     @Override
@@ -61,6 +56,21 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
             status = Status.PRESENT;
         else
             status = Status.MISSING;
+    }
+
+    public @NotNull String getVisualSelected() {
+        if (status == Status.UNKNOWN)
+            return "???";
+        else
+            return selected;
+    }
+
+    public void setSelected(@Nullable String selected) {
+        this.selected = selected;
+    }
+
+    public @Nullable String getSelected() {
+        return selected;
     }
 
     private enum Status {

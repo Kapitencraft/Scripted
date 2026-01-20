@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.client.UsefulTextures;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -79,5 +80,9 @@ public class BlockSelectWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return ExprWidgetFetchResult.notRemoved(this, x, y);
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
     }
 }

@@ -6,12 +6,15 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
@@ -19,32 +22,32 @@ import java.util.Optional;
 public class VarModWidget extends BlockCodeWidget {
     public static final MapCodec<VarModWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
-                    Codec.STRING.fieldOf("name").forGetter(w -> w.varName)
+                    Codec.STRING.optionalFieldOf("name").forGetter(w -> Optional.ofNullable(w.varNameSelectorWidget.getSelected()))
             ).and(
                     ExprCodeWidget.CODEC.fieldOf("expr").forGetter(w -> w.expr)
             ).apply(i, VarModWidget::new)
     );
 
-    private final String varName;
-    private final ExprCodeWidget expr;
+    private ExprCodeWidget expr;
+    private final VarNameSelectorWidget varNameSelectorWidget = new VarNameSelectorWidget();
 
     private VarModWidget(BlockCodeWidget child, String varName, ExprCodeWidget expr) {
         this.expr = expr;
         this.setChild(child);
-        this.varName = varName;
+        this.varNameSelectorWidget.setSelected(varName);
     }
 
-    public VarModWidget(Optional<BlockCodeWidget> child, String varName, ExprCodeWidget expr) {
+    public VarModWidget(Optional<BlockCodeWidget> child, Optional<String> varName, ExprCodeWidget expr) {
         this.expr = expr;
         child.ifPresent(this::setChild);
-        this.varName = varName;
+        varName.ifPresent(this.varNameSelectorWidget::setSelected);
     }
 
     @Override
     public BlockCodeWidget copy() {
         return new VarModWidget(
                 getChildCopy(),
-                this.varName,
+                this.varNameSelectorWidget.getVisualSelected(),
                 this.expr.copy()
         );
     }
@@ -58,13 +61,13 @@ public class VarModWidget extends BlockCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) >> 1, "§assign", Map.of("value", expr), context);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) >> 1, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
         super.render(graphics, font, renderX, renderY);
     }
 
     @Override
     public int getWidth(Font font) {
-        return font.width(this.varName);
+        return font.width(this.varNameSelectorWidget.getVisualSelected());
     }
 
     @Override
@@ -81,6 +84,18 @@ public class VarModWidget extends BlockCodeWidget {
         if (y > this.getHeight()) return fetchChildRemoveHovered(x, y - this.getHeight(), font);
         //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
         return null;
+    }
+
+    public void setExpr(ExprCodeWidget widget) {
+        if (widget == null) widget = ParamWidget.OBJ; //TODO add dynamic type support
+        this.expr = widget;
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+        this.varNameSelectorWidget.update(context);
+        this.expr.update(context);
+        super.update(context);
     }
 
     public static class Builder implements BlockCodeWidget.Builder<VarModWidget> {

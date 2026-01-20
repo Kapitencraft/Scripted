@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
@@ -30,6 +31,11 @@ public class ParamWidget implements ExprCodeWidget {
     @Override
     public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
         return null;
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context) {
+
     }
 
     @Override

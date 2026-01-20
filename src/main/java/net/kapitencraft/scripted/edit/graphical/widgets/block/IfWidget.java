@@ -282,12 +282,24 @@ public class IfWidget extends BlockCodeWidget {
     @Override
     public void update(@Nullable MethodContext context) {
         this.condition.update(context);
-        if (this.conditionBody != null)
+        if (this.conditionBody != null) {
+            if (context != null)
+                context.lvt.push();
             this.conditionBody.update(context);
+            if (context != null) {
+                context.lvt.pop();
+            }
+        }
         if (this.elseVisible) {
             this.elseCondition.update(context);
-            if (this.elseBody != null)
+            if (this.elseBody != null) {
+                if (context != null)
+                    context.lvt.push();
                 this.elseBody.update(context);
+                if (context != null) {
+                    context.lvt.pop();
+                }
+            }
         }
         super.update(context);
     }

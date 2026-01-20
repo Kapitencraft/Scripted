@@ -204,8 +204,15 @@ public class WhileLoopWidget extends BlockCodeWidget {
     @Override
     public void update(@Nullable MethodContext context) {
         this.condition.update(context);
-        if (this.body != null)
+        if (this.body != null) {
+            if (context != null) {
+                context.lvt.push();
+            }
             this.body.update(context);
+            if (context != null) {
+                context.lvt.pop();
+            }
+        }
         super.update(context);
     }
 }
