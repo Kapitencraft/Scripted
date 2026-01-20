@@ -1,0 +1,18 @@
+[
+  {
+    "type": "stmt",
+    "entry": {
+      "type": "body",
+      "expr": {
+        "type": "param",
+        "category": "other"
+      }
+    }
+  },
+  {
+    "type": "expr",
+    "entry": {
+      "type": "get_var"
+    }
+  }
+]
