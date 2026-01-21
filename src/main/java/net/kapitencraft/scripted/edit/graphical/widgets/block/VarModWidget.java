@@ -60,14 +60,14 @@ public class VarModWidget extends BlockCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
-        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + Math.max(0, (height - 19)) >> 1, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
+        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, getWidth(font), 3 + height);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 6, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
         super.render(graphics, font, renderX, renderY);
     }
 
     @Override
     public int getWidth(Font font) {
-        return font.width(this.varNameSelectorWidget.getVisualSelected());
+        return 6 + RenderHelper.getVisualTextWidth(font, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
     }
 
     @Override

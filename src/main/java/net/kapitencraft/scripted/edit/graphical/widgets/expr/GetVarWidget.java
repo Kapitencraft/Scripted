@@ -3,7 +3,10 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.RenderHelper;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.client.gui.Font;
@@ -11,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Map;
 import java.util.Optional;
 
 public class GetVarWidget implements ExprCodeWidget {
@@ -24,6 +28,7 @@ public class GetVarWidget implements ExprCodeWidget {
 
     private final @Nullable String name;
     private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget();
+    private ExprCategory exprCategory = ExprCategory.OTHER;
 
     public GetVarWidget(@Nullable String name) {
         this.name = name;
@@ -36,7 +41,8 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-
+        graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5, "§get", Map.of("var", this.nameSelector));
     }
 
     @Override
@@ -46,26 +52,28 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
+        //will always be null
         return null;
     }
 
     @Override
     public int getWidth(Font font) {
-        return 0;
+        return 6 + RenderHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
     }
 
     @Override
     public int getHeight() {
-        return 14;
+        return 18;
     }
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return null;
+        return x < this.getWidth(font) ? ExprWidgetFetchResult.notRemoved(this, x, y) : null;
     }
 
     @Override
     public void update(@Nullable MethodContext context) {
         this.nameSelector.update(context);
+        this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 }

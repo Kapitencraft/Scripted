@@ -1,8 +1,5 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -12,30 +9,32 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Function;
 
-public class ListSelectionWidget implements ExprCodeWidget {
-    public static final MapCodec<ListSelectionWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            Codec.STRING.listOf().fieldOf("entries").forGetter(w -> w.entries)
-    ).apply(i, ListSelectionWidget::new));
+/**
+ * these should never be serialized. store all other information on the overlying expr or statement
+ */
+public class ListSelectionWidget<T> implements ExprCodeWidget {
 
-    private final List<String> entries;
+    private final List<T> entries;
+    private final Function<T, String> textProvider;
     private int index;
 
-    public ListSelectionWidget(List<String> entries) {
+    public ListSelectionWidget(List<T> entries, Function<T, String> textProvider) {
         this.entries = entries;
+        this.textProvider = textProvider;
     }
 
-    private ListSelectionWidget(List<String> entries, int index) {
-        this(entries);
+    private ListSelectionWidget(List<T> entries, Function<T, String> textProvider, int index) {
+        this(entries, textProvider);
         this.index = index;
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new ListSelectionWidget(
-                this.entries,
-                this.index
-        );
+        return new ListSelectionWidget<>(
+                this.entries, this.textProvider,
+                this.index);
     }
 
     @Override
@@ -48,9 +47,10 @@ public class ListSelectionWidget implements ExprCodeWidget {
 
     }
 
+    @SuppressWarnings("DataFlowIssue")
     @Override
     public @NotNull Type getType() {
-        return Type.LIST_SELECTION;
+        return null;
     }
 
     @Override
@@ -60,7 +60,7 @@ public class ListSelectionWidget implements ExprCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return font.width(entries.get(index)) + 4;
+        return font.width(textProvider.apply(entries.get(index))) + 4;
     }
 
     @Override
@@ -71,5 +71,9 @@ public class ListSelectionWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    public T getValue() {
+        return this.entries.isEmpty() ? null : this.entries.get(index);
     }
 }

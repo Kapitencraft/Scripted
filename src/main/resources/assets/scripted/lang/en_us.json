@@ -20,10 +20,7 @@
   "selection_tab.scripted.world": "World",
 
   "§assign": "set {var} to {value}",
-  "§assign_add": "increase {var} by {value}",
-  "§assign_sub": "remove {value} from {var}",
-  "§assign_mul": "scale {var} with {value}",
-  "§assign_div": "divide {var} by {value}",
+  "§get": "get variable {var}",
   "§if": "if {condition} do",
   "§while": "while {condition} do",
   "§for": "for {var} from {min} to {max} each {interval} do",
@@ -32,7 +29,6 @@
   "§continue": "continue with next loop iteration",
   "§else_if": "else if {condition} do",
   "§else": "else do",
-  "§get": "get variable {var}",
 
   "scripted.code.head.test": "A Method",
   "scripted.code.expr.test0": "a test with expr {arg0}",

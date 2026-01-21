@@ -212,7 +212,7 @@ public class IfWidget extends BlockCodeWidget {
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getHeadWidth(font))
-                return WidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
+                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
             return null;
         }
 

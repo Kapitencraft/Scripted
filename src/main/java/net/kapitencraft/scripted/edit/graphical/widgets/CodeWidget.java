@@ -20,4 +20,6 @@ public interface CodeWidget {
     GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock);
 
     void update(@Nullable MethodContext context);
+
+    void clicked()
 }

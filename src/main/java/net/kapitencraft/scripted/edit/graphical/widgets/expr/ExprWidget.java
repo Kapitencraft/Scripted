@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+//TODO removing expression crashes the game
 public class ExprWidget implements ExprCodeWidget {
     public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
@@ -59,7 +60,7 @@ public class ExprWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
         int height = getHeight();
-        RenderHelper.renderVisualText(graphics, font, renderX + 6, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
     }
 
     @Override
@@ -75,7 +76,7 @@ public class ExprWidget implements ExprCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
-        return ExprWidgetFetchResult.fromExprList(6, x, y, font, this, this.translationKey, this.args);
+        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.args);
     }
 
     public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {

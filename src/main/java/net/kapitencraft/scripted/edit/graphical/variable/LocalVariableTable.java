@@ -39,4 +39,8 @@ public class LocalVariableTable {
     public boolean has(@Nullable String selected) {
         return active().containsKey(selected);
     }
+
+    public ExprCategory getType(@Nullable String name) {
+        return active().getOrDefault(name, ExprCategory.OTHER);
+    }
 }

@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +21,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.drawString(font, getVisualSelected(), renderX, renderY, 0);
+        graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), renderX, renderY, 0);
     }
 
     @Override
@@ -30,7 +31,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return 0;
+        return 10;
     }
 
     @Override
@@ -50,7 +51,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context) {
-        if (context == null || selected == null) //no method
+        if (context == null) //no method
             status = Status.UNKNOWN;
         else if (context.lvt.has(this.selected))
             status = Status.PRESENT;
@@ -59,10 +60,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     public @NotNull String getVisualSelected() {
-        if (status == Status.UNKNOWN)
-            return "???";
-        else
-            return selected;
+        return selected != null ? selected : "???";
     }
 
     public void setSelected(@Nullable String selected) {
