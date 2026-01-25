@@ -28,8 +28,7 @@ public class Scripted {
         return DeferredRegister.create(key, MOD_ID);
     }
 
-    public Scripted(IEventBus bus)
-    {
+    public Scripted(IEventBus bus) {
     }
 
     public static ResourceLocation res(String id) {

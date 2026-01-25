@@ -21,5 +21,5 @@ public interface CodeWidget {
 
     void update(@Nullable MethodContext context);
 
-    void clicked()
+    boolean clicked(int x, int y);
 }
