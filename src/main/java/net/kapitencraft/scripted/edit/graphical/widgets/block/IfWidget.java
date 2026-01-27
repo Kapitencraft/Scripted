@@ -249,7 +249,7 @@ public class IfWidget extends BlockCodeWidget {
             }
         }
         if (y > this.getHeight())
-            return this.fetchChildRemoveHovered(x, y - getHeight(), font);
+            return super.fetchAndRemoveHovered(x, y - getHeight(), font);
         return null;
     }
 

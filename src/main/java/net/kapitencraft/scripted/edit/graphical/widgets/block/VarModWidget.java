@@ -81,7 +81,7 @@ public class VarModWidget extends BlockCodeWidget {
 
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        if (y > this.getHeight()) return fetchChildRemoveHovered(x, y - this.getHeight(), font);
+        if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
         return null;
     }

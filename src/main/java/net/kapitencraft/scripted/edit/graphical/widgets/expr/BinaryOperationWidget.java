@@ -8,6 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -16,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class BinaryOperationWidget implements ExprCodeWidget {
     public static final MapCodec<BinaryOperationWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -83,6 +85,23 @@ public class BinaryOperationWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return ExprWidgetFetchResult.fromExprList(4,  x, y, font, this, "§op", Map.of("left", left, "right", right));
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new SelectOperationInteraction( , , operatorWidget.getWidth(font), operatorWidget.getHeight()));
+    }
+
+    private class SelectOperationInteraction extends CodeInteraction {
+
+        protected SelectOperationInteraction(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void onClick(int mouseX, int mouseY) {
+
+        }
     }
 
     private enum Operation implements StringRepresentable {

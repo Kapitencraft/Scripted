@@ -15,6 +15,7 @@ import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -22,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class WhileLoopWidget extends BlockCodeWidget {
     public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
@@ -150,7 +152,7 @@ public class WhileLoopWidget extends BlockCodeWidget {
         if (y < this.getHeadHeight()) {
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
         } else if (y > this.getHeight()) {
-            return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
+            return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         } else if (this.body != null) {
             WidgetFetchResult result = this.body.fetchAndRemoveHovered(x, y - this.getHeadHeight(), font);
             if (result == null) return null;
@@ -160,6 +162,11 @@ public class WhileLoopWidget extends BlockCodeWidget {
             return result.setRemoved();
         }
         return BlockWidgetFetchResult.notRemoved(this, x, y);
+    }
+
+    @Override
+    public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
     }
 
     public static Builder builder() {

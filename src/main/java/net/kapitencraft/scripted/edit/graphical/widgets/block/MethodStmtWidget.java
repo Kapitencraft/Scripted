@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -78,8 +79,8 @@ public class MethodStmtWidget extends BlockCodeWidget {
     }
 
     @Override
-    public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return x < this.getWidth(font) ? BlockWidgetFetchResult.notRemoved(this, x, y) : null;
+    public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+        return x < this.getWidth(font) ? BlockWidgetFetchResult.notRemoved(this, x, y) : super.fetchAndRemoveHovered(x, y, font);
     }
 
     @Override

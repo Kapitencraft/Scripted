@@ -6,7 +6,6 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetRemoveFetcher;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -19,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class BlockCodeWidget implements WidgetRemoveFetcher, CodeWidget {
+public abstract class BlockCodeWidget implements CodeWidget {
     public static final Codec<BlockCodeWidget> CODEC = Type.CODEC.dispatch(BlockCodeWidget::getType, Type::getEntryCodec);
 
     protected static <T extends BlockCodeWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<BlockCodeWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
@@ -90,7 +89,7 @@ public abstract class BlockCodeWidget implements WidgetRemoveFetcher, CodeWidget
 
     public abstract BlockCodeWidget copy();
 
-    protected WidgetFetchResult fetchChildRemoveHovered(int x, int y, Font font) {
+    public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
         if (result == null) return null;
         if (!result.removed())

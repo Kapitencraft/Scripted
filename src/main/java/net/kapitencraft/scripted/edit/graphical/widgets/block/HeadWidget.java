@@ -91,7 +91,7 @@ public class HeadWidget extends BlockCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < 8) return BlockWidgetFetchResult.notRemoved(this, x, y);
-        if (y > this.getHeight()) return this.fetchChildRemoveHovered(x, y - this.getHeight(), font);
+        if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, ArgumentStorage.create(this.args));
         return null;

@@ -2,7 +2,6 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetRemoveFetcher;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public interface ExprCodeWidget extends WidgetRemoveFetcher, CodeWidget {
+public interface ExprCodeWidget extends CodeWidget {
     Codec<ExprCodeWidget> CODEC = Type.CODEC.dispatch(ExprCodeWidget::getType, Type::getEntryCodec);
 
     @NotNull Type getType();
