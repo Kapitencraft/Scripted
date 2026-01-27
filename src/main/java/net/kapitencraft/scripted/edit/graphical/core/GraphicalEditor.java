@@ -521,6 +521,11 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
+        protected void updateInteractions() {
+
+        }
+
+        @Override
         public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
             pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
             this.widget.render(pGuiGraphics, font, x, y);
@@ -558,11 +563,6 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
-        }
-
-        @Override
         public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
             int height = getHeight();
             graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
@@ -573,6 +573,11 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public @Nullable BlockWidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
             return null;
+        }
+
+        @Override
+        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
         }
 
         @Override
@@ -620,13 +625,13 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
+        public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
+            return null;
         }
 
         @Override
-        public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-            return null;
+        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
         }
     }
     //endregion
