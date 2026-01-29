@@ -89,7 +89,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new SelectOperationInteraction( , , operatorWidget.getWidth(font), operatorWidget.getHeight()));
+        sink.accept(new SelectOperationInteraction(0, 0, operatorWidget.getWidth(font), operatorWidget.getHeight()));
     }
 
     private class SelectOperationInteraction extends CodeInteraction {

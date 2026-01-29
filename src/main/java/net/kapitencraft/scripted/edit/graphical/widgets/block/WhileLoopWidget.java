@@ -15,7 +15,6 @@ import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +22,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 public class WhileLoopWidget extends BlockCodeWidget {
     public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
@@ -162,11 +160,6 @@ public class WhileLoopWidget extends BlockCodeWidget {
             return result.setRemoved();
         }
         return BlockWidgetFetchResult.notRemoved(this, x, y);
-    }
-
-    @Override
-    public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
     }
 
     public static Builder builder() {

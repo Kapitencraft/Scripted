@@ -576,7 +576,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
         }
 
@@ -630,7 +630,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
         }
     }
