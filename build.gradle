@@ -111,7 +111,7 @@ repositories {
 }
 
 dependencies {
-    implementation "maven.modrinth:kap_lib:v${kap_lib_version}-mc${mc_version}"
+    implementation "maven.modrinth:kap_lib:v${kap_lib_version}-mc${mc_version}:core"
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.

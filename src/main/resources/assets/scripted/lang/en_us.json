@@ -29,6 +29,7 @@
   "§continue": "continue with next loop iteration",
   "§else_if": "else if {condition} do",
   "§else": "else do",
+  "§op": "{left} {op} {right}",
 
   "scripted.code.head.test": "A Method",
   "scripted.code.expr.test0": "a test with expr {arg0}",

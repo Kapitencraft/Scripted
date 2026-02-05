@@ -27,5 +27,5 @@ public interface CodeWidget {
 
     @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font);
 
-    void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink);
+    void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink);
 }

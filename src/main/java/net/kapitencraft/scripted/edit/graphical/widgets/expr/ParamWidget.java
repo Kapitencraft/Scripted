@@ -5,10 +5,13 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class ParamWidget implements ExprCodeWidget {
     public static final MapCodec<ParamWidget> CODEC = ExprCategory.CODEC.xmap(ParamWidget::new, w -> w.exprCategory).fieldOf("category");
@@ -62,5 +65,10 @@ public class ParamWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
     }
 }

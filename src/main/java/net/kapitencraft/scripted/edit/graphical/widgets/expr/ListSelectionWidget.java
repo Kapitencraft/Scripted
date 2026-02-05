@@ -1,14 +1,17 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -55,7 +58,8 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-
+        graphics.blitSprite(ExprCategory.OTHER.getSpriteLocation(), renderX, renderY, getWidth(font), 10);
+        graphics.drawString(font, textProvider.apply(entries.get(index)), renderX + 2, renderY + 1, -1);
     }
 
     @Override
@@ -71,6 +75,11 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
     }
 
     public T getValue() {

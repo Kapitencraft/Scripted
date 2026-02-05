@@ -14,4 +14,5 @@ public interface CodeWidgetSprites {
     ResourceLocation SCOPE_END = Scripted.res("code/scope_end");
     ResourceLocation SCOPE_END_WITH_CODE = Scripted.res("code/scope_end_with_code");
     ResourceLocation SIMPLE_BLOCK = Scripted.res("code/simple_block");
+    ResourceLocation MODIFY_IF = Scripted.res("code/modify_if");
 }

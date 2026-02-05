@@ -97,7 +97,6 @@ public class HeadWidget extends BlockCodeWidget {
         return null;
     }
 
-
     public static class Builder implements BlockCodeWidget.Builder<HeadWidget> {
         private String translationKey;
         private final Map<String, ExprCodeWidget> expr = new HashMap<>();

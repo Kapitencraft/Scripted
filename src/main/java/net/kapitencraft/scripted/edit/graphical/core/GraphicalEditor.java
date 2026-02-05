@@ -1,9 +1,12 @@
 package net.kapitencraft.scripted.edit.graphical.core;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.kapitencraft.kap_lib.config.ClientModConfig;
+import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
+import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
+import net.kapitencraft.kap_lib.core.helpers.ClientHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -16,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -36,8 +40,11 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GraphicalEditor extends AbstractWidget {
+    private static boolean renderDebug = true;
+
     private final Registry<SelectionTab> tabs;
 
+    private @Nullable PositionedWidget widget;
     private CodeWidget draggedWidget;
     private final GhostBlockWidget ghostBlockWidget = new GhostBlockWidget();
     private final GhostExprWidget ghostExprWidget = new GhostExprWidget();
@@ -202,12 +209,22 @@ public class GraphicalEditor extends AbstractWidget {
         }
         pose.popPose();
         pGuiGraphics.disableScissor();
+
+        if (this.widget != null) {
+            pose.pushPose();
+            pose.translate(0, 0, 400);
+            this.widget.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
+            pose.popPose();
+        }
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (this.widget != null) {
+            return this.widget.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
+        }
         if (isPoolAreaHovered(mouseX, mouseY)) {
-            selectionScroll += (float) (scrollY * ClientModConfig.getScrollScale());
+            selectionScroll += (float) (scrollY * CoreClientModConfig.getScrollScale());
             return true;
         }
         if (Screen.hasControlDown()) {
@@ -236,7 +253,7 @@ public class GraphicalEditor extends AbstractWidget {
                 this.scrollY += relativeY / scale - relativeY / scaleOld;
             }
         } else {
-            float scrollDelta = (float) (scrollY * ClientModConfig.getScrollScale());
+            float scrollDelta = (float) (scrollY * CoreClientModConfig.getScrollScale());
             if (Screen.hasShiftDown()) {
                 this.scrollX += scrollDelta;
             } else
@@ -251,22 +268,40 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (this.widget != null) {
+            if (this.widget.isMouseOver(mouseX, mouseY)) {
+                return this.widget.mouseClicked(mouseX, mouseY, button);
+            } else {
+                this.widget = null;
+            }
+            return true;
+        }
         if (isPoolAreaHovered(mouseX, mouseY)) {
             this.attemptGetWidgetFromPool(mouseX - this.getX() - 60, mouseY - this.getY());
         }
         int posX = (int) (mouseX / scale - scrollX) - getX();
         int posY = (int) (mouseY / scale - scrollY) - getY();
+        InteractionData data = new InteractionData(
+                GraphicalEditor.this::setWidget,
+                GraphicalEditor.this.font,
+                (int) ClientHelper.getScreenWidth(),
+                (int) ClientHelper.getScreenHeight()
+        );
+        for (CodeElement element : this.elements) {
+            if (element.hovered(posX, posY)) {
+                if (element.interacted(posX, posY, data))
+                    return true;
+            }
+        }
         for (int i = 0; i < this.elements.size(); i++) {
             CodeElement element = this.elements.get(i);
             if (element.hovered(posX, posY)) {
-                if (element.interacted(posX, posY))
-                    return true;
                 WidgetFetchResult result = element.fetchAndRemoveHoveredWidget(posX, posY, font);
                 if (result == null) {
                     continue;
                 }
                 if (result.widget() != element.widget()) {
-                    element.recalculateSize();
+                    element.update();
                 }
                 this.draggedWidget = result.widget();
                 this.draggedOffsetX = -result.x();
@@ -310,11 +345,23 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {
+        if (this.widget != null) {
+            this.widget.mouseMoved(mouseX, mouseY);
+            return;
+        }
         if (draggedWidget != null && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             GhostInserter inserter;
             for (CodeElement element : elements) {
+                if (element instanceof BlockCodeElement bCE) {
+                    //TODO
+                    for (Connector connector : bCE.connectors) {
+                        if (connector.canConnect(element.x, element.y)) {
+
+                        }
+                    }
+                }
                 if ((inserter = element.gatherGhostInserter(draggedUiX, draggedUiY)) != null) {
                     if (!inserter.equals(this.inserter)) {
                         if (inserter instanceof BlockGhostInserter bGI) {
@@ -351,6 +398,9 @@ public class GraphicalEditor extends AbstractWidget {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (this.widget != null) {
+            return this.widget.mouseReleased(mouseX, mouseY, button);
+        }
         if (this.draggedWidget != null) {
             if (inserter != null) {
                 if (draggedWidget instanceof BlockCodeWidget blockWidget) {
@@ -366,7 +416,7 @@ public class GraphicalEditor extends AbstractWidget {
                 }
                 this.inserter.insert(draggedWidget);
                 this.inserter = null;
-                this.ghostTargetElement.recalculateSize();
+                this.ghostTargetElement.update();
                 this.ghostTargetElement = null;
             } else if (
                     !(mouseX > this.getX() && mouseX < this.getX() + 120 &&
@@ -385,6 +435,17 @@ public class GraphicalEditor extends AbstractWidget {
             return true;
         }
         return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    private void setWidget(@Nullable PositionedWidget widget) {
+        this.widget = widget;
+    }
+
+    public void updateContentFrom(GraphicalEditor original) {
+        if (original != null) {
+            this.elements.clear();
+            this.elements.addAll(original.elements);
+        }
     }
 
     //region element
@@ -419,13 +480,15 @@ public class GraphicalEditor extends AbstractWidget {
             return this.x + width > minX || this.y + height > minY || this.x < maxX || this.y < maxY;
         }
 
-        public void recalculateSize() {
+        public void update() {
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
             this.updateInteractions();
         }
 
-        protected abstract void updateInteractions();
+        protected void updateInteractions() {
+            this.widget.registerInteractions(this.x, this.y, font, this.interactions::add);
+        }
 
         public abstract void render(GuiGraphics pGuiGraphics, Font font, int x, int y);
 
@@ -437,10 +500,10 @@ public class GraphicalEditor extends AbstractWidget {
             return this.widget.getGhostWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font, draggedWidget instanceof BlockCodeWidget);
         }
 
-        public boolean interacted(int posX, int posY) {
+        public boolean interacted(int posX, int posY, InteractionData data) {
             for (CodeInteraction interaction : this.interactions) {
                 if (interaction.hovered(posX, posY)) {
-                    interaction.onClickRelative(posX, posY);
+                    interaction.onClickRelative(posX, posY, data);
                     return true;
                 }
             }
@@ -449,6 +512,7 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private class BlockCodeElement extends CodeElement {
+        private final List<Connector> connectors = new ArrayList<>();
 
         private BlockCodeElement(@NotNull BlockCodeWidget widget) {
             this(150, 40, widget);
@@ -456,12 +520,14 @@ public class GraphicalEditor extends AbstractWidget {
 
         private BlockCodeElement(int x, int y, @NotNull BlockCodeWidget widget) {
             super(x, y, widget);
-            this.recalculateSize();
             this.update();
         }
 
-        private void update() {
-            this.widget.update(null); //expect head widget to create context
+        @Override
+        public void update() {
+            super.update();
+            this.connectors.clear();
+            this.widget().collectConnectors(0, 0, this.connectors::add);
         }
 
         @Override
@@ -488,13 +554,19 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        protected void updateInteractions() {
-        }
-
-        @Override
         public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
-            pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
+            if (renderDebug)
+                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
             this.widget.render(pGuiGraphics, font, x, y);
+            if (renderDebug) {
+                PoseStack pose = pGuiGraphics.pose();
+                pose.pushPose();
+                pose.translate(x, y, 0);
+                for (Connector connector : this.connectors) {
+                    connector.renderDebug(pGuiGraphics);
+                }
+                pose.popPose();
+            }
         }
 
         @Override
@@ -507,7 +579,7 @@ public class GraphicalEditor extends AbstractWidget {
 
         private ExprCodeElement(int x, int y, ExprCodeWidget widget) {
             super(x, y, widget);
-            this.recalculateSize();
+            this.update();
         }
 
         @Override
@@ -521,13 +593,9 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        protected void updateInteractions() {
-
-        }
-
-        @Override
         public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
-            pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
+            if (renderDebug)
+                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
             this.widget.render(pGuiGraphics, font, x, y);
         }
 
@@ -558,6 +626,9 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
+        public void collectConnectors(int aX, int aY, Consumer<Connector> collector) {}
+
+        @Override
         public BlockGhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
             return null;
         }
@@ -576,8 +647,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         }
 
         @Override
@@ -630,7 +700,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
         }
     }

@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
 import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 //TODO removing expression crashes the game
 public class ExprWidget implements ExprCodeWidget {
@@ -77,6 +79,11 @@ public class ExprWidget implements ExprCodeWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) return null;
         return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.args);
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        RenderHelper.registerAllInteractions(xOrigin, yOrigin, font, sink, translationKey, args);
     }
 
     public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {

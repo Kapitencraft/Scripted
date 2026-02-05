@@ -3,12 +3,15 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class VarNameSelectorWidget implements ExprCodeWidget {
     private @NotNull Status status = Status.UNKNOWN;
@@ -47,6 +50,11 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return null;
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+
     }
 
     @Override

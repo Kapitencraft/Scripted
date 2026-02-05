@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.variable;
 
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -16,7 +17,8 @@ public class LocalVariableTable {
         this.stack.removeLast();
     }
 
-    private Map<String, ExprCategory> active() {
+    @ApiStatus.Internal
+    public Map<String, ExprCategory> active() {
         return stack.getLast();
     }
 

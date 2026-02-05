@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchConnector;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
@@ -69,6 +71,18 @@ public class WhileLoopWidget extends BlockCodeWidget {
     @Override
     protected @NotNull Type getType() {
         return Type.WHILE_LOOP;
+    }
+
+    @Override
+    public void collectConnectors(int aX, int aY, Consumer<Connector> collector) {
+        collector.accept(new CommonBranchConnector(
+                aX + 6,
+                aY + this.getHeadHeight(),
+                this::setBody,
+                () -> this.body,
+                collector
+        ));
+        super.collectConnectors(aX, aY, collector);
     }
 
     @Override
@@ -165,7 +179,7 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void registerInteractions(int rX, int rY, int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
     }
 

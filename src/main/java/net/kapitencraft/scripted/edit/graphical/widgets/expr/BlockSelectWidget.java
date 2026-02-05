@@ -3,19 +3,25 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.kap_lib.client.UsefulTextures;
+import net.kapitencraft.kap_lib.core.client.UsefulTextures;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
+import net.kapitencraft.scripted.edit.graphical.widgets.io.SelectBlockWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class BlockSelectWidget implements ExprCodeWidget {
     public static final MapCodec<BlockSelectWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -80,6 +86,24 @@ public class BlockSelectWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         return ExprWidgetFetchResult.notRemoved(this, x, y);
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new Interaction(xOrigin, yOrigin, 12, 14));
+    }
+
+    private class Interaction extends CodeInteraction {
+
+        protected Interaction(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void onClick(int mouseX, int mouseY, InteractionData data) {
+            data.openWidget(new SelectBlockWidget(50, 20, data.getWidth() - 100, data.getHeight() - 40, Component.literal("Select block"), data.getFont(), data.wrapCloseWidget(BlockSelectWidget.this::setBlock)));
+            //TODO select
+        }
     }
 
     @Override

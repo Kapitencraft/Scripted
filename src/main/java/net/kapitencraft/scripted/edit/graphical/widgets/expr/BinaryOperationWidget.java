@@ -72,7 +72,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
                     right = widget;
                 }
                 throw new IllegalArgumentException("unknown operation argument: " + s);
-            }, Map.of("left", left, "right", right));
+            }, Map.of("left", left, "op", operatorWidget, "right", right));
         return null;
     }
 
@@ -84,24 +84,14 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return ExprWidgetFetchResult.fromExprList(4,  x, y, font, this, "§op", Map.of("left", left, "right", right));
+        return ExprWidgetFetchResult.fromExprList(4,  x, y, font, this, "§op", Map.of("left", left, "op", operatorWidget, "right", right));
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new SelectOperationInteraction( , , operatorWidget.getWidth(font), operatorWidget.getHeight()));
-    }
-
-    private class SelectOperationInteraction extends CodeInteraction {
-
-        protected SelectOperationInteraction(int x, int y, int width, int height) {
-            super(x, y, width, height);
-        }
-
-        @Override
-        public void onClick(int mouseX, int mouseY) {
-
-        }
+        this.left.registerInteractions(xOrigin, yOrigin, font, sink);
+        this.operatorWidget.registerInteractions(xOrigin + RenderHelper.getPartialWidth(font, "§op", Map.of("left", left, "right", right), "op"), yOrigin, font, sink);
+        this.right.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     private enum Operation implements StringRepresentable {

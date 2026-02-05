@@ -11,10 +11,10 @@ public abstract class CodeInteraction {
         this.height = height;
     }
 
-    public abstract void onClick(int mouseX, int mouseY);
+    public abstract void onClick(int mouseX, int mouseY, InteractionData callbacks);
 
-    public final void onClickRelative(int posX, int posY) {
-        this.onClick(posX - x, posY - y);
+    public final void onClickRelative(int posX, int posY, InteractionData callbacks) {
+        this.onClick(posX - x, posY - y, callbacks);
     }
 
     public boolean hovered(int posX, int posY) {
