@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class VarModWidget extends BlockCodeWidget {
     public static final MapCodec<VarModWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
@@ -84,6 +86,12 @@ public class VarModWidget extends BlockCodeWidget {
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
         return null;
+    }
+
+    @Override
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        this.expr.registerInteractions(xOrigin, yOrigin, font, sink);
+        //sink.accept();
     }
 
     public void setExpr(ExprCodeWidget widget) {
