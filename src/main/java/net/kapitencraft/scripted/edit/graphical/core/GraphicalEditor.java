@@ -50,6 +50,7 @@ public class GraphicalEditor extends AbstractWidget {
     private final GhostExprWidget ghostExprWidget = new GhostExprWidget();
     private CodeWidget ghostExprOriginal;
     private CodeElement ghostTargetElement;
+    private Connector connector;
     private GhostInserter inserter;
     private int draggedOffsetX, draggedOffsetY;
 
@@ -357,8 +358,16 @@ public class GraphicalEditor extends AbstractWidget {
                 if (element instanceof BlockCodeElement bCE) {
                     //TODO
                     for (Connector connector : bCE.connectors) {
-                        if (connector.canConnect(element.x, element.y)) {
-
+                        if (connector.canConnect(element.x, element.y, draggedUiX, draggedUiY)) {
+                            if (connector != this.connector) {
+                                if (this.connector != null)
+                                    this.connector.insert(this.ghostBlockWidget.getChild());
+                                BlockCodeWidget current = connector.get();
+                                this.ghostBlockWidget.setChild(current);
+                                connector.insert(this.ghostBlockWidget);
+                                this.connector = connector;
+                            }
+                            return;
                         }
                     }
                 }
