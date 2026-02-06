@@ -5,11 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.ChildConnector;
+import net.kapitencraft.scripted.edit.graphical.connector.ChildBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
@@ -52,10 +50,10 @@ public abstract class BlockCodeWidget implements CodeWidget {
 
     protected abstract @NotNull Type getType();
 
-    public void collectConnectors(int aX, int aY, Consumer<Connector> collector) {
-        collector.accept(new ChildConnector(aX, aY, this));
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        collector.accept(new ChildBlockConnector(aX, aY, this));
         if (this.child != null) {
-            this.child.collectConnectors(aX, aY + this.getHeight(), collector);
+            this.child.collectConnectors(aX, aY + this.getHeight(), font, collector);
         }
     }
 
@@ -116,18 +114,6 @@ public abstract class BlockCodeWidget implements CodeWidget {
             widget = widget.getChild();
         }
         return height;
-    }
-
-    @Deprecated
-    public @Nullable GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        if (y < 0)
-            return null;
-        if (isBlock && y < this.getHeight() + 10 && x > -10 && x < 30) {
-            return new ChildBlockGhostInserter(this);
-        }
-        if (this.child != null)
-            return this.child.getGhostWidgetTarget(x, y - getHeight(), font, isBlock);
-        return null;
     }
 
     public void insertChildMiddle(BlockCodeWidget widget) {

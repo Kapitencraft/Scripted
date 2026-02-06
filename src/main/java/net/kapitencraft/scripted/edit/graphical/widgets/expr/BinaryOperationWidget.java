@@ -4,10 +4,11 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +36,8 @@ public class BinaryOperationWidget implements ExprCodeWidget {
         this.right = right;
     }
 
-    public BinaryOperationWidget() {}
+    public BinaryOperationWidget() {
+    }
 
     @Override
     public @NotNull Type getType() {
@@ -63,20 +65,6 @@ public class BinaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        if (x < this.getWidth(font))
-            return ArgumentInserter.create(x, y, font, "§op", (s, widget) -> {
-                if (s.equals("left"))
-                    left = widget;
-                else if (s.equals("right")) {
-                    right = widget;
-                }
-                throw new IllegalArgumentException("unknown operation argument: " + s);
-            }, Map.of("left", left, "op", operatorWidget, "right", right));
-        return null;
-    }
-
-    @Override
     public void update(@Nullable MethodContext context) {
         this.left.update(context);
         this.right.update(context);
@@ -84,14 +72,43 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return ExprWidgetFetchResult.fromExprList(4,  x, y, font, this, "§op", Map.of("left", left, "op", operatorWidget, "right", right));
+        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§op", Map.of("left", left, "op", operatorWidget, "right", right));
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         this.left.registerInteractions(xOrigin, yOrigin, font, sink);
-        this.operatorWidget.registerInteractions(xOrigin + RenderHelper.getPartialWidth(font, "§op", Map.of("left", left, "right", right), "op"), yOrigin, font, sink);
+        this.operatorWidget.registerInteractions(xOrigin + RenderHelper.getPartialWidth(font, "§op", Map.of("left", left, "op", operatorWidget, "right", right), "op"), yOrigin, font, sink);
         this.right.registerInteractions(xOrigin, yOrigin, font, sink);
+    }
+
+    @Override
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        Map<String, ExprCodeWidget> params = Map.of("left", left, "op", operatorWidget, "right", right);
+        RenderHelper.forPartialWidth(font, "§op", params, (s, integer) -> {
+            if (!"op".equals(s)) {
+                collector.accept(new ArgumentExprConnector(aX + integer, aY, this, s));
+                params.get(s).collectConnectors(aX + integer, aY, font, collector);
+            }
+        });
+    }
+
+    @Override
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        switch (arg) {
+            case "left" -> this.left = obj;
+            case "right" -> this.right = obj;
+            default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
+        }
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        return switch (argName) {
+            case "left" -> this.left;
+            case "right" -> this.right;
+            default -> throw new IllegalArgumentException("unknown arg type for binary: " + argName);
+        };
     }
 
     private enum Operation implements StringRepresentable {

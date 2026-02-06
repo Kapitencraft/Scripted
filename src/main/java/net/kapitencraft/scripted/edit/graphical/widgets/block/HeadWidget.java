@@ -9,6 +9,7 @@ import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -53,6 +54,16 @@ public class HeadWidget extends BlockCodeWidget {
                 getChildCopy(),
                 this.translationKey
         );
+    }
+
+    @Override
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        //TODO
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        return null;
     }
 
     @Override

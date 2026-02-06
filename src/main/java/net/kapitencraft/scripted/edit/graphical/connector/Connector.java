@@ -1,11 +1,12 @@
 package net.kapitencraft.scripted.edit.graphical.connector;
 
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.Nullable;
 
 public abstract class Connector {
-    private final int x, y;
+    protected final int x, y;
     private MethodContext.Snapshot contextSnapshot;
 
     protected Connector(int x, int y) {
@@ -17,16 +18,11 @@ public abstract class Connector {
         this.contextSnapshot = contextSnapshot;
     }
 
-    public abstract void insert(BlockCodeWidget widget);
+    public abstract void insert(@Nullable CodeWidget widget);
 
-    public abstract BlockCodeWidget get();
+    public abstract CodeWidget get();
 
-    public void renderDebug(GuiGraphics graphics) {
-        graphics.fill(x + 2, y - 1, x + 22, y + 1, 0x8FFF0000);
-    }
+    public abstract void renderDebug(GuiGraphics graphics);
 
-    public boolean canConnect(int xO, int yO, int xM, int yM) {
-        return xM > xO + this.x - 3 && xM < xO + this.x + 27 &&
-                yM > yO + this.y - 6 && yM < yO + this.y + 6;
-    }
+    public abstract boolean canConnect(int xO, int yO, int xM, int yM);
 }

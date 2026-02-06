@@ -8,6 +8,7 @@ import net.minecraft.locale.Language;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +54,23 @@ public interface RenderHelper {
         String subElement = inst.substring(j);
         width += font.width(subElement);
         return width + 1;
+    }
+
+    static void forPartialWidth(Font font, String key, Map<String, ExprCodeWidget> args, BiConsumer<String, Integer> offsets) {
+        String inst = Language.getInstance().getOrDefault(key);
+        int width = 0;
+        Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
+        int j, l;
+        for (j = 0; matcher.find(j); j = l) {
+            int k = matcher.start();
+            l = matcher.end();
+            String subElement = inst.substring(j, k);
+            width += font.width(subElement);
+            String name = matcher.group(1);
+            offsets.accept(name, width);
+            ExprCodeWidget widget = args.get(name);
+            width += widget.getWidth(font);
+        }
     }
 
     static int getPartialWidth(Font font, String key, Map<String, ExprCodeWidget> args, String paramToFind) {

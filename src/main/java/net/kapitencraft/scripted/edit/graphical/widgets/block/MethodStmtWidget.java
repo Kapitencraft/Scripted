@@ -8,8 +8,8 @@ import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -19,29 +19,30 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
+//the difference to ExprCodeWidget?
+//idk
 public class MethodStmtWidget extends BlockCodeWidget {
     public static final MapCodec<MethodStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i)
                     .and(Codec.STRING.fieldOf("signature").forGetter(w -> w.signature))
-                    .and(Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.arguments))
+                    .and(Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args))
                     .apply(i, MethodStmtWidget::new)
     );
 
     private final String signature;
-    private final Map<String, ExprCodeWidget> arguments = new HashMap<>();
+    private final Map<String, ExprCodeWidget> args = new HashMap<>();
 
-    public MethodStmtWidget(Optional<BlockCodeWidget> child, String signature, Map<String, ExprCodeWidget> arguments) {
+    public MethodStmtWidget(Optional<BlockCodeWidget> child, String signature, Map<String, ExprCodeWidget> args) {
         this.signature = signature;
-        this.arguments.putAll(arguments);
+        this.args.putAll(args);
         child.ifPresent(this::setChild);
     }
 
-    public MethodStmtWidget(BlockCodeWidget child, String sig, Map<String, ExprCodeWidget> arguments) {
+    public MethodStmtWidget(BlockCodeWidget child, String sig, Map<String, ExprCodeWidget> args) {
         this.setChild(child);
         this.signature = sig;
-        this.arguments.putAll(arguments);
+        this.args.putAll(args);
     }
 
     @Override
@@ -49,8 +50,22 @@ public class MethodStmtWidget extends BlockCodeWidget {
         return new MethodStmtWidget(
                 this.getChildCopy(),
                 this.signature,
-                this.arguments
+                this.args
         );
+    }
+
+    @Override
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        if (args.containsKey(arg)) {
+            args.put(arg, obj);
+        } else {
+            throw new IllegalArgumentException("unknown argument in expr '" + this.signature + "': " + arg);
+        }
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        return args.get(argName);
     }
 
     public static Builder builder() {
@@ -67,17 +82,17 @@ public class MethodStmtWidget extends BlockCodeWidget {
 
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, signature, arguments);
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, signature, args);
     }
 
     @Override
     public int getWidth(Font font) {
-        return RenderHelper.getVisualTextWidth(font, this.signature, this.arguments) + 12;
+        return RenderHelper.getVisualTextWidth(font, this.signature, this.args) + 12;
     }
 
     @Override
     public int getHeight() {
-        return Math.max(19, ExprCodeWidget.getHeightFromArgs(this.arguments) + 4);
+        return Math.max(19, ExprCodeWidget.getHeightFromArgs(this.args) + 4);
     }
 
     @Override
@@ -87,7 +102,7 @@ public class MethodStmtWidget extends BlockCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context) {
-        this.arguments.values().forEach(c -> c.update(context));
+        this.args.values().forEach(c -> c.update(context));
         super.update(context);
     }
 

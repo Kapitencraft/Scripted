@@ -6,10 +6,11 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -53,9 +54,22 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        if (isBlock) return null;
-        return ArgumentInserter.create(x, y, font, translationKey, args::put, args);
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        if (args.containsKey(arg)) {
+            args.put(arg, obj);
+        } else {
+            throw new IllegalArgumentException("unknown argument in expr '" + this.translationKey + "': " + arg);
+        }
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        return args.get(argName);
+    }
+
+    @Override
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        ArgumentExprConnector.parse(font, aX, aY, this.translationKey, this.args, this, collector);
     }
 
     @Override

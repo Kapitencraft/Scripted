@@ -8,6 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
@@ -52,6 +53,22 @@ public class VarModWidget extends BlockCodeWidget {
                 this.varNameSelectorWidget.getVisualSelected(),
                 this.expr.copy()
         );
+    }
+
+    @Override
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        if (!"value".equals(arg)) {
+            throw new IllegalArgumentException("unknown argument in VarModWidget: " + arg);
+        }
+        this.expr = obj;
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        if ("value".equals(argName)) {
+            return this.expr;
+        }
+        throw new IllegalArgumentException("unknown argument in VarModWidget: " + argName);
     }
 
     @Override

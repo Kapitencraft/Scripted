@@ -6,12 +6,10 @@ import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
 import net.kapitencraft.kap_lib.core.helpers.ClientHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.BlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.BlockGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.expr.ExprGhostInserter;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
@@ -51,7 +49,6 @@ public class GraphicalEditor extends AbstractWidget {
     private CodeWidget ghostExprOriginal;
     private CodeElement ghostTargetElement;
     private Connector connector;
-    private GhostInserter inserter;
     private int draggedOffsetX, draggedOffsetY;
 
     private final Font font;
@@ -353,53 +350,48 @@ public class GraphicalEditor extends AbstractWidget {
         if (draggedWidget != null && !isPoolAreaHovered(mouseX, mouseY)) {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
-            GhostInserter inserter;
             for (CodeElement element : elements) {
                 if (element instanceof BlockCodeElement bCE) {
                     //TODO
                     for (Connector connector : bCE.connectors) {
                         if (connector.canConnect(element.x, element.y, draggedUiX, draggedUiY)) {
-                            if (connector != this.connector) {
-                                if (this.connector != null)
-                                    this.connector.insert(this.ghostBlockWidget.getChild());
-                                BlockCodeWidget current = connector.get();
-                                this.ghostBlockWidget.setChild(current);
-                                connector.insert(this.ghostBlockWidget);
-                                this.connector = connector;
+                            if (connector == this.connector) {
+                                return;
                             }
+                            if (connector instanceof BlockConnector bc) {
+                                if (draggedWidget instanceof BlockCodeWidget) {
+                                    if (this.connector != null)
+                                        this.connector.insert(this.ghostBlockWidget.getChild());
+                                    this.ghostBlockWidget.setChild(bc.get());
+                                    bc.insert(this.ghostBlockWidget);
+                                } else
+                                    return; //return early before connector & element are put
+                            } else {
+                                if (draggedWidget instanceof ExprCodeWidget) { //TODO add conversion between
+                                    if (this.connector != null) {
+                                        this.connector.insert(this.ghostExprOriginal);
+                                    }
+                                    this.ghostExprOriginal = connector.get();
+                                    connector.insert(this.ghostExprWidget);
+                                } else
+                                    return; //return early before connector & element are put
+                            }
+                            this.connector = connector;
+                            this.ghostTargetElement = element;
                             return;
                         }
                     }
                 }
-                if ((inserter = element.gatherGhostInserter(draggedUiX, draggedUiY)) != null) {
-                    if (!inserter.equals(this.inserter)) {
-                        if (inserter instanceof BlockGhostInserter bGI) {
-                            if (this.inserter != null) { //reset previous inserter
-                                this.inserter.insert(this.ghostBlockWidget.getChild());
-                            }
-                            bGI.insertChildMiddle(ghostBlockWidget);
-                        } else {
-                            if (this.inserter != null) { //reset previous inserter
-                                this.inserter.insert(this.ghostExprOriginal);
-                            }
-                            this.ghostExprOriginal = ((ExprGhostInserter) inserter).getOriginal();
-                            inserter.insert(ghostExprWidget);
-                        }
-                        this.inserter = inserter;
-                        ghostTargetElement = element;
-                    }
-                    return;
-                }
             }
-            if (this.inserter != null) {
-                if (this.inserter instanceof BlockGhostInserter) {
-                    this.inserter.insert(this.ghostBlockWidget.getChild());
+            if (connector != null) {
+                if (this.connector instanceof BlockConnector) {
+                    this.connector.insert(this.ghostBlockWidget.getChild());
                 } else {
-                    this.inserter.insert(this.ghostExprOriginal);
+                    this.connector.insert(this.ghostExprOriginal);
                     this.ghostExprOriginal = null;
                 }
-                this.inserter = null;
-                ghostTargetElement = null;
+                this.connector = null;
+                this.ghostTargetElement = null;
             }
         }
         super.mouseMoved(mouseX, mouseY);
@@ -411,25 +403,27 @@ public class GraphicalEditor extends AbstractWidget {
             return this.widget.mouseReleased(mouseX, mouseY, button);
         }
         if (this.draggedWidget != null) {
-            if (inserter != null) {
-                if (draggedWidget instanceof BlockCodeWidget blockWidget) {
-                    blockWidget.setBottomChild(this.ghostBlockWidget.getChild());
+            if (connector != null) {
+                if (draggedWidget instanceof BlockCodeWidget bcw) {
+                    bcw.setBottomChild(this.ghostBlockWidget.getChild());
                 } else {
-                    ExprCodeWidget original = ((ExprGhostInserter) inserter).getOriginal();
+                    CodeWidget original = ghostExprOriginal;
                     if (!(original instanceof ParamWidget)) { //can be ignored as they are fallback
                         int uiX = (int) (mouseX / scale - scrollX) - getX();
                         int uiY = (int) (mouseY / scale - scrollY) - getY();
 
-                        this.elements.addLast(new ExprCodeElement(uiX, uiY, original));
+                        this.elements.addLast(new ExprCodeElement(uiX, uiY, (ExprCodeWidget) original));
                     }
                 }
-                this.inserter.insert(draggedWidget);
-                this.inserter = null;
+                connector.insert(draggedWidget);
+                this.connector = null;
                 this.ghostTargetElement.update();
                 this.ghostTargetElement = null;
+                this.draggedWidget = null;
+                return true;
             } else if (
                     !(mouseX > this.getX() && mouseX < this.getX() + 120 &&
-                    mouseY > this.getY() && mouseY < this.getY() + this.getHeight())
+                            mouseY > this.getY() && mouseY < this.getY() + this.getHeight())
             ) { //if pool is hovered, delete the widget
                 int uiX = (int) (mouseX / scale - scrollX) - getX();
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
@@ -505,10 +499,6 @@ public class GraphicalEditor extends AbstractWidget {
             return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
         }
 
-        public GhostInserter gatherGhostInserter(int draggedUiX, int draggedUiY) {
-            return this.widget.getGhostWidgetTarget(draggedUiX - this.x, draggedUiY - this.y, font, draggedWidget instanceof BlockCodeWidget);
-        }
-
         public boolean interacted(int posX, int posY, InteractionData data) {
             for (CodeInteraction interaction : this.interactions) {
                 if (interaction.hovered(posX, posY)) {
@@ -536,7 +526,7 @@ public class GraphicalEditor extends AbstractWidget {
         public void update() {
             super.update();
             this.connectors.clear();
-            this.widget().collectConnectors(0, 0, this.connectors::add);
+            this.widget().collectConnectors(0, 0, font, this.connectors::add);
         }
 
         @Override
@@ -635,11 +625,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void collectConnectors(int aX, int aY, Consumer<Connector> collector) {}
-
-        @Override
-        public BlockGhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-            return null;
+        public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         }
 
         @Override
@@ -663,6 +649,17 @@ public class GraphicalEditor extends AbstractWidget {
         public BlockCodeWidget copy() {
             throw new IllegalAccessError("attempting to copy ghost widget");
         }
+
+        @Override
+        public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+            throw new IllegalAccessError("can not insert into ghost");
+        }
+
+        @Override
+        public CodeWidget getByName(String argName) {
+            throw new IllegalAccessError("can not get from ghost");
+        }
+
     }
 
     private class GhostExprWidget implements ExprCodeWidget {
@@ -694,8 +691,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-            return null;
+        public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         }
 
         @Override
@@ -711,6 +707,16 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
+        }
+
+        @Override
+        public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+            throw new IllegalAccessError("can not insert into ghost");
+        }
+
+        @Override
+        public CodeWidget getByName(String argName) {
+            throw new IllegalAccessError("can not get from ghost");
         }
     }
     //endregion

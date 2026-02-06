@@ -5,9 +5,10 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.client.UsefulTextures;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.kapitencraft.scripted.edit.graphical.widgets.io.SelectBlockWidget;
@@ -78,9 +79,18 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        //will always be null
-        return null;
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        throw new IllegalAccessError("can not insert into block select widget");
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        throw new IllegalAccessError("can not get from block select widget");
+    }
+
+    @Override
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+
     }
 
     @Override

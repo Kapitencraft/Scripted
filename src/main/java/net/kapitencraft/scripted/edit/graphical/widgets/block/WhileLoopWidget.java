@@ -6,15 +6,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchConnector;
+import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.ChildBlockGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.block.WhileBodyBlockGhostInserter;
-import net.kapitencraft.scripted.edit.graphical.inserter.expr.ArgumentInserter;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -69,25 +67,47 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        if ("condition".equals(arg)) {
+            this.condition = obj;
+        }
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        if ("condition".equals(argName)) {
+            return this.condition;
+        }
+        throw new IllegalArgumentException("unknown argument " + argName + " in While");
+    }
+
+    @Override
     protected @NotNull Type getType() {
         return Type.WHILE_LOOP;
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Consumer<Connector> collector) {
-        collector.accept(new CommonBranchConnector(
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        collector.accept(new SingletonExprConnector(
+                aX + 6 + RenderHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                aY,
+                this::setCondition,
+                () -> this.condition
+        ));
+        collector.accept(new CommonBranchBlockConnector(
                 aX + 6,
                 aY + this.getHeadHeight(),
                 this::setBody,
                 () -> this.body,
+                font,
                 collector
         ));
-        super.collectConnectors(aX, aY, collector);
+        super.collectConnectors(aX, aY, font, collector);
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int loopWidth = 6 + getHeadWidth(font);
+        int loopWidth = getHeadWidth(font);
         int headHeight = getHeadHeight();
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, headHeight + 3);
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
@@ -108,12 +128,12 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     private int getHeadWidth(Font font) {
-        return RenderHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
+        return 4 + RenderHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
     }
 
     @Override
     public int getWidth(Font font) {
-        int width = 6 + getHeadWidth(font);
+        int width = getHeadWidth(font);
         if (this.body != null) {
             int i = this.body.getWidth(font) + 6;
             if (i > width)
@@ -135,30 +155,6 @@ public class WhileLoopWidget extends BlockCodeWidget {
     public void insertBodyMiddle(BlockCodeWidget widget) {
         widget.setChild(this.body);
         this.body = widget;
-    }
-
-    @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        if (y < 0) return null;
-        if (!isBlock && y < this.getHeadHeight()) {
-            return ArgumentInserter.create(x, y, font, "§while", (s, widget) -> {
-                if (!"condition".equals(s))
-                    throw new IllegalArgumentException("unknown while argument: " + s);
-                this.setCondition(widget);
-            }, Map.of("condition", this.condition));
-        }
-        y -= this.getHeadHeight();
-        if (isBlock && y < 10 && x > -10 && x < 40)
-            return new WhileBodyBlockGhostInserter(this);
-        if (this.body != null && y < this.body.getHeightWithChildren())
-            return this.body.getGhostWidgetTarget(x - 6, y, font, isBlock);
-        y -= this.body != null ? this.body.getHeightWithChildren() : 10;
-        y -= 16;
-        if (isBlock && y < 10 && x > -10 && x < 40)
-            return new ChildBlockGhostInserter(this);
-        if (this.getChild() != null)
-            return this.getChild().getGhostWidgetTarget(x, y, font, isBlock);
-        return null;
     }
 
     @Override

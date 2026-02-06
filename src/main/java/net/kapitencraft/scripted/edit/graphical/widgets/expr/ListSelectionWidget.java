@@ -2,8 +2,9 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.inserter.GhostInserter;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -41,8 +42,18 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
     }
 
     @Override
-    public GhostInserter getGhostWidgetTarget(int x, int y, Font font, boolean isBlock) {
-        return null;
+    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        throw new IllegalAccessError("can not insert into list selector widget");
+    }
+
+    @Override
+    public CodeWidget getByName(String argName) {
+        throw new IllegalAccessError("can not get from var list selector widget");
+    }
+
+    @Override
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+
     }
 
     @Override
