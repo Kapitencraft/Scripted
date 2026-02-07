@@ -3,13 +3,24 @@
     "type": "stmt",
     "entry": {
       "type": "if",
+      "elifs": [],
       "show_else": false
     }
   },
   {
     "type": "stmt",
     "entry": {
-      "type": "if"
+      "type": "if",
+      "elifs": []
+    }
+  },
+  {
+    "type": "stmt",
+    "entry": {
+      "type": "if",
+      "elifs": [
+        {}
+      ]
     }
   },
   {

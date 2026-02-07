@@ -44,6 +44,7 @@ public interface SelectionTabs {
                 .withEntry(IfWidget.builder()
                         .hideElse()
                 ).withEntry(IfWidget.builder())
+                .withEntry(IfWidget.builder().withElseIfNoCondition())
                 .withEntry(WhileLoopWidget.builder())
                 .build()
         );

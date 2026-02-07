@@ -22,6 +22,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -36,32 +38,37 @@ public class IfWidget extends BlockCodeWidget {
                     Codec.BOOL.optionalFieldOf("show_else", true).forGetter(w -> w.elseVisible)
             ).and(
                     BlockCodeWidget.CODEC.optionalFieldOf("else_body").forGetter(w -> Optional.ofNullable(w.elseBody))
+            ).and(
+                    ElseIfEntry.CODEC.listOf().fieldOf("elifs").forGetter(w -> w.elseIfs)
             ).apply(i, IfWidget::new)
     );
 
     private ExprCodeWidget condition;
-    private boolean elseVisible;
     private @Nullable BlockCodeWidget conditionBody;
+    private boolean elseVisible;
     private @Nullable BlockCodeWidget elseBody;
+    private final List<ElseIfEntry> elseIfs = new ArrayList<>();
 
     public IfWidget(ExprCodeWidget condition) {
         this.condition = condition;
     }
 
-    private IfWidget(BlockCodeWidget child, ExprCodeWidget condition, @Nullable BlockCodeWidget conditionBody, @Nullable BlockCodeWidget elseBody, boolean showElse) {
+    private IfWidget(BlockCodeWidget child, ExprCodeWidget condition, @Nullable BlockCodeWidget conditionBody, @Nullable BlockCodeWidget elseBody, boolean showElse, List<ElseIfEntry> elifs) {
         this(condition);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
         this.setChild(child);
         this.elseVisible = showElse;
+        this.elseIfs.addAll(elifs);
     }
 
-    public IfWidget(Optional<BlockCodeWidget> child, ExprCodeWidget headWidgets, Optional<BlockCodeWidget> conditionBody, boolean elseVisible, Optional<BlockCodeWidget> elseBody) {
+    public IfWidget(Optional<BlockCodeWidget> child, ExprCodeWidget headWidgets, Optional<BlockCodeWidget> conditionBody, boolean elseVisible, Optional<BlockCodeWidget> elseBody, List<ElseIfEntry> elseIfs) {
         child.ifPresent(this::setChild);
         this.condition = headWidgets;
         this.elseVisible = elseVisible;
         this.conditionBody = conditionBody.orElse(null);
         this.elseBody = elseBody.orElse(null);
+        this.elseIfs.addAll(elseIfs);
     }
 
     @Override
@@ -71,8 +78,13 @@ public class IfWidget extends BlockCodeWidget {
                 this.condition.copy(),
                 this.conditionBody != null ? this.conditionBody.copy() : null,
                 this.elseBody != null ? this.elseBody.copy() : null,
-                this.elseVisible
+                this.elseVisible,
+                copyElifs(this.elseIfs)
         );
+    }
+
+    private List<ElseIfEntry> copyElifs(List<ElseIfEntry> elseIfs) {
+        return elseIfs.stream().map(ElseIfEntry::copy).toList();
     }
 
     @Override
@@ -118,10 +130,30 @@ public class IfWidget extends BlockCodeWidget {
                 font,
                 collector
         ));
+        int yOffset = headHeight + this.getBodyHeight();
+        int cOffset = RenderHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            collector.accept(new SingletonExprConnector(
+                    aX + 4 + cOffset,
+                    aY + yOffset,
+                    elseIf::setCondition,
+                    elseIf::condition
+            ));
+            yOffset += getElseIfHeadHeight(elseIf);
+            collector.accept(new CommonBranchBlockConnector(
+                    aX + 6,
+                    aY + yOffset,
+                    elseIf::setBody,
+                    elseIf::body,
+                    font,
+                    collector
+            ));
+            yOffset += getElseifBodyHeight(elseIf);
+        }
         if (this.elseVisible) {
             collector.accept(new CommonBranchBlockConnector(
                     aX + 6,
-                    aY + headHeight + this.getBodyHeight() + this.getElseHeadHeight(),
+                    aY + yOffset + this.getElseHeadHeight(),
                     this::setElseBody,
                     () -> this.elseBody,
                     font,
@@ -132,6 +164,7 @@ public class IfWidget extends BlockCodeWidget {
     }
 
     //region size
+    //TODO store sizes, this is getting ridiculous
     @Override
     public int getWidth(Font font) {
         int width = getHeadWidth(font);
@@ -147,15 +180,52 @@ public class IfWidget extends BlockCodeWidget {
             if (i > width)
                 width = i;
         }
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            int i = this.getElseIfHeadWidth(font, elseIf);
+            if (i > width)
+                width = i;
+            if (elseIf.body != null) {
+                int j = elseIf.body.getWidth(font) + 6;
+                if (j > width) {
+                    width = j;
+                }
+            }
+        }
         return width;
+    }
+
+    private int getGlobalHeadWidth(Font font) {
+        int width = this.getHeadWidth(font);
+        if (elseVisible) {
+            int i = this.getElseHeadWidth(font);
+            if (i > width)
+                width = i;
+        }
+        return Math.max(width, this.elseIfs.stream().mapToInt(e -> this.getElseIfHeadWidth(font, e)).max().orElse(0));
+    }
+
+    private int getHeadWidth(Font font) {
+        return 4 + RenderHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
+    }
+
+    private int getElseHeadWidth(Font font) {
+        return 4 + RenderHelper.getVisualTextWidth(font, "§else", Map.of());
+    }
+
+    private int getElseIfHeadWidth(Font font, ElseIfEntry entry) {
+        return 4 + RenderHelper.getVisualTextWidth(font, "§else_if", Map.of("condition", entry.condition));
     }
 
     @Override
     public int getHeight() {
-        return getHeadHeight() +
-                this.getBodyHeight() +
-                (this.elseVisible ? this.getElseHeadHeight() + getElseBodyHeight() : 0) +
-                13; //height of the bottom enclose part - 3 for the offset
+        int height = getHeadHeight() + this.getBodyHeight();
+        if (this.elseVisible) {
+            height += this.getElseHeadHeight() + getElseBodyHeight();
+        }
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            height += this.getElseIfHeadHeight(elseIf) + getElseifBodyHeight(elseIf);
+        }
+        return height + 13; //height of the bottom enclose part - 3 for the offset
     }
 
     private int getBodyHeight() {
@@ -166,6 +236,10 @@ public class IfWidget extends BlockCodeWidget {
         return this.elseBody == null ? 10 : this.elseBody.getHeightWithChildren();
     }
 
+    private int getElseifBodyHeight(ElseIfEntry entry) {
+        return entry.body == null ? 10 : entry.body.getHeightWithChildren();
+    }
+
     private int getHeadHeight() {
         return Math.max(18, this.condition.getHeight() + 4) + 2;
     }
@@ -174,21 +248,18 @@ public class IfWidget extends BlockCodeWidget {
         return 18;
     }
 
-    private int getHeadWidth(Font font) {
-        return 4 + RenderHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
+    private int getElseIfHeadHeight(ElseIfEntry entry) {
+        return Math.max(18, entry.condition.getHeight() + 4) + 2;
     }
 
-    private int getElseHeadWidth(Font font) {
-        return RenderHelper.getVisualTextWidth(font, "§else", Map.of());
-    }
     //endregion
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int headWidth = getHeadWidth(font);
+        int globalHeadWidth = getGlobalHeadWidth(font);
         int headHeight = getHeadHeight();
         //head
-        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, headWidth, headHeight + 3);
+        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, globalHeadWidth, headHeight + 3);
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§if", Map.of("condition", condition));
 
         //body
@@ -197,22 +268,33 @@ public class IfWidget extends BlockCodeWidget {
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
 
+        int endY = renderY + headHeight + bodyHeight;
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            int elseIfHeadHeight = getElseIfHeadHeight(elseIf);
+            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseIfHeadHeight + 3);
+            int elseIfBodyHeight = getElseifBodyHeight(elseIf);
+            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else_if", Map.of("condition", elseIf.condition));
+            if (elseIf.body != null) {
+                elseIf.body.render(graphics, font, renderX + 6, endY + elseIfHeadHeight);
+            }
+            graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseIfHeadHeight + 3, 6, elseIfBodyHeight - 3);
+            endY += elseIfHeadHeight + elseIfBodyHeight;
+        }
+
         if (elseVisible) {
             //else
             int elseHeadHeight = getElseHeadHeight();
-            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, renderY + headHeight + bodyHeight, headWidth, elseHeadHeight + 3);
+            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
             int elseBodyHeight = getElseBodyHeight();
-            RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + headHeight + bodyHeight + 7, "§else", Map.of());
+            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else", Map.of());
             if (this.elseBody != null) {
-                this.elseBody.render(graphics, font, renderX + 6, renderY + headHeight + bodyHeight + elseHeadHeight);
+                this.elseBody.render(graphics, font, renderX + 6, endY + elseHeadHeight);
             }
-            graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + 3, 6, elseBodyHeight - 3);
-            //end
-            renderScopeEnd(graphics, renderX, renderY + headHeight + bodyHeight + elseHeadHeight + elseBodyHeight, headWidth);
-        } else {
-            //end
-            renderScopeEnd(graphics, renderX, renderY + headHeight + bodyHeight, headWidth);
+            graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseHeadHeight + 3, 6, elseBodyHeight - 3);
+            endY += elseHeadHeight + elseBodyHeight;
         }
+        //end
+        renderScopeEnd(graphics, renderX, endY, globalHeadWidth);
         super.render(graphics, font, renderX, renderY);
     }
 
@@ -289,6 +371,7 @@ public class IfWidget extends BlockCodeWidget {
         }
     }
 
+    //region mod
     public void setBody(@Nullable BlockCodeWidget conditionBody) {
         this.conditionBody = conditionBody;
     }
@@ -310,6 +393,7 @@ public class IfWidget extends BlockCodeWidget {
     public void setCondition(@Nullable ExprCodeWidget target) {
         this.condition = target == null ? ParamWidget.CONDITION : target;
     }
+    //endregion
 
     @Override
     public void update(@Nullable MethodContext context) {
@@ -335,8 +419,51 @@ public class IfWidget extends BlockCodeWidget {
         super.update(context);
     }
 
+    private static final class ElseIfEntry {
+        private static final Codec<ElseIfEntry> CODEC = RecordCodecBuilder.create(i -> i.group(
+                ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(ElseIfEntry::condition),
+                BlockCodeWidget.CODEC.optionalFieldOf("body").forGetter(e -> Optional.ofNullable(e.body))
+        ).apply(i, ElseIfEntry::fromCodec));
+
+        private static ElseIfEntry fromCodec(ExprCodeWidget widget, Optional<BlockCodeWidget> blockCodeWidget) {
+            return new ElseIfEntry(widget, blockCodeWidget.orElse(null));
+        }
+
+        private @NotNull ExprCodeWidget condition;
+        private BlockCodeWidget body;
+
+        private ElseIfEntry(ExprCodeWidget condition, BlockCodeWidget body) {
+            this.condition = condition;
+            this.body = body;
+        }
+
+        public ExprCodeWidget condition() {
+            return condition;
+        }
+
+        public void setCondition(ExprCodeWidget condition) {
+            if (condition == null) {
+                condition = ParamWidget.CONDITION;
+            }
+            this.condition = condition;
+        }
+
+        public BlockCodeWidget body() {
+            return body;
+        }
+
+        public void setBody(BlockCodeWidget body) {
+            this.body = body;
+        }
+
+        public ElseIfEntry copy() {
+            return new ElseIfEntry(this.condition, this.body);
+        }
+    }
+
     public static class Builder implements BlockCodeWidget.Builder<IfWidget> {
         private ExprCodeWidget condition = ParamWidget.CONDITION;
+        private final List<ElseIfEntry> elifs = new ArrayList<>();
         private boolean showElse = true;
         private BlockCodeWidget child, branch, elseBranch;
 
@@ -351,6 +478,16 @@ public class IfWidget extends BlockCodeWidget {
 
         public Builder hideElse() {
             this.showElse = false;
+            return this;
+        }
+
+        public Builder withElseIf(ExprCodeWidget condition) {
+            this.elifs.add(new ElseIfEntry(condition, null));
+            return this;
+        }
+
+        public Builder withElseIfNoCondition() {
+            this.elifs.add(new ElseIfEntry(ParamWidget.CONDITION, null));
             return this;
         }
 
@@ -372,7 +509,7 @@ public class IfWidget extends BlockCodeWidget {
 
         @Override
         public IfWidget build() {
-            return new IfWidget(child, condition, branch, showElse ? elseBranch : null, showElse);
+            return new IfWidget(child, condition, branch, showElse ? elseBranch : null, showElse, elifs);
         }
     }
 }
