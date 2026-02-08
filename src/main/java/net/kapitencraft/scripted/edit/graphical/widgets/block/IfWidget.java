@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.block;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
@@ -69,6 +70,10 @@ public class IfWidget extends BlockCodeWidget {
         this.conditionBody = conditionBody.orElse(null);
         this.elseBody = elseBody.orElse(null);
         this.elseIfs.addAll(elseIfs);
+    }
+
+    public boolean isElseVisible() {
+        return elseVisible;
     }
 
     @Override
@@ -359,6 +364,27 @@ public class IfWidget extends BlockCodeWidget {
         }
     }
 
+    private class ModifyBranchesWidget extends PositionedWidget {
+
+        protected ModifyBranchesWidget(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            guiGraphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, x + 2, y + 2, 10, 10);
+            int yOffset = 12;
+            for (ElseIfEntry elseIf : IfWidget.this.elseIfs) {
+                guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
+                yOffset += 10;
+            }
+            //TODO
+            if (IfWidget.this.elseVisible) {
+                guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
+            }
+        }
+    }
+
     private class ModifyWidgetBranchesInteraction extends CodeInteraction {
 
         protected ModifyWidgetBranchesInteraction(int x, int y, int width, int height) {
@@ -367,7 +393,7 @@ public class IfWidget extends BlockCodeWidget {
 
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData callbacks) {
-
+            callbacks.openWidget(new ModifyBranchesWidget(this.x + 10, this.y + 10, 50, 50));
         }
     }
 

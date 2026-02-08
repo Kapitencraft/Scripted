@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.interaction;
 
 public abstract class CodeInteraction {
-    private final int x, y;
+    protected final int x, y;
     private final int width, height;
 
     protected CodeInteraction(int x, int y, int width, int height) {
