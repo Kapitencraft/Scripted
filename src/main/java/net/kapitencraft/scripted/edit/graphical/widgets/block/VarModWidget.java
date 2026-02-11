@@ -7,7 +7,9 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
@@ -101,7 +103,7 @@ public class VarModWidget extends BlockCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
-        //if (x < this.getWidth(font)) return WidgetFetchResult.fromExprList(4, x, y, font, this, this.expr);
+        if (x < this.getWidth(font)) return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§assign", ArgumentStorage.createSingle("value", this::setExpr, () -> this.expr));
         return null;
     }
 

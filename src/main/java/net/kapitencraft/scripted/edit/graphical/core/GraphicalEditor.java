@@ -316,8 +316,8 @@ public class GraphicalEditor extends AbstractWidget {
         int uX = (int) x;
         //vPos = .75 * (translate + aPos) | / (3 / 4)
         //vPos * (4 / 3) = translate + aPos | - translate
-        //vPos * (4 / 3) + translate = aPos
-        int uY = (int) mouseY * 4 / 3 + (int) selectionScroll;
+        //vPos * (4 / 3) - translate = aPos
+        int uY = (int) mouseY * 4 / 3 - (int) selectionScroll;
         Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();

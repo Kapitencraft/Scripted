@@ -1,5 +1,7 @@
-1. increase body-script width to remove "zebra"-effect
-3. add method code map
-4. add code storage
-5. add code selection panel
-6.
+do something about "zebra"-effect
+add 'ctrl' removing block widgets to only remove one expr instead of all children
+add field access
+add method & field chaining
+add method code map
+add code storage
+add code selection panel
