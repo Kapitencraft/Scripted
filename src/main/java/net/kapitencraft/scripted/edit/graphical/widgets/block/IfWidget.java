@@ -50,6 +50,8 @@ public class IfWidget extends BlockCodeWidget {
     private @Nullable BlockCodeWidget elseBody;
     private final List<ElseIfEntry> elseIfs = new ArrayList<>();
 
+    private int globalHeadWidth;
+
     public IfWidget(ExprCodeWidget condition) {
         this.condition = condition;
     }
@@ -442,6 +444,15 @@ public class IfWidget extends BlockCodeWidget {
                 }
             }
         }
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            elseIf.condition.update(context);
+            if (context != null)
+                context.lvt.push();
+            elseIf.body.update(context);
+            if (context != null) {
+                context.lvt.pop();
+            }
+        }
         super.update(context);
     }
 
@@ -458,7 +469,7 @@ public class IfWidget extends BlockCodeWidget {
         private @NotNull ExprCodeWidget condition;
         private BlockCodeWidget body;
 
-        private ElseIfEntry(ExprCodeWidget condition, BlockCodeWidget body) {
+        private ElseIfEntry(@NotNull ExprCodeWidget condition, BlockCodeWidget body) {
             this.condition = condition;
             this.body = body;
         }
