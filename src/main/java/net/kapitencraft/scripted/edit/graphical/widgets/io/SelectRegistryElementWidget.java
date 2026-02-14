@@ -6,7 +6,6 @@ import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
 import net.kapitencraft.kap_lib.core.helpers.MathHelper;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Contract;
@@ -30,7 +29,7 @@ public abstract class SelectRegistryElementWidget<T> extends PositionedWidget {
     protected T selected;
     private final Consumer<T> valueSink;
 
-    protected SelectRegistryElementWidget(int x, int y, int width, int height, Component title, Font font, Registry<T> registry, Consumer<T> valueSink) {
+    protected SelectRegistryElementWidget(int x, int y, int width, int height, Component title, Font font, Iterable<T> registry, Consumer<T> valueSink) {
         super(x, y, width, height);
         this.allElements = new ArrayList<>();
         for (T element : registry) allElements.add(element);

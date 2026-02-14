@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.fetch;
 
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
 
@@ -37,7 +38,7 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
                 if (result == null)
                     return ExprWidgetFetchResult.notRemoved(self, x, y);
                 if (!result.removed())
-                    expr.remove(name);
+                    expr.put(name, ParamWidget.OBJ);
                 return result.setRemoved();
             }
             x -= widget.getWidth(font);

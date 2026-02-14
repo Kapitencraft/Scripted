@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.kap_lib.core.collection.MapStream;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
@@ -50,7 +51,7 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public ExprCodeWidget copy() {
-        return new ExprWidget(this.type, this.translationKey, this.args);
+        return new ExprWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
     }
 
     @Override

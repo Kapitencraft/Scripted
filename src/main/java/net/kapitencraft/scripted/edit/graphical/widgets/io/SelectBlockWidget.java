@@ -16,16 +16,15 @@ import java.util.stream.StreamSupport;
 
 public class SelectBlockWidget extends SelectRegistryElementWidget<Block> {
     private static final int ITEM_WIDTH_WITH_OFFSET = 18;
-    private static final List<ItemStack> itemsCache = StreamSupport.stream(BuiltInRegistries.ITEM.spliterator(), false)
+    private static final List<ItemStack> ITEMS_CACHE = StreamSupport.stream(BuiltInRegistries.ITEM.spliterator(), false)
             .filter(item -> Block.byItem(item) != Blocks.AIR)
             .filter(item -> item != Items.AIR)
             .map(Item::getDefaultInstance)
             .toList();
     private final int xOffset = (this.width - 2) % ITEM_WIDTH_WITH_OFFSET / 2;
-    private final int maxHeight = ITEM_WIDTH_WITH_OFFSET * (itemsCache.size() / getEPR());
 
     public SelectBlockWidget(int x, int y, int width, int height, Component title, Font font, Consumer<Block> itemSink) {
-        super(x, y, width, height, title, font, BuiltInRegistries.BLOCK, itemSink);
+        super(x, y, width, height, title, font, ITEMS_CACHE.stream().map(ItemStack::getItem).map(Block::byItem).toList(), itemSink);
     }
 
     @Override
@@ -42,7 +41,7 @@ public class SelectBlockWidget extends SelectRegistryElementWidget<Block> {
     protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         int elementsPerRow = getEPR();
         int minIndex = (int) scroll / ITEM_WIDTH_WITH_OFFSET * elementsPerRow;
-        int maxIndex = Math.min(itemsCache.size(), ((int) scroll + this.height) / ITEM_WIDTH_WITH_OFFSET * elementsPerRow);
+        int maxIndex = Math.min(ITEMS_CACHE.size(), ((int) scroll + this.height) / ITEM_WIDTH_WITH_OFFSET * elementsPerRow);
         for (int i = minIndex; i < maxIndex; i++) {
             int column = i % elementsPerRow;
             int row = i / elementsPerRow;
@@ -51,7 +50,7 @@ public class SelectBlockWidget extends SelectRegistryElementWidget<Block> {
             if (selectedIndex == i) {
                 graphics.fill(rX, rY, rX + 16, rY + 16, 0x8FFFFFFF);
             }
-            graphics.renderItem(itemsCache.get(i), rX, rY);
+            graphics.renderItem(ITEMS_CACHE.get(i), rX, rY);
         }
     }
 
