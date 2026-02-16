@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public class GraphicalEditor extends AbstractWidget {
-    private static boolean renderDebug = true;
+    public static boolean renderDebug = true;
 
     private final Registry<SelectionTab> tabs;
 
@@ -120,7 +120,7 @@ public class GraphicalEditor extends AbstractWidget {
             pose.pushPose();
             pose.scale(scale, scale, 1);
 
-            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/black_wool.png");
+            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/white_wool.png");
             int i = Mth.floor(this.scrollX);
             int j = Mth.floor(this.scrollY);
             int k = i % 16;

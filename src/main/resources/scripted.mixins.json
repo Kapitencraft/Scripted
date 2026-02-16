@@ -5,6 +5,7 @@
   "package": "net.kapitencraft.scripted.mixin.classes",
   "refmap": "scripted.mixin-refmap.json",
   "client": [
+    "KeyboardHandlerMixin"
   ],
   "mixins": [
   ],

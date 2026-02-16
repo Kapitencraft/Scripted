@@ -21,10 +21,11 @@ public class SelectBlockWidget extends SelectRegistryElementWidget<Block> {
             .filter(item -> item != Items.AIR)
             .map(Item::getDefaultInstance)
             .toList();
+    private static final List<Block> BLOCKS = ITEMS_CACHE.stream().map(ItemStack::getItem).map(Block::byItem).toList();
     private final int xOffset = (this.width - 2) % ITEM_WIDTH_WITH_OFFSET / 2;
 
     public SelectBlockWidget(int x, int y, int width, int height, Component title, Font font, Consumer<Block> itemSink) {
-        super(x, y, width, height, title, font, ITEMS_CACHE.stream().map(ItemStack::getItem).map(Block::byItem).toList(), itemSink);
+        super(x, y, width, height, title, font, BLOCKS, itemSink);
     }
 
     @Override

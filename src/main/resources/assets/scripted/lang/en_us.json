@@ -1,4 +1,7 @@
 {
+  "debug.editor.on": "Enabled Editor debug",
+  "debug.editor.off": "Disabled Editor debug",
+
   "edit_screen.title": "Edit Screen",
 
   "error.code_after_cancel": "Unreachable statement",
@@ -17,6 +20,7 @@
 
   "selection_tab.scripted.operators": "Operators",
   "selection_tab.scripted.control": "Control",
+  "selection_tab.scripted.variables": "Variables",
   "selection_tab.scripted.world": "World",
 
   "§assign": "set {var} to {value}",
