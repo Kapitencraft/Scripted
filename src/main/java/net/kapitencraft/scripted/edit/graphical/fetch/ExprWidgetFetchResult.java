@@ -19,6 +19,7 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
     }
 
     public static WidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, ExprCodeWidget self, String translation, Map<String, ExprCodeWidget> expr) {
+        int oX = x;
         if (x < minWidth) return ExprWidgetFetchResult.notRemoved(self, x, y);
         x -= minWidth;
         String inst = Language.getInstance().getOrDefault(translation);
@@ -29,20 +30,20 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
             l = matcher.end();
             String subElement = inst.substring(j, k);
             if (x < font.width(subElement))
-                return ExprWidgetFetchResult.notRemoved(self, x, y);
+                return ExprWidgetFetchResult.notRemoved(self, oX, y);
             x -= font.width(subElement);
             String name = matcher.group(1);
             ExprCodeWidget widget = expr.get(name);
             if (x < widget.getWidth(font)) {
                 WidgetFetchResult result = widget.fetchAndRemoveHovered(x, y, font);
                 if (result == null)
-                    return ExprWidgetFetchResult.notRemoved(self, x, y);
+                    return ExprWidgetFetchResult.notRemoved(self, oX, y);
                 if (!result.removed())
                     expr.put(name, ParamWidget.OBJ);
                 return result.setRemoved();
             }
             x -= widget.getWidth(font);
         }
-        return ExprWidgetFetchResult.notRemoved(self, x, y);
+        return ExprWidgetFetchResult.notRemoved(self, oX, y);
     }
 }

@@ -75,8 +75,8 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX, aY, this.translationKey, this.args, this, collector);
-        //collector.accept(new ExprChainConnector(aX + this.getWidth(font), aY, this));
+        ArgumentExprConnector.parse(font, aX + 4, aY, this.translationKey, this.args, this, collector);
+        //collector.accept(new ExprChainConnector(aX + 4 + this.getWidth(font), aY, this));
     }
 
     @Override

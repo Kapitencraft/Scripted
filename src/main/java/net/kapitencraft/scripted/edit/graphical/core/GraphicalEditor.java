@@ -459,6 +459,7 @@ public class GraphicalEditor extends AbstractWidget {
         protected int height;
         protected final CodeWidget widget;
         private final List<CodeInteraction> interactions = new ArrayList<>();
+        protected final List<Connector> connectors = new ArrayList<>();
 
         private CodeElement(int x, int y, CodeWidget widget) {
             this.x = x;
@@ -487,13 +488,28 @@ public class GraphicalEditor extends AbstractWidget {
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
             this.updateInteractions();
+            this.connectors.clear();
+            this.widget().collectConnectors(0, 0, font, this.connectors::add);
         }
 
         protected void updateInteractions() {
             this.widget.registerInteractions(this.x, this.y, font, this.interactions::add);
         }
 
-        public abstract void render(GuiGraphics pGuiGraphics, Font font, int x, int y);
+        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
+            if (renderDebug)
+                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
+            this.widget.render(pGuiGraphics, font, x, y);
+            if (renderDebug) {
+                PoseStack pose = pGuiGraphics.pose();
+                pose.pushPose();
+                pose.translate(x, y, 0);
+                for (Connector connector : this.connectors) {
+                    connector.renderDebug(pGuiGraphics);
+                }
+                pose.popPose();
+            }
+        }
 
         public WidgetFetchResult fetchAndRemoveHoveredWidget(int posX, int posY, Font font) {
             return this.widget.fetchAndRemoveHovered(posX - x, posY - y, font);
@@ -511,7 +527,6 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private class BlockCodeElement extends CodeElement {
-        private final List<Connector> connectors = new ArrayList<>();
 
         private BlockCodeElement(@NotNull BlockCodeWidget widget) {
             this(150, 40, widget);
@@ -520,13 +535,6 @@ public class GraphicalEditor extends AbstractWidget {
         private BlockCodeElement(int x, int y, @NotNull BlockCodeWidget widget) {
             super(x, y, widget);
             this.update();
-        }
-
-        @Override
-        public void update() {
-            super.update();
-            this.connectors.clear();
-            this.widget().collectConnectors(0, 0, font, this.connectors::add);
         }
 
         @Override
@@ -553,22 +561,6 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
-            if (renderDebug)
-                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
-            this.widget.render(pGuiGraphics, font, x, y);
-            if (renderDebug) {
-                PoseStack pose = pGuiGraphics.pose();
-                pose.pushPose();
-                pose.translate(x, y, 0);
-                for (Connector connector : this.connectors) {
-                    connector.renderDebug(pGuiGraphics);
-                }
-                pose.popPose();
-            }
-        }
-
-        @Override
         public @NotNull BlockCodeWidget widget() {
             return (BlockCodeWidget) this.widget;
         }
@@ -589,13 +581,6 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         protected int calculateWidgetHeight() {
             return widget.getHeight();
-        }
-
-        @Override
-        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
-            if (renderDebug)
-                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
-            this.widget.render(pGuiGraphics, font, x, y);
         }
 
         @Override

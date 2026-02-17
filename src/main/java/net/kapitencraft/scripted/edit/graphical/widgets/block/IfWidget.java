@@ -99,13 +99,21 @@ public class IfWidget extends BlockCodeWidget {
         if (arg.equals("condition")) {
             this.condition = obj;
         }
-        //TODO add else-ifs
+        if (arg.startsWith("elif-condition")) {
+            int idx = Integer.parseInt(arg.substring(14));
+            this.elseIfs.get(idx).condition = obj;
+        }
+        throw new IllegalArgumentException("unknown argument in if widget: " + arg);
     }
 
     @Override
     public CodeWidget getByName(String argName) {
         if ("condition".equals(argName)) {
             return this.condition;
+        }
+        if (argName.startsWith("elif-condition")) {
+            int idx = Integer.parseInt(argName.substring(14));
+            return this.elseIfs.get(idx).condition;
         }
         throw new IllegalArgumentException("unknown argument named " + argName + " in If");
     }
