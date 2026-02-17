@@ -121,12 +121,14 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        int conditionOffset = aX + 4 + RenderHelper.getPartialWidth(font, "§if", Map.of(), "condition");
         collector.accept(new SingletonExprConnector(
-                aX + 4 + RenderHelper.getPartialWidth(font, "§if", Map.of(), "condition"),
+                conditionOffset,
                 aY,
                 this::setCondition,
                 () -> this.condition
         ));
+        this.condition.collectConnectors(conditionOffset, aY, font, collector);
 
         int headHeight = this.getHeadHeight();
         collector.accept(new CommonBranchBlockConnector(
@@ -146,6 +148,7 @@ public class IfWidget extends BlockCodeWidget {
                     elseIf::setCondition,
                     elseIf::condition
             ));
+            elseIf.condition.collectConnectors(aX + 4, aY + yOffset, font, collector);
             yOffset += getElseIfHeadHeight(elseIf);
             collector.accept(new CommonBranchBlockConnector(
                     aX + 6,
@@ -359,11 +362,17 @@ public class IfWidget extends BlockCodeWidget {
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         //TODO
         this.condition.registerInteractions(xOrigin, yOrigin, font, sink);
-        if (elseVisible) {
-            int width = getHeadWidth(font);
-            int height = getHeadHeight() + getBodyHeight() + getElseHeadHeight() + getElseBodyHeight();
-            sink.accept(new ModifyWidgetBranchesInteraction(xOrigin + width - 9, yOrigin + height, 7, 7));
+        if (this.conditionBody != null) {
+            this.conditionBody.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
         }
+        int h = getHeadHeight() + getBodyHeight();
+        if (elseVisible) {
+            if (this.elseBody != null) {
+                this.elseBody.registerInteractions(xOrigin + 6, yOrigin + h + getElseHeadHeight(), font, sink);
+            }
+            h += getElseHeadHeight() + getElseBodyHeight();
+        }
+        sink.accept(new ModifyWidgetBranchesInteraction(xOrigin + getHeadWidth(font) - 9, yOrigin + h, 7, 7));
     }
 
     private class ModifyBranchesWidget extends PositionedWidget {

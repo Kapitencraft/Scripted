@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public interface ExprCodeWidget extends CodeWidget {

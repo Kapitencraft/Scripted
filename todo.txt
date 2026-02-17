@@ -1,5 +1,4 @@
-do something about "zebra"-effect
-add 'ctrl' removing block widgets to only remove one expr instead of all children
+do something about "zebra"-effect -> rework rendering to 2 passes: background & text and rework backend to manual
 add field access
 add method & field chaining
 add method code map

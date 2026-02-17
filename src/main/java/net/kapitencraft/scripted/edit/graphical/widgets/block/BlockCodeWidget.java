@@ -12,6 +12,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -101,8 +102,15 @@ public abstract class BlockCodeWidget implements CodeWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
         if (result == null) return null;
-        if (!result.removed())
-            this.setChild(null);
+        if (!result.removed()) {
+            BlockCodeWidget target = null;
+            if (Screen.hasControlDown()) {
+                BlockCodeWidget bcW = (BlockCodeWidget) result.widget();
+                target = bcW.child;
+                bcW.setChild(null);
+            }
+            this.setChild(target);
+        }
         return result.setRemoved();
     }
 

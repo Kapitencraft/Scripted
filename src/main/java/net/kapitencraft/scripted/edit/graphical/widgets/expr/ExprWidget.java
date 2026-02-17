@@ -9,6 +9,7 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.connector.ExprChainConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -33,6 +34,7 @@ public class ExprWidget implements ExprCodeWidget {
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private ExprWidget child;
 
     public ExprWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
         this.type = type;
@@ -50,8 +52,11 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public ExprCodeWidget copy() {
-        return new ExprWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+    public ExprWidget copy() {
+        ExprWidget exprWidget = new ExprWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+        if (this.child != null)
+            exprWidget.setChild(this.child.copy());
+        return exprWidget;
     }
 
     @Override
@@ -71,6 +76,7 @@ public class ExprWidget implements ExprCodeWidget {
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         ArgumentExprConnector.parse(font, aX, aY, this.translationKey, this.args, this, collector);
+        //collector.accept(new ExprChainConnector(aX + this.getWidth(font), aY, this));
     }
 
     @Override
@@ -92,13 +98,25 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        if (x > this.getWidth(font)) return null;
+        if (x > this.getWidth(font)) {
+            if (this.child != null)
+                return this.child.fetchAndRemoveHovered(x + this.getWidth(font), y, font);
+            return null;
+        }
         return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.args);
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         RenderHelper.registerAllInteractions(xOrigin, yOrigin, font, sink, translationKey, args);
+    }
+
+    public void setChild(@Nullable ExprWidget codeWidget) {
+        this.child = codeWidget;
+    }
+
+    public @Nullable ExprWidget getChild() {
+        return this.child;
     }
 
     public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {
