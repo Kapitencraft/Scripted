@@ -278,7 +278,7 @@ public class IfWidget extends BlockCodeWidget {
         int headHeight = getHeadHeight();
         //head
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, globalHeadWidth, headHeight + 3);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§if", Map.of("condition", condition));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 20) / 2, "§if", Map.of("condition", condition));
 
         //body
         int bodyHeight = getBodyHeight();

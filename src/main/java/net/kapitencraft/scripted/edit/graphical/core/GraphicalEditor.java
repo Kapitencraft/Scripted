@@ -120,7 +120,7 @@ public class GraphicalEditor extends AbstractWidget {
             pose.pushPose();
             pose.scale(scale, scale, 1);
 
-            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/white_wool.png");
+            ResourceLocation resourcelocation = ResourceLocation.withDefaultNamespace("textures/block/black_wool.png");
             int i = Mth.floor(this.scrollX);
             int j = Mth.floor(this.scrollY);
             int k = i % 16;
@@ -162,7 +162,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
         if (this.draggedWidget != null) {
-            this.draggedWidget.render(pGuiGraphics, font, pMouseX + this.draggedOffsetX, pMouseY + this.draggedOffsetY);
+            this.draggedWidget.render(pGuiGraphics, font, (int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale));
         }
         pose.popPose();
         //endregion

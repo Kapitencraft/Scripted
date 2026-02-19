@@ -15,10 +15,11 @@ public abstract class KeyboardHandlerMixin {
     @Shadow protected abstract void debugFeedbackTranslated(String message, Object... args);
 
     @SuppressWarnings("AssignmentUsedAsCondition")
-    @Inject(method = "handleDebugKeys",at = @At("HEAD"))
+    @Inject(method = "handleDebugKeys",at = @At("HEAD"), cancellable = true)
     private void handleToggleDebug(int key, CallbackInfoReturnable<Boolean> cir) {
         if (key == GLFW.GLFW_KEY_J) {
             this.debugFeedbackTranslated((GraphicalEditor.renderDebug = !GraphicalEditor.renderDebug) ? "debug.editor.on" : "debug.editor.off");
+            cir.setReturnValue(true);
         }
     }
 }
