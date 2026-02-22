@@ -19,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -147,10 +148,11 @@ public class GraphicalEditor extends AbstractWidget {
         int maxX = (int) (getWidth() / scale - scrollX);
         int maxY = (int) (getHeight() / scale - scrollY);
 
+        WidgetRenderer renderer = new WidgetRenderer(Minecraft.getInstance().getGuiSprites(), pose.last().pose());
         for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
             CodeElement element = this.elements.get(i);
             if (element.visible(minX, minY, maxX, maxY)) {
-                element.render(pGuiGraphics, font, element.x, element.y);
+                element.render(pGuiGraphics, renderer, font, element.x, element.y);
             }
         }
 
@@ -162,7 +164,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
         if (this.draggedWidget != null) {
-            this.draggedWidget.render(pGuiGraphics, font, (int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale));
+            this.draggedWidget.renderBackground(pGuiGraphics, font, (int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale));
         }
         pose.popPose();
         //endregion
@@ -200,7 +202,7 @@ public class GraphicalEditor extends AbstractWidget {
             yO += 10;
             for (int i1 = 0; i1 < value.size(); i1++) {
                 CodeWidget widget = value.get(i1);
-                widget.render(pGuiGraphics, font, 0, yO);
+                widget.renderBackground(pGuiGraphics, font, 0, yO);
                 yO += widget.getHeight();
                 yO += 10;
             }
@@ -496,10 +498,10 @@ public class GraphicalEditor extends AbstractWidget {
             this.widget.registerInteractions(this.x, this.y, font, this.interactions::add);
         }
 
-        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
+        public void render(GuiGraphics pGuiGraphics, WidgetRenderer renderer, Font font, int x, int y) {
             if (renderDebug)
                 pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
-            this.widget.render(pGuiGraphics, font, x, y);
+            this.widget.renderBackground(renderer, font, x, y);
             if (renderDebug) {
                 PoseStack pose = pGuiGraphics.pose();
                 pose.pushPose();
@@ -614,11 +616,15 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        public void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY) {
             int height = getHeight();
             graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
+            super.renderBackground(renderer, font, renderX, renderY);
+        }
+
+        @Override
+        public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
             graphics.drawString(font, "ghost", renderX + 6, renderY + 7, 0, false);
-            super.render(graphics, font, renderX, renderY);
         }
 
         @Override

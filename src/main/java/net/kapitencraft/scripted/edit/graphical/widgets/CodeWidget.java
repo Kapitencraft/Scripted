@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -14,7 +15,9 @@ import java.util.function.Consumer;
 
 public interface CodeWidget {
 
-    void render(GuiGraphics graphics, Font font, int renderX, int renderY);
+    void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY);
+
+    void renderText(GuiGraphics graphics, Font font, int renderX, int renderY);
 
     int getHeight();
 

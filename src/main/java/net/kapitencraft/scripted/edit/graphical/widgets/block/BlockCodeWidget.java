@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ChildBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -44,9 +45,17 @@ public abstract class BlockCodeWidget implements CodeWidget {
         parent.setChild(ghostTarget);
     }
 
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    @Override
+    public void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY) {
         if (this.child != null)
-            this.child.render(graphics, font, renderX, renderY + getHeight());
+            this.child.renderBackground(renderer, font, renderX, renderY + getHeight());
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        if (this.child != null) {
+            this.child.renderText(graphics,  font, renderX, renderY + getHeight());
+        }
     }
 
     protected abstract @NotNull Type getType();
