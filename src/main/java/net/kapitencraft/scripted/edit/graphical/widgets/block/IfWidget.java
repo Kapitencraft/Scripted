@@ -19,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
+import net.kapitencraft.scripted.lang.holder.ast.ElifBranch;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -569,19 +570,29 @@ public class IfWidget extends BlockCodeWidget {
         }
     }
 
-    public static final class CodeVisitor implements StmtCodeVisitor {
+    public static final class CodeVisitor implements StmtCodeVisitor<IfWidget> {
 
         @Override
-        public Stmt parse(BlockCodeWidget widget) {
+        public Stmt parse(IfWidget widget) {
+            Stmt elseBody = parseOptionalStmtList(widget.elseBody);
 
+            ElifBranch[] branches =
+                    widget.elseIfs.stream()
+                            .map(entry -> new ElifBranch(
+                                    parseExpr(entry.condition),
+                                    parseStmt(entry.body)
+                            )).toArray(ElifBranch[]::new);
 
             return new Stmt.If(
-
+                    parseExpr(widget.condition),
+                    parseStmtList(widget.conditionBody),
+                    elseBody,
+                    branches
             );
         }
 
         @Override
-        public BlockCodeWidget decode(Stmt stmt) {
+        public IfWidget decode(Stmt stmt) {
             return null;
         }
     }
