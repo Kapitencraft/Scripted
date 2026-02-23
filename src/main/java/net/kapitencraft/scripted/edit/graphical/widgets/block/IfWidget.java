@@ -7,6 +7,7 @@ import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.code.StmtCodeVisitor;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
@@ -18,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -564,6 +566,23 @@ public class IfWidget extends BlockCodeWidget {
         @Override
         public IfWidget build() {
             return new IfWidget(child, condition, branch, showElse ? elseBranch : null, showElse, elifs);
+        }
+    }
+
+    public static final class CodeVisitor implements StmtCodeVisitor {
+
+        @Override
+        public Stmt parse(BlockCodeWidget widget) {
+
+
+            return new Stmt.If(
+
+            );
+        }
+
+        @Override
+        public BlockCodeWidget decode(Stmt stmt) {
+            return null;
         }
     }
 }

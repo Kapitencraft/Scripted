@@ -40,7 +40,7 @@ public interface Stmt {
         Expr condition, 
         Expr increment, 
         Stmt body, 
-        Token keyword, 
+        Token keyword,
         int popVarCount
     ) implements Stmt {
 

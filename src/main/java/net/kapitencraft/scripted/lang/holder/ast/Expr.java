@@ -79,9 +79,9 @@ public interface Expr {
     }
 
     record RegistryAccess(
-        ClassReference type, 
-        Token origin, 
-        String regKey, 
+        ClassReference type,
+        Token origin,
+        String regKey,
         String valKey
     ) implements Expr {
 
@@ -133,8 +133,8 @@ public interface Expr {
     }
 
     record ComparisonChain(
-        Expr[] entries, 
-        Token[] types, 
+        Expr[] entries,
+        Token[] types,
         ClassReference dataType
     ) implements Expr {
 
@@ -318,7 +318,7 @@ public interface Expr {
 
     record Switch(
         Expr provider, 
-        Map<Integer,Expr> params, 
+        Map<Integer,Expr> params,
         Expr defaulted, 
         Token keyword
     ) implements Expr {
