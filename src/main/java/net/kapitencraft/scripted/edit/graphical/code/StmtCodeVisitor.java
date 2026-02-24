@@ -3,9 +3,9 @@ package net.kapitencraft.scripted.edit.graphical.code;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 
-public interface StmtCodeVisitor<T extends BlockCodeWidget> {
+public interface StmtCodeVisitor<W extends BlockCodeWidget, S extends Stmt> {
 
-    Stmt parse(T widget);
+    S parse(W widget);
 
-    T decode(Stmt stmt);
+    W decode(S stmt);
 }
