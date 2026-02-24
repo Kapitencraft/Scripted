@@ -7,6 +7,7 @@ import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.code.CodeParser;
 import net.kapitencraft.scripted.edit.graphical.code.StmtCodeVisitor;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -26,11 +27,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class IfWidget extends BlockCodeWidget {
     public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
@@ -570,30 +569,44 @@ public class IfWidget extends BlockCodeWidget {
         }
     }
 
-    public static final class CodeVisitor implements StmtCodeVisitor<IfWidget> {
+    private static final class CodeVisitor implements StmtCodeVisitor<IfWidget, Stmt.If> {
 
         @Override
-        public Stmt parse(IfWidget widget) {
-            Stmt elseBody = parseOptionalStmtList(widget.elseBody);
+        public Stmt.If parse(IfWidget widget) {
 
             ElifBranch[] branches =
                     widget.elseIfs.stream()
                             .map(entry -> new ElifBranch(
-                                    parseExpr(entry.condition),
-                                    parseStmt(entry.body)
+                                    CodeParser.parseExpr(entry.condition),
+                                    CodeParser.parseStmtList(entry.body)
                             )).toArray(ElifBranch[]::new);
 
             return new Stmt.If(
-                    parseExpr(widget.condition),
-                    parseStmtList(widget.conditionBody),
-                    elseBody,
+                    CodeParser.parseExpr(widget.condition),
+                    CodeParser.parseOptionalStmtList(widget.conditionBody),
+                    CodeParser.parseOptionalStmtList(widget.elseBody),
                     branches
             );
         }
 
         @Override
-        public IfWidget decode(Stmt stmt) {
-            return null;
+        public IfWidget decode(Stmt.If stmt) {
+            List<ElseIfEntry> entries = Arrays.stream(stmt.elifs())
+                    .map(branch -> new ElseIfEntry(
+                            CodeParser.decodeExpr(branch.condition()),
+                            CodeParser.decodeStmtList(branch.body())
+                    )).collect(Collectors.toCollection(ArrayList::new));
+
+            return new IfWidget(
+                    null,
+                    CodeParser.decodeExpr(stmt.condition()),
+                    CodeParser.decodeOptionalStmtList(stmt.thenBranch()),
+                    CodeParser.decodeOptionalStmtList(stmt.elseBranch()),
+                    stmt.elseBranch() != null,
+                    entries
+            );
         }
     }
+
+    private static final CodeVisitor VISITOR = new CodeVisitor();
 }

@@ -6,6 +6,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.code.CodeParser;
+import net.kapitencraft.scripted.edit.graphical.code.StmtCodeVisitor;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
@@ -16,6 +18,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -231,5 +234,25 @@ public class WhileLoopWidget extends BlockCodeWidget {
             }
         }
         super.update(context);
+    }
+
+    private static final class CodeVisitor implements StmtCodeVisitor<WhileLoopWidget, Stmt.While> {
+
+        @Override
+        public Stmt.While parse(WhileLoopWidget widget) {
+            return new Stmt.While(
+                    CodeParser.parseExpr(widget.condition),
+                    CodeParser.parseOptionalStmtList(widget.body),
+
+            );
+        }
+
+        @Override
+        public WhileLoopWidget decode(Stmt.While stmt) {
+            return new WhileLoopWidget(
+                    CodeParser.decodeExpr(stmt.condition()),
+                    CodeParser.decodeOptionalStmtList(stmt.body())
+            );
+        }
     }
 }
