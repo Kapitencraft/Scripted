@@ -4,6 +4,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.CacheBuilder;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
@@ -12,7 +13,6 @@ import net.kapitencraft.scripted.lang.oop.field.CompileField;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;

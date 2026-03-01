@@ -5,10 +5,10 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.CacheBuilder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 public class CompileField implements ScriptedField {
     private final Token name;

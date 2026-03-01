@@ -1,11 +1,11 @@
 package net.kapitencraft.scripted.lang.oop.clazz.primitive;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.exe.algebra.Operand;
+import net.kapitencraft.scripted.lang.exe.algebra.OperationType;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.PrimitiveClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
-import net.kapitencraft.scripted.lang.run.algebra.Operand;
-import net.kapitencraft.scripted.lang.run.algebra.OperationType;
 
 public class CharacterClass extends PrimitiveClass {
     public CharacterClass() {

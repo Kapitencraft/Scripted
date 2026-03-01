@@ -5,8 +5,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.kap_lib.core.helpers.CollectorHelper;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.minecraft.util.GsonHelper;
 

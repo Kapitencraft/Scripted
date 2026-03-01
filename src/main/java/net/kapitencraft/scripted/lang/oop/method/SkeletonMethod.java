@@ -6,11 +6,11 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceClassReference;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.minecraft.util.GsonHelper;
 

@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -13,7 +14,6 @@ import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
 import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
 import net.kapitencraft.scripted.lang.oop.method.annotation.CompileAnnotationCallable;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 import java.util.Map;
 

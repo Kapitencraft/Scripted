@@ -5,13 +5,13 @@ import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.VarTypeParser;
 import net.kapitencraft.scripted.lang.compiler.analyser.BytecodeVars;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.ElifBranch;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;

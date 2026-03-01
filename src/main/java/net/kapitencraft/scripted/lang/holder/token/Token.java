@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.holder.token;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

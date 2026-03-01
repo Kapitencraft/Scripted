@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.lang.compiler.VarTypeParser;
 import net.kapitencraft.scripted.lang.compiler.analyser.BytecodeVars;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
 import net.kapitencraft.scripted.lang.compiler.analyser.RetTypeAnalyser;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceClassReference;
@@ -17,7 +18,6 @@ import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory;
 import net.kapitencraft.scripted.lang.oop.Package;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

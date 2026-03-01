@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.oop;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 

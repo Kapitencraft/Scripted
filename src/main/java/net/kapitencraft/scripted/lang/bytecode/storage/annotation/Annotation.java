@@ -3,9 +3,9 @@ package net.kapitencraft.scripted.lang.bytecode.storage.annotation;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.minecraft.util.GsonHelper;
 
 import java.util.Arrays;

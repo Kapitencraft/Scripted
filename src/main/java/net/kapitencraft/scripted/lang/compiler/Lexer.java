@@ -1,11 +1,11 @@
 package net.kapitencraft.scripted.lang.compiler;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 import java.util.*;
 import java.util.function.Function;

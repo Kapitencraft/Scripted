@@ -6,9 +6,9 @@ import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.minecraft.util.GsonHelper;
 

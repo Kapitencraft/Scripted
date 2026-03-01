@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.holder;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.minecraft.util.GsonHelper;
 
 public record LiteralHolder(Object value, ScriptedClass type) {

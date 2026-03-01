@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.AbstractAnnotationClass;
@@ -11,7 +12,6 @@ import net.kapitencraft.scripted.lang.oop.method.annotation.AnnotationCallable;
 import net.kapitencraft.scripted.lang.oop.method.annotation.SkeletonAnnotationMethod;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import net.kapitencraft.scripted.lang.oop.method.map.AnnotationMethodMap;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 

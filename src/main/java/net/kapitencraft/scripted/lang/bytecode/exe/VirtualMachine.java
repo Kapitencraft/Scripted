@@ -2,15 +2,15 @@ package net.kapitencraft.scripted.lang.bytecode.exe;
 
 import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
 import net.kapitencraft.scripted.lang.bytecode.storage.LocalVariableTable;
+import net.kapitencraft.scripted.lang.exe.Interpreter;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
+import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.ClassInstance;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.DynamicClassInstance;
-import net.kapitencraft.scripted.lang.run.Interpreter;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
-import net.kapitencraft.scripted.lang.run.natives.NativeClassInstance;
-import net.kapitencraft.scripted.lang.run.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.kapitencraft.scripted.lang.tool.Util;
 import org.jetbrains.annotations.Contract;
@@ -56,15 +56,6 @@ public class VirtualMachine {
                     "index=" + stackBottom + ", " +
                     "signature=" + signature + ']';
         }
-    }
-
-    public static void main(String[] args) {
-        Chunk.Builder builder = new Chunk.Builder();
-        builder.addDoubleConstant(15.4);
-        builder.addDoubleConstant(7.7);
-        builder.addCode(Opcode.D_DIV);
-        Chunk chunk = builder.build();
-        Disassembler.disassemble(chunk, "test");
     }
 
     private static final Map<Integer, TraceTable> tableData = new HashMap<>();

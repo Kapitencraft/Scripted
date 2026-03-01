@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.oop.method.annotation;
 
 import com.google.gson.JsonObject;
+import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.load.ClassLoader;
 
 public class SkeletonAnnotationMethod extends AnnotationCallable {
     private final boolean hasValue;

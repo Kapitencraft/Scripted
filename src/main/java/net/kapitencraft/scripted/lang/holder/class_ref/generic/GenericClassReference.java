@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.holder.class_ref.generic;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 public class GenericClassReference extends ClassReference {
     private final ClassReference lowerBound, upperBound;

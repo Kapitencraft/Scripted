@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.compiler.analyser;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.Contract;
 
 public class RetTypeAnalyser implements Expr.Visitor<ClassReference> {

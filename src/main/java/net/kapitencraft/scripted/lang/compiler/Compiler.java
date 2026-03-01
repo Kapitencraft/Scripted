@@ -5,22 +5,26 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
+import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
+import net.kapitencraft.scripted.lang.exe.load.CompilerLoaderHolder;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
-import net.kapitencraft.scripted.lang.run.load.ClassLoader;
-import net.kapitencraft.scripted.lang.run.load.CompilerLoaderHolder;
 import net.kapitencraft.scripted.lang.tool.Util;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -30,6 +34,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public class Compiler {
+    private static final Logger LOGGER = LoggerFactory.getLogger("Compiler");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
     static int errorCount = 0;
@@ -64,36 +69,40 @@ public class Compiler {
         }
     }
 
-    public static void main(String[] args) {
-        File root = new File("./run/src");
-        File cache = ClassLoader.cacheLoc;
+    public static void compileAll(File src, ServerPlayer errorSink) {
+        File cache = new File(src, "cache");
 
-        System.out.println("Compiling...");
+        LOGGER.info("Compiling...");
 
-        compileData = ClassLoader.load(root, ".scr", CompilerLoaderHolder::new);
+        compileData = ClassLoader.load(new File(src, "src"), ".scr", CompilerLoaderHolder::new);
 
         ExecutorService executor = Executors.newFixedThreadPool(10, new CompilerThreadFactory());
         for (Stage stage : Stage.values()) {
             registers.forEach(ClassRegister::register);
             registers.clear();
             activeStage = stage;
-            System.out.printf("executing step %s\n", stage);
-
-            if (stage == Stage.CACHING && cache.exists())
-                Util.delete(cache);
+            LOGGER.debug("executing step {}", stage);
 
             ClassLoader.useHolders(compileData, stage.action, executor);
 
             if (errorCount > 0) {
-                printErrors(compileData);
+                printErrors(compileData, errorSink);
 
                 if (errorCount > 100) {
                     System.err.println("only showing the first 100 errors out of " + errorCount + " total");
                 } else System.err.println(errorCount + " errors");
-                System.exit(65);
             }
         }
+
+        LOGGER.debug("executing step CACHING");
+        if (cache.exists()) {
+            Util.delete(cache);
+        }
+        ClassLoader.useHolders(compileData, compilerLoaderHolder -> compilerLoaderHolder.cache(cache), executor);
+
         executor.shutdownNow();
+
+        errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
     }
 
     /**
@@ -108,8 +117,8 @@ public class Compiler {
         }
     }
 
-    private static void printErrors(ClassLoader.PackageHolder<CompilerLoaderHolder> compileData) {
-        compileData.forEach(CompilerLoaderHolder::printErrors);
+    private static void printErrors(ClassLoader.PackageHolder<CompilerLoaderHolder> compileData, ServerPlayer errorSink) {
+        compileData.forEach(c -> c.printErrors(errorSink));
     }
 
     public interface ClassBuilder {
@@ -149,31 +158,30 @@ public class Compiler {
             finder = new LocationAnalyser();
         }
 
-        public void printAll() {
+        public void printAll(ServerPlayer errorSink) {
             for (Message msg : messages) {
-                msg.print(lines, fileLoc);
+                msg.print(lines, fileLoc, errorSink);
             }
         }
 
         private interface Message {
 
-            void print(String[] lines, String fileLoc);
+            void print(String[] lines, String fileLoc, ServerPlayer errorSink);
         }
 
         private record Error(int lineIndex, int lineStartIndex, String msg, String line) implements Message {
 
-
             @Override
-            public void print(String[] lines, String fileLoc) {
-                Compiler.error(lineIndex, lineStartIndex, msg, fileLoc, line);
+            public void print(String[] lines, String fileLoc, ServerPlayer errorSink) {
+                Compiler.error(lineIndex, lineStartIndex, msg, fileLoc, line, errorSink);
             }
         }
 
         private record Warn(int lineIndex, int lineStartIndex, String msg) implements Message {
 
             @Override
-            public void print(String[] lines, String fileLoc) {
-                Compiler.warn(lineIndex, lineStartIndex, msg, fileLoc, lines[lineIndex]);
+            public void print(String[] lines, String fileLoc, ServerPlayer errorSink) {
+                Compiler.warn(lineIndex, lineStartIndex, msg, fileLoc, lines[lineIndex], errorSink);
             }
         }
 
@@ -224,25 +232,19 @@ public class Compiler {
         }
     }
 
-    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line) {
-        report(System.err, lineIndex, msg, fileId, lineStartIndex, line);
+    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line, ServerPlayer errorSink) {
+        report(errorSink, lineIndex, msg, fileId, lineStartIndex, line, ChatFormatting.RED);
     }
 
-    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line) {
-        System.out.print("\u001B[33m"); //set output color to yellow
-        report(System.out, lineIndex, msg, filedId, lineStartIndex, line);
-        System.out.print("\u001B[0m"); //reset output color
+    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line, ServerPlayer player) {
+        report(player, lineIndex, msg, filedId, lineStartIndex, line, ChatFormatting.YELLOW);
     }
 
-    public static void report(PrintStream target, int lineIndex, String message, String fileId, int startIndex, String line) {
-        target.print(fileId);
-        target.print(":");
-        target.print(lineIndex);
-        target.print(": ");
-        target.println(message);
-
-        target.println(line);
-        target.println(" ".repeat(startIndex) + "^");
+    public static void report(ServerPlayer target, int lineIndex, String message, String fileId, int startIndex, String line, ChatFormatting color) {
+        Component component = Component.literal(fileId + ":" + lineIndex + ": " + message).withStyle(color);
+        target.sendSystemMessage(component);
+        target.sendSystemMessage(Component.literal(line));
+        target.sendSystemMessage(Component.literal(" ".repeat(startIndex) + "^"));
     }
 
     public enum Stage {
@@ -250,8 +252,7 @@ public class Compiler {
         CREATE_SKELETON(CompilerLoaderHolder::applySkeleton),
         VALIDATE(CompilerLoaderHolder::validate),
         CONSTRUCT(CompilerLoaderHolder::construct),
-        FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad),
-        CACHING(CompilerLoaderHolder::cache);
+        FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad);
 
         private final Consumer<CompilerLoaderHolder> action;
 

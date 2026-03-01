@@ -2,8 +2,8 @@ package net.kapitencraft.scripted.lang.bytecode.exe;
 
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;

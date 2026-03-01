@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.compiler.analyser;
 
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 
 import java.util.ArrayList;
 import java.util.List;

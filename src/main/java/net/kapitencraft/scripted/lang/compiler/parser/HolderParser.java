@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsReference;
@@ -12,7 +13,6 @@ import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.oop.Package;
 import net.kapitencraft.scripted.lang.oop.clazz.ClassType;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;

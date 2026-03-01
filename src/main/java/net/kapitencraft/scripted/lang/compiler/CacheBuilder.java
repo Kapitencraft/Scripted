@@ -6,6 +6,8 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.bytecode.exe.Opcode;
 import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
 import net.kapitencraft.scripted.lang.holder.ast.ElifBranch;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
@@ -15,8 +17,6 @@ import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
-import net.kapitencraft.scripted.lang.run.VarTypeManager;
-import net.kapitencraft.scripted.lang.run.natives.NativeClassInstance;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
