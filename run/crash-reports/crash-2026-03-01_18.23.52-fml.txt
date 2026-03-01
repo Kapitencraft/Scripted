@@ -1,0 +1,131 @@
+---- Minecraft Crash Report ----
+// Why did you do that?
+
+Time: 2026-03-01 18:23:52
+Description: Mod loading failures have occurred; consult the issue messages for more details
+
+net.neoforged.neoforge.logging.CrashReportExtender$ModLoadingCrashException: Mod loading has failed
+
+
+A detailed walkthrough of the error, its code path and all known details is as follows:
+---------------------------------------------------------------------------------------
+
+-- Head --
+Thread: Render thread
+Stacktrace:
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641) ~[?:?] {}
+-- Mod loading issue for: scripted --
+Details:
+	Caused by 0: java.lang.NoClassDefFoundError: org/reflections/Reflections
+		at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.natives.NativeClassLoader.load(NativeClassLoader.java:62) ~[%23191!/:?] {re:classloading}
+		at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.VarTypeManager.<clinit>(VarTypeManager.java:40) ~[%23191!/:?] {re:classloading}
+		at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.natives.NativeClassLoader.<clinit>(NativeClassLoader.java:41) ~[%23191!/:?] {re:classloading}
+		at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.Scripted.<init>(Scripted.java:34) ~[%23191!/:?] {re:classloading}
+		at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62) ~[?:?] {}
+		at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502) ~[?:?] {}
+		at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486) ~[?:?] {}
+		at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.javafmlmod.FMLModContainer.constructMod(FMLModContainer.java:115) ~[loader-4.0.41.jar%23146!/:4.0] {}
+		at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.ModLoader.lambda$constructMods$3(ModLoader.java:153) ~[loader-4.0.41.jar%23146!/:4.0] {}
+		at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.ModLoader.lambda$dispatchParallelTask$7(ModLoader.java:231) ~[loader-4.0.41.jar%23146!/:4.0] {}
+		at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:934) ~[?:?] {}
+		at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:911) ~[?:?] {}
+		at java.base/java.util.concurrent.CompletableFuture$Completion.exec(CompletableFuture.java:483) ~[?:?] {}
+		at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[?:?] {}
+		at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[?:?] {}
+		at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[?:?] {}
+		at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[?:?] {}
+		at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[?:?] {}
+
+	Mod file: /C:/Users/kapit/intellij/Mods/Scripted/build/classes/java/main/
+	Failure message: Scripted (scripted) has failed to load correctly
+		java.lang.NoClassDefFoundError: org/reflections/Reflections
+	Mod version: 0.5.0
+	Mod issues URL: <No issues URL found>
+	Exception message: java.lang.ClassNotFoundException: org.reflections.Reflections
+Stacktrace:
+	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641) ~[?:?] {}
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526) ~[?:?] {}
+	at cpw.mods.securejarhandler/cpw.mods.cl.ModuleClassLoader.loadClass(ModuleClassLoader.java:216) ~[securejarhandler-3.0.8.jar:?] {}
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526) ~[?:?] {}
+	at cpw.mods.securejarhandler/cpw.mods.cl.ModuleClassLoader.loadClass(ModuleClassLoader.java:216) ~[securejarhandler-3.0.8.jar:?] {}
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526) ~[?:?] {}
+	at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.natives.NativeClassLoader.load(NativeClassLoader.java:62) ~[%23191!/:?] {re:classloading}
+	at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.VarTypeManager.<clinit>(VarTypeManager.java:40) ~[%23191!/:?] {re:classloading}
+	at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.lang.run.natives.NativeClassLoader.<clinit>(NativeClassLoader.java:41) ~[%23191!/:?] {re:classloading}
+	at TRANSFORMER/scripted@0.5.0/net.kapitencraft.scripted.Scripted.<init>(Scripted.java:34) ~[%23191!/:?] {re:classloading}
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62) ~[?:?] {}
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502) ~[?:?] {}
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486) ~[?:?] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.javafmlmod.FMLModContainer.constructMod(FMLModContainer.java:115) ~[loader-4.0.41.jar%23146!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.ModLoader.lambda$constructMods$3(ModLoader.java:153) ~[loader-4.0.41.jar%23146!/:4.0] {}
+	at MC-BOOTSTRAP/fml_loader@4.0.41/net.neoforged.fml.ModLoader.lambda$dispatchParallelTask$7(ModLoader.java:231) ~[loader-4.0.41.jar%23146!/:4.0] {}
+	at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:934) ~[?:?] {}
+	at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:911) ~[?:?] {}
+	at java.base/java.util.concurrent.CompletableFuture$Completion.exec(CompletableFuture.java:483) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1312) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1843) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1808) ~[?:?] {}
+	at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188) ~[?:?] {}
+
+
+-- System Details --
+Details:
+	Minecraft Version: 1.21.1
+	Minecraft Version ID: 1.21.1
+	Operating System: Windows 11 (amd64) version 10.0
+	Java Version: 21.0.4, Eclipse Adoptium
+	Java VM Version: OpenJDK 64-Bit Server VM (mixed mode, sharing), Eclipse Adoptium
+	Memory: 145556920 bytes (138 MiB) / 505413632 bytes (482 MiB) up to 4234149888 bytes (4038 MiB)
+	CPUs: 8
+	Processor Vendor: GenuineIntel
+	Processor Name: 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz
+	Identifier: Intel64 Family 6 Model 140 Stepping 1
+	Microarchitecture: Tiger Lake
+	Frequency (GHz): 2.80
+	Number of physical packages: 1
+	Number of physical CPUs: 4
+	Number of logical CPUs: 8
+	Graphics card #0 name: Intel(R) Iris(R) Xe Graphics
+	Graphics card #0 vendor: Intel Corporation
+	Graphics card #0 VRAM (MiB): 1024.00
+	Graphics card #0 deviceId: VideoController1
+	Graphics card #0 versionInfo: 31.0.101.4502
+	Memory slot #0 capacity (MiB): 8192.00
+	Memory slot #0 clockSpeed (GHz): 3.20
+	Memory slot #0 type: DDR4
+	Memory slot #1 capacity (MiB): 8192.00
+	Memory slot #1 clockSpeed (GHz): 3.20
+	Memory slot #1 type: DDR4
+	Virtual memory max (MiB): 18709.99
+	Virtual memory used (MiB): 15434.67
+	Swap memory total (MiB): 2560.00
+	Swap memory used (MiB): 234.95
+	Space in storage for jna.tmpdir (MiB): <path not set>
+	Space in storage for org.lwjgl.system.SharedLibraryExtractPath (MiB): <path not set>
+	Space in storage for io.netty.native.workdir (MiB): <path not set>
+	Space in storage for java.io.tmpdir (MiB): available: 265072.06, total: 486998.00
+	Space in storage for workdir (MiB): available: 265072.06, total: 486998.00
+	JVM Flags: 0 total; 
+	ModLauncher: 11.0.5+main.901c6ea8
+	ModLauncher launch target: forgeclientdev
+	ModLauncher services: 
+		sponge-mixin-0.15.2+mixin.0.8.7.jar mixin PLUGINSERVICE 
+		loader-4.0.41.jar slf4jfixer PLUGINSERVICE 
+		loader-4.0.41.jar runtime_enum_extender PLUGINSERVICE 
+		at-modlauncher-10.0.1.jar accesstransformer PLUGINSERVICE 
+		loader-4.0.41.jar runtimedistcleaner PLUGINSERVICE 
+		modlauncher-11.0.5.jar mixin TRANSFORMATIONSERVICE 
+		modlauncher-11.0.5.jar fml TRANSFORMATIONSERVICE 
+	FML Language Providers: 
+		javafml@4.0
+		lowcodefml@4.0
+		minecraft@4.0
+	Mod List: 
+		kap_lib-v1.31.0-mc1.21.1-core.jar                 |KapLib Core Module            |kap_lib_core                  |1.31.0              |Manifest: NOSIGNATURE
+		neoforge-21.1.208.jar                             |Minecraft                     |minecraft                     |1.21.1              |Manifest: NOSIGNATURE
+		neoforge-21.1.208.jar                             |NeoForge                      |neoforge                      |21.1.208            |Manifest: NOSIGNATURE
+		main                                              |Scripted                      |scripted                      |0.5.0               |Manifest: NOSIGNATURE
+	Crash Report UUID: 9cf0c1f4-d59f-4450-9b47-d6e750d8b55f
+	FML: 4.0.41
+	NeoForge: 21.1.208

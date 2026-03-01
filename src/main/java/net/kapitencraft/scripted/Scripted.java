@@ -2,6 +2,7 @@ package net.kapitencraft.scripted;
 
 import com.mojang.logging.LogUtils;
 import net.kapitencraft.scripted.edit.OpenEditScreenCommand;
+import net.kapitencraft.scripted.lang.run.natives.NativeClassLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -29,6 +30,8 @@ public class Scripted {
     }
 
     public Scripted(IEventBus bus) {
+
+        NativeClassLoader.load();
     }
 
     public static ResourceLocation res(String id) {

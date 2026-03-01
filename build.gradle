@@ -89,6 +89,7 @@ neoForge {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    mavenCentral()
     // Put repositories for dependencies here
     // ForgeGradle automatically adds the Forge maven and Maven Central for you
 
@@ -112,6 +113,8 @@ repositories {
 
 dependencies {
     implementation "maven.modrinth:kap_lib:v${kap_lib_version}-mc${mc_version}:core"
+
+    implementation 'org.reflections:reflections:0.10.2'
 }
 
 // This block of code expands all declared replace properties in the specified resource targets.
