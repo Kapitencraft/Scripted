@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
+import net.neoforged.fml.ModList;
 
 import java.util.*;
 import java.util.function.Function;
@@ -22,7 +23,8 @@ public class Lexer {
 
     public static TokenType getType(String name) {
         if (keywords.containsKey(name)) return keywords.get(name);
-
+        if (ModList.get().isLoaded(name))
+            return NAMESPACE;
         return IDENTIFIER;
     }
 

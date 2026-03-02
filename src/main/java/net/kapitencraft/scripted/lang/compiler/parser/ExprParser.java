@@ -607,6 +607,9 @@ public class ExprParser extends AbstractParser {
         if (match(FALSE)) return false;
         if (match(TRUE)) return true;
         if (match(NULL)) return null;
+        if (match(NAMESPACE)) {
+            //TODO registry keys
+        }
 
         if (match(NUM, STR)) {
             return previous().literal();
