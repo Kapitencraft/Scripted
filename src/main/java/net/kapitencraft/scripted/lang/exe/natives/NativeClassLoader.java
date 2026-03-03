@@ -17,15 +17,20 @@ import net.kapitencraft.scripted.lang.oop.field.NativeField;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import net.kapitencraft.scripted.lang.tool.Util;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.progress.ProgressMeter;
 import net.neoforged.fml.loading.progress.StartupNotificationManager;
+import net.neoforged.neoforgespi.language.ModFileScanData;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.reflections.Reflections;
+import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.annotation.ElementType;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -56,19 +61,18 @@ public class NativeClassLoader {
     @ApiStatus.Internal
     public static void load() {
         LOGGER.info("loading natives...");
-        Reflections reflections = new Reflections("net.kapitencraft.scripted.lang.exe.natives.scripted");
+
+        Collection<Class<?>> plugins = getTypesAnnotatedWith(ScriptedPlugin.class);
+        StartupNotificationManager.addModMessage("Found " + plugins.size() + " plugin(s)");
 
         List<ClassObj> nativeClasses = new ArrayList<>();
-
-        Collection<Class<?>> plugins = reflections.getTypesAnnotatedWith(ScriptedPlugin.class);
-        StartupNotificationManager.addModMessage("Found " + plugins.size() + " plugin(s)");
 
         ClassRegistration registration = new ClassRegistration(nativeClasses);
         ProgressMeter meter = StartupNotificationManager.addProgressBar("Loading native classes...", 0);
         plugins.forEach(c -> handlePlugin(c, registration));
         meter.complete();
-        
-        registerAnnotated(nativeClasses, reflections.getTypesAnnotatedWith(NativeClass.class));
+
+        registerAnnotated(nativeClasses, getTypesAnnotatedWith(NativeClass.class));
 
         nativeClasses.forEach(ClassObj::registerReference);
         nativeClasses.forEach(ClassObj::loadClass);
@@ -81,7 +85,24 @@ public class NativeClassLoader {
         StartupNotificationManager.addModMessage("Total registered classes: " + nativeClasses.size());
     }
 
-    private static void registerAnnotated(List<ClassObj> nativeClasses, Set<Class<?>> annotated) {
+    private static Collection<Class<?>> getTypesAnnotatedWith(Class<? extends java.lang.annotation.Annotation> clazz) {
+        List<ModFileScanData.AnnotationData> list = ModList.get().getAllScanData().stream().flatMap(d -> d.getAnnotatedBy(clazz, ElementType.TYPE)).toList();
+
+        Type type = Type.getType(clazz);
+        List<Class<?>> obj = new ArrayList<>();
+        for (ModFileScanData.AnnotationData data : list) {
+            if (data.annotationType().equals(type)) {
+                try {
+                    obj.add(Class.forName(data.clazz().getClassName()));
+                } catch (ClassNotFoundException e) {
+                    LOGGER.warn("type not found: {}", data.clazz().getClassName());
+                }
+            }
+        }
+        return obj;
+    }
+
+    private static void registerAnnotated(List<ClassObj> nativeClasses, Collection<Class<?>> annotated) {
         annotated.stream().map(AnnotatedClassObj::new).forEach(nativeClasses::add);
     }
 
@@ -89,7 +110,8 @@ public class NativeClassLoader {
         try {
             Method method = c.getMethod("registerClasses", ClassRegistration.class);
             method.invoke(null, registration);
-        } catch (NoSuchMethodException ignored) {} catch (InvocationTargetException | IllegalAccessException e) {
+        } catch (NoSuchMethodException ignored) {
+        } catch (InvocationTargetException | IllegalAccessException e) {
             LOGGER.warn("unable to execute plugin method 'registerClasses': {}", e.getMessage());
         }
 
@@ -104,9 +126,10 @@ public class NativeClassLoader {
     /**
      * creates and registers a native class for the given java class
      * <br>Developers should use {@link ScriptedPlugin} or {@link NativeClass}
-     * @param clazz the target to create & register
+     *
+     * @param clazz         the target to create & register
      */
-    private static void createNativeClass(Class<?> clazz, String className, String pck, @Nullable String[] capturedMethods, @Nullable String[] capturedFields) {
+    private static void createNativeClass(Class<?> clazz, String className, String pck, @Nullable String[] capturedMethods, @Nullable String[] capturedFields, ResourceKey<? extends Registry<?>> owner) {
         try {
             Multimap<String, ScriptedCallable> methods = HashMultimap.create();
             for (Method declaredMethod : clazz.getDeclaredMethods()) {
@@ -165,16 +188,24 @@ public class NativeClassLoader {
             NativeClassImpl target = new NativeClassImpl(className, pck,
                     staticFields,
                     bakeMethods(methods), fields,
-                    getClassOrThrow(clazz.getSuperclass()),
+                    getSuperClass(clazz.getSuperclass()),
                     extractInterfaces(clazz.getInterfaces()),
+                    owner,
                     Modifiers.fromJavaMods(clazz.getModifiers())
             );
             type.setTarget(target);
             VarTypeManager.registerFlat(target);
         } catch (Exception e) {
-            System.err.println("Failed to load class '" + clazz.getName() + "': " + e.getMessage());
+            LOGGER.warn("Failed to load class '{}': {}", clazz.getName(), e.getMessage());
             hadError = true;
         }
+    }
+
+    private static ClassReference getSuperClass(Class<?> superclass) {
+        if (superclass == null) //class is object; no superclass present
+            return null;
+
+        return getClass(superclass).orElse(VarTypeManager.OBJECT);
     }
 
     private static ClassReference[] extractInterfaces(Class<?>[] interfaces) {
@@ -183,6 +214,10 @@ public class NativeClassLoader {
             getClass(c).ifPresent(extensions::add);
         }
         return extensions.toArray(ClassReference[]::new);
+    }
+
+    private static Optional<ClassReference> getClassOrThrowIfAllowed(Class<?> type, boolean ignoreMissing) {
+        return type == null ? null : ignoreMissing ? getClass(type) : Optional.ofNullable(getClassOrThrow(type));
     }
 
     private static ClassReference getClassOrThrow(Class<?> aClass) {
@@ -204,6 +239,7 @@ public class NativeClassLoader {
 
     /**
      * queries the given class for lookup
+     *
      * @param aClass the class to query
      * @return an optional of the gotten reference
      */
@@ -286,10 +322,9 @@ public class NativeClassLoader {
                 String pck = nativeClass.pck();
                 String className = nativeClass.name();
                 if (className.isEmpty()) className = target.getSimpleName();
-                NativeClassLoader.createNativeClass(target, className, pck, null, null);
+                NativeClassLoader.createNativeClass(target, className, pck, null, null, null);
             } else {
-                System.err.printf("can not create native class for '%s': missing NativeClass annotation", target.getCanonicalName());
-                System.out.println();
+                LOGGER.warn("can not create native class for '{}': missing NativeClass annotation", target.getCanonicalName());
             }
         }
 
@@ -306,12 +341,20 @@ public class NativeClassLoader {
     }
 
     static class RegisteredClassObj implements ClassObj {
+        /**
+         * target class
+         */
         private final Class<?> target;
+        /**
+         * specify methods and fields to capture
+         */
+        private final ResourceKey<? extends Registry<?>> owner;
         private final String[] capturedMethods, capturedFields;
         private final String name, pck;
 
-        RegisteredClassObj(Class<?> target, String[] capturedMethods, String[] capturedFields, String name, String pck) {
+        RegisteredClassObj(Class<?> target, ResourceKey<? extends Registry<?>> owner, String[] capturedMethods, String[] capturedFields, String name, String pck) {
             this.target = target;
+            this.owner = owner;
             this.capturedMethods = capturedMethods;
             this.capturedFields = capturedFields;
             this.name = name;
@@ -321,7 +364,7 @@ public class NativeClassLoader {
         @Override
         public void loadClass() {
             try {
-                NativeClassLoader.createNativeClass(target, name, pck, capturedMethods, capturedFields);
+                NativeClassLoader.createNativeClass(target, name, pck, capturedMethods, capturedFields, owner);
             } catch (Exception e) {
                 System.err.println("Failed to load class '" + target.getName() + "': " + e.getMessage());
             }
@@ -335,30 +378,30 @@ public class NativeClassLoader {
 
     private record NativeWrapper(String name, String pck) implements ScriptedClass {
 
-            @Override
-            public @Nullable ClassReference superclass() {
-                return null;
-            }
+        @Override
+        public @Nullable ClassReference superclass() {
+            return null;
+        }
 
-            @Override
-            public ScriptedCallable getMethod(String signature) {
-                return null;
-            }
+        @Override
+        public ScriptedCallable getMethod(String signature) {
+            return null;
+        }
 
-            @Override
-            public AbstractMethodMap getMethods() {
-                return null;
-            }
+        @Override
+        public AbstractMethodMap getMethods() {
+            return null;
+        }
 
-            @Override
-            public Annotation[] annotations() {
-                return new Annotation[0];
-            }
+        @Override
+        public Annotation[] annotations() {
+            return new Annotation[0];
+        }
 
-            @Override
-            public short getModifiers() {
-                return 0;
-            }
+        @Override
+        public short getModifiers() {
+            return 0;
+        }
 
         @Override
         public boolean isNative() {

@@ -24,7 +24,7 @@ public class VarTypeManager {
     private static final HashMap<String, ScriptedClass> flatMap = new HashMap<>();
 
     private static PrimitiveClass registerPrimitive(PrimitiveClass primitiveClass) {
-        VarTypeManager.getOrCreatePackage("scripted.lang").addClass(primitiveClass.name(), primitiveClass);
+        LANG_ROOT.addClass(primitiveClass.name(), primitiveClass);
         return primitiveClass;
     }
 
@@ -140,7 +140,7 @@ public class VarTypeManager {
             }
             pg = pg.getPackage(lexeme);
         }
-        Token token = s.get(s.size()-1);
+        Token token = s.getLast();
         String lexeme = token.lexeme();
         if (!pg.hasClass(lexeme)) {
             error.accept(token, "unknown class '" + lexeme + "'");
@@ -155,7 +155,7 @@ public class VarTypeManager {
             String pckName = path.get(i).lexeme();
             pg = pg.getOrCreatePackage(pckName);
         }
-        Token last = path.get(path.size() - 1);
+        Token last = path.getLast();
         return SourceClassReference.from(last, pg.getOrCreateClass(last.lexeme()));
     }
 

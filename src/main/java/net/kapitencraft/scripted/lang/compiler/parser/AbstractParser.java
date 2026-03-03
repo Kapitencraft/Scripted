@@ -1,6 +1,5 @@
 package net.kapitencraft.scripted.lang.compiler.parser;
 
-import com.google.common.collect.ImmutableList;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.VarTypeParser;
@@ -44,7 +43,7 @@ public class AbstractParser {
     protected VarTypeParser parser;
     protected RetTypeAnalyser finder;
     protected final LocationAnalyser locFinder = new LocationAnalyser();
-    protected final Deque<List<ClassReference>> args = new ArrayDeque<>(); //TODO either use or remove
+    protected final Deque<Set<ClassReference>> args = new ArrayDeque<>();
     protected final Compiler.ErrorStorage errorStorage;
     protected BytecodeVars varAnalyser;
 
@@ -68,7 +67,7 @@ public class AbstractParser {
     }
 
     protected void expectType(ClassReference... types) {
-        args.push(List.of(types));
+        args.push(Set.of(types));
     }
 
     protected void popExpectation() {
@@ -79,12 +78,12 @@ public class AbstractParser {
         return searched().contains(target);
     }
 
-    protected List<ClassReference> searched() {
+    protected Set<ClassReference> searched() {
         return args.getLast();
     }
 
     protected void expectType(List<ClassReference> types) {
-        args.push(ImmutableList.copyOf(types));
+        args.push(Set.copyOf(types));
     }
 
     protected ClassReference expectType(Token errorLoc, Expr value, ClassReference type) {
@@ -253,6 +252,15 @@ public class AbstractParser {
             throw error(peek(), message);
     }
 
+    protected Token consume(TokenTypeCategory category, String message) {
+        if (check(category)) return advance();
+
+        if (isAtEnd()) {
+            throw error(previous().after(), message);
+        } else
+            throw error(peek(), message);
+    }
+
     protected Token consumeNoThrow(TokenType type, String msg) {
         if (check(type)) return advance();
 
@@ -354,6 +362,12 @@ public class AbstractParser {
         Holder.AppliedGenerics declared = appliedGenerics(stack);
         if (declared != null) return SourceClassReference.from(last, new AppliedGenericsReference(reference, declared));
         return SourceClassReference.from(last, reference);
+    }
+
+    //stupid me. namespaces can be used as package names :agony:
+    //i'm sure that won't bite future me in the ...
+    protected Token consumePackageOrClass() {
+        return consume(TokenTypeCategory.PACKAGE_DEF, "<identifier> or <namespace> expected");
     }
 
     protected Token consumeIdentifier() {

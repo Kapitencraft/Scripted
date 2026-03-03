@@ -31,7 +31,11 @@ public class HolderParser extends AbstractParser {
 
     public void parseImports() {
         while (check(IMPORT)) {
-            importStmt();
+            try {
+                importStmt();
+            } catch (ParseError error) {
+                synchronize();
+            }
         }
     }
 
@@ -43,17 +47,17 @@ public class HolderParser extends AbstractParser {
         consumeEndOfArg();
         SourceClassReference target = VarTypeManager.getOrCreateClass(packages);
         if (parser.hasClass(target.getReference(), nameOverride)) {
-            error(packages.get(packages.size() - 1), "unknown class '" + packages.stream().map(Token::lexeme).collect(Collectors.joining(".")) + "'");
+            error(packages.getLast(), "unknown class '" + packages.stream().map(Token::lexeme).collect(Collectors.joining(".")) + "'");
         }
         parser.addClass(target, nameOverride);
     }
 
     private List<Token> readPackage() {
         List<Token> packages = new ArrayList<>();
-        packages.add(consumeIdentifier());
+        packages.add(consumePackageOrClass());
         while (!check(EOA, AS)) {
             consume(DOT, "unexpected name");
-            packages.add(consumeIdentifier());
+            packages.add(consumePackageOrClass());
         }
         return packages;
     }
@@ -98,7 +102,7 @@ public class HolderParser extends AbstractParser {
 
     protected SourceClassReference consumeVarType() {
         StringBuilder typeName = new StringBuilder();
-        Token token = consumeIdentifier();
+        Token token = consumePackageOrClass();
         typeName.append(token.lexeme());
         if (activeGenerics != null) {
             Optional<ClassReference> generic = activeGenerics.getValue(token.lexeme());
@@ -109,15 +113,17 @@ public class HolderParser extends AbstractParser {
         ClassReference reference = parser.getClass(token.lexeme());
         if (reference == null) {
             if (!check(DOT)) {
-                String pckId = this.activePackages.peek();
-                if (pckId != null) {
-                    Package p = VarTypeManager.getOrCreatePackage(pckId);
-                    reference = p.getOrCreateClass(token.lexeme());
+                if (!this.activePackages.isEmpty()) {
+                    String pckId = this.activePackages.peek();
+                    if (pckId != null) {
+                        Package p = VarTypeManager.getOrCreatePackage(pckId);
+                        reference = p.getOrCreateClass(token.lexeme());
+                    }
                 }
             } else {
                 Package p = VarTypeManager.getPackage(token.lexeme());
                 while (match(DOT) && p != null) {
-                    String id = consumeIdentifier().lexeme();
+                    String id = consumePackageOrClass().lexeme();
                     typeName.append(".").append(id);
                     if (check(DOT)) p = p.getPackage(id);
                     else reference = p.getOrCreateClass(id);
@@ -125,7 +131,7 @@ public class HolderParser extends AbstractParser {
             }
         }
 
-        if (reference == null) {
+        if (reference == null && !this.activePackages.isEmpty()) {
             reference = VarTypeManager.getOrCreateClass(typeName.toString(), activePackages.getLast());
         }
         Holder.AppliedGenerics generics = appliedGenerics();
@@ -152,10 +158,10 @@ public class HolderParser extends AbstractParser {
         List<Token> pck = new ArrayList<>();
         try {
             consume(PACKAGE, "package expected!");
-            pck.add(consumeIdentifier());
+            pck.add(consumePackageOrClass()); //TODO reset to only identifier instead
             while (!check(EOA)) {
                 consume(DOT, "unexpected token");
-                pck.add(consumeIdentifier());
+                pck.add(consumePackageOrClass());
             }
             consumeEndOfArg();
         } catch (ParseError error) {

@@ -9,6 +9,8 @@ import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.NativeField;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,6 +22,7 @@ public class NativeClassImpl implements ScriptedClass {
     private final Map<String, NativeField> fields, staticFields;
     private final ClassReference superclass;
     private final ClassReference[] interfaces;
+    private final ResourceKey<? extends Registry<?>> owner;
     private final short modifiers;
     private final String name, pck;
 
@@ -27,7 +30,7 @@ public class NativeClassImpl implements ScriptedClass {
     public NativeClassImpl(String name, String pck,
                            Map<String, NativeField> staticFields,
                            Map<String, DataMethodContainer> methods, Map<String, NativeField> fields,
-                           ClassReference superclass, ClassReference[] interfaces, short modifiers) {
+                           ClassReference superclass, ClassReference[] interfaces, ResourceKey<? extends Registry<?>> owner, short modifiers) {
         this.name = name;
         this.pck = pck;
         this.methods = new GeneratedMethodMap(methods);
@@ -35,7 +38,13 @@ public class NativeClassImpl implements ScriptedClass {
         this.staticFields = staticFields;
         this.superclass = superclass;
         this.interfaces = interfaces;
+        this.owner = owner;
         this.modifiers = modifiers;
+    }
+
+    @Nullable
+    public ResourceKey<? extends Registry<?>> getOwner() {
+        return owner;
     }
 
     @Override

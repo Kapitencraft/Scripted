@@ -33,7 +33,7 @@ public enum TokenType {
     TRY(KEY_WORD), CATCH(KEY_WORD), FINALLY(KEY_WORD), SINGLE_OR,
     RETURN(KEY_WORD), THROW(KEY_WORD),
     THIS(KEY_WORD), SUPER(KEY_WORD),
-    IDENTIFIER, NAMESPACE;
+    IDENTIFIER(PACKAGE_DEF), NAMESPACE(PACKAGE_DEF);
 
     private final List<TokenTypeCategory> categories;
 

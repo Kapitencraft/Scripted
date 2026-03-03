@@ -8,6 +8,7 @@ import net.kapitencraft.scripted.lang.compiler.analyser.BytecodeVars;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.algebra.Operand;
 import net.kapitencraft.scripted.lang.exe.algebra.OperationType;
+import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
@@ -23,6 +24,10 @@ import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.ScriptedField;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.tool.Util;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -741,6 +746,40 @@ public class ExprParser extends AbstractParser {
                     return new Expr.SuperCall(new Expr.VarRef(reference, (byte) 0), superclass, name, arguments, retType, signature);
                 }
             }
+        }
+
+        if (match(NAMESPACE)) {
+            Token origin = previous();
+            consume(COLON, "expected ':' after namespace");
+
+            List<Token> name = new ArrayList<>();
+
+            name.add(consumeIdentifier());
+
+            //lookup current expected argument types
+            Set<ClassReference> last = searched();
+
+            List<? extends Registry<?>> list = last.stream()
+                    .filter(ClassReference::exists)
+                    .map(ClassReference::get)
+                    .filter(NativeClassImpl.class::isInstance)
+                    .map(NativeClassImpl.class::cast)
+                    .map(NativeClassImpl::getOwner)
+                    .filter(Objects::nonNull)
+                    .map(ResourceKey::location) //so stupid i have to get the location instead of being able to do it directly. curse you java generics!
+                    .map(BuiltInRegistries.REGISTRY::get)
+                    .toList();
+
+            if (!list.isEmpty()) {
+                String text = name.stream().map(Token::lexeme).collect(Collectors.joining());
+
+                for (Registry<?> objects : list) {
+                    Object o = objects.get(ResourceLocation.fromNamespaceAndPath(previous().lexeme(), text));
+
+                }
+            }
+
+            //TODO
         }
 
         if (match(IDENTIFIER)) {

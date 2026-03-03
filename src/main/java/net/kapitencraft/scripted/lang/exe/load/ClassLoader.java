@@ -130,7 +130,7 @@ public class ClassLoader {
         List<Pair<PackageHolder<T>, Package>> packageData = new ArrayList<>();
         packageData.add(Pair.of(root, VarTypeManager.rootPackage()));
         while (!packageData.isEmpty()) {
-            Pair<PackageHolder<T>, Package> data = packageData.get(0);
+            Pair<PackageHolder<T>, Package> data = packageData.getFirst();
             PackageHolder<T> holder = data.getFirst();
             Package pck = data.getSecond();
             holder.classes.forEach((n, o) ->
@@ -139,7 +139,7 @@ public class ClassLoader {
             holder.packages.forEach((name, holder1) ->
                     packageData.add(Pair.of(holder1, pck.getOrCreatePackage(name))) //adding all packages back to the queue
             );
-            packageData.remove(0);
+            packageData.removeFirst();
         }
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
     }
@@ -176,7 +176,7 @@ public class ClassLoader {
     }
 
     public static String pck(File dataOrigin, File file) {
-        String path = file.getPath().replace(dataOrigin.getPath(), "").replace(".scrc", "");
+        String path = file.getPath().replace(dataOrigin.getPath(), "").replaceAll("\\..+", "");
         List<String> pckData = new ArrayList<>(List.of(path.split("\\\\")));
         pckData = pckData.subList(1, pckData.size()-1);
         return String.join(".", pckData);

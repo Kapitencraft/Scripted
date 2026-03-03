@@ -59,7 +59,7 @@ public class CompilerLoaderHolder extends ClassLoaderHolder<CompilerLoaderHolder
 
         if (decl == null) return;
 
-        String path = file.getParentFile().getPath().substring(10).replace(".scr", "");
+        String path = ClassLoader.pck(Compiler.src, file);
         String pck = path.replace('\\', '.');
         String declPck = decl.pck();
         if (!Objects.equals(declPck, pck)) {
@@ -78,10 +78,10 @@ public class CompilerLoaderHolder extends ClassLoaderHolder<CompilerLoaderHolder
         builder = holder.construct(stmtParser, this.varTypeParser, this.storage);
     }
 
-    public void cache(File cacheLoc) {
+    public void cache() {
         try {
             Compiler.cache(
-                    cacheLoc,
+                    Compiler.cache,
                     new CacheBuilder(),
                     target.pck().replace(".", "/"),
                     target,

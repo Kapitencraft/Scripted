@@ -37,6 +37,9 @@ public class Compiler {
     private static final Logger LOGGER = LoggerFactory.getLogger("Compiler");
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
+    public static File src;
+    public static File cache;
+
     static int errorCount = 0;
     private static ClassLoader.PackageHolder<CompilerLoaderHolder> compileData;
     private static final List<ClassRegister> registers = new ArrayList<>();
@@ -70,11 +73,12 @@ public class Compiler {
     }
 
     public static void compileAll(File src, ServerPlayer errorSink) {
-        File cache = new File(src, "cache");
+        Compiler.src = new File(src, "src");
+        Compiler.cache = new File(src, "cache");
 
         LOGGER.info("Compiling...");
 
-        compileData = ClassLoader.load(new File(src, "src"), ".scr", CompilerLoaderHolder::new);
+        compileData = ClassLoader.load(Compiler.src, ".scr", CompilerLoaderHolder::new);
 
         ExecutorService executor = Executors.newFixedThreadPool(10, new CompilerThreadFactory());
         for (Stage stage : Stage.values()) {
@@ -82,6 +86,10 @@ public class Compiler {
             registers.clear();
             activeStage = stage;
             LOGGER.debug("executing step {}", stage);
+
+            if (cache.exists() && stage == Stage.CACHE) {
+                Util.delete(cache);
+            }
 
             ClassLoader.useHolders(compileData, stage.action, executor);
 
@@ -91,14 +99,9 @@ public class Compiler {
                 if (errorCount > 100) {
                     System.err.println("only showing the first 100 errors out of " + errorCount + " total");
                 } else System.err.println(errorCount + " errors");
+                break; //exit if errors have been recorded
             }
         }
-
-        LOGGER.debug("executing step CACHING");
-        if (cache.exists()) {
-            Util.delete(cache);
-        }
-        ClassLoader.useHolders(compileData, compilerLoaderHolder -> compilerLoaderHolder.cache(cache), executor);
 
         executor.shutdownNow();
 
@@ -241,7 +244,7 @@ public class Compiler {
     }
 
     public static void report(ServerPlayer target, int lineIndex, String message, String fileId, int startIndex, String line, ChatFormatting color) {
-        Component component = Component.literal(fileId + ":" + lineIndex + ": " + message).withStyle(color);
+        Component component = Component.literal(lineIndex + ": " + message).withStyle(color);
         target.sendSystemMessage(component);
         target.sendSystemMessage(Component.literal(line));
         target.sendSystemMessage(Component.literal(" ".repeat(startIndex) + "^"));
@@ -252,7 +255,8 @@ public class Compiler {
         CREATE_SKELETON(CompilerLoaderHolder::applySkeleton),
         VALIDATE(CompilerLoaderHolder::validate),
         CONSTRUCT(CompilerLoaderHolder::construct),
-        FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad);
+        FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad),
+        CACHE(CompilerLoaderHolder::cache);
 
         private final Consumer<CompilerLoaderHolder> action;
 
