@@ -394,7 +394,8 @@ public class AbstractParser {
         return this.consumeNoThrow(EOA, "';' expected");
     }
 
-    protected static class ParseError extends RuntimeException {}
+    protected static class ParseError extends RuntimeException {
+    }
 
     protected ParseError error(Token token, String message) {
         errorStorage.error(token, message);
