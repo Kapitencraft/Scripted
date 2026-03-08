@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.lang.exe.algebra.OperationType;
 import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
+import net.kapitencraft.scripted.lang.holder.RegistryHolder;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceClassReference;
@@ -18,7 +19,6 @@ import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsRe
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericStack;
 import net.kapitencraft.scripted.lang.holder.token.Token;
-import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.oop.clazz.PrimitiveClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.ScriptedField;
@@ -26,8 +26,12 @@ import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -163,7 +167,7 @@ public class ExprParser extends AbstractParser {
         if (match(QUESTION_MARK)) {
             expectCondition(expr);
             Expr ifTrue = expression();
-            consume(TokenType.COLON, "':' expected");
+            consume(COLON, "':' expected");
             Expr ifFalse = expression();
             ClassReference ifTrueClass = finder.findRetType(ifTrue);
             ClassReference ifFalseClass = finder.findRetType(ifFalse);
@@ -199,11 +203,11 @@ public class ExprParser extends AbstractParser {
             if (expr instanceof Expr.VarRef variable) {
                 Token name = variable.name();
 
-                checkVarExistence(name, assign.type() != TokenType.ASSIGN,
+                checkVarExistence(name, assign.type() != ASSIGN,
                         false);
                 checkVarType(name, value);
                 Executor executor;
-                if (assign.type() == TokenType.ASSIGN) {
+                if (assign.type() == ASSIGN) {
                     varAnalyser.setHasValue(variable.ordinal());
                     executor = Executor.UNKNOWN;
                 } else
@@ -612,9 +616,8 @@ public class ExprParser extends AbstractParser {
         if (match(FALSE)) return false;
         if (match(TRUE)) return true;
         if (match(NULL)) return null;
-        if (match(NAMESPACE)) {
-            //TODO registry keys
-        }
+        RegistryHolder holder = tryParseRegistry();
+        if (holder != null) return holder;
 
         if (match(NUM, STR)) {
             return previous().literal();
@@ -748,40 +751,6 @@ public class ExprParser extends AbstractParser {
             }
         }
 
-        if (match(NAMESPACE)) {
-            Token origin = previous();
-            consume(COLON, "expected ':' after namespace");
-
-            List<Token> name = new ArrayList<>();
-
-            name.add(consumeIdentifier());
-
-            //lookup current expected argument types
-            Set<ClassReference> last = searched();
-
-            List<? extends Registry<?>> list = last.stream()
-                    .filter(ClassReference::exists)
-                    .map(ClassReference::get)
-                    .filter(NativeClassImpl.class::isInstance)
-                    .map(NativeClassImpl.class::cast)
-                    .map(NativeClassImpl::getOwner)
-                    .filter(Objects::nonNull)
-                    .map(ResourceKey::location) //so stupid i have to get the location instead of being able to do it directly. curse you java generics!
-                    .map(BuiltInRegistries.REGISTRY::get)
-                    .toList();
-
-            if (!list.isEmpty()) {
-                String text = name.stream().map(Token::lexeme).collect(Collectors.joining());
-
-                for (Registry<?> objects : list) {
-                    Object o = objects.get(ResourceLocation.fromNamespaceAndPath(previous().lexeme(), text));
-
-                }
-            }
-
-            //TODO
-        }
-
         if (match(IDENTIFIER)) {
             Token previous = previous(); //the identifier just consumed
             BytecodeVars.FetchResult result = varAnalyser.get(previous.lexeme()); //fetch variable under that name
@@ -822,6 +791,44 @@ public class ExprParser extends AbstractParser {
             );
         }
 
+        RegistryHolder holder = tryParseRegistry();
+        if (holder != null) {
+            Expr expr = new Expr.RegistryAccess(
+                    holder.reference(), holder.origin(),
+                    holder.key().location().toString(),
+                    holder.objLoc().toString()
+            );
+
+            Set<ClassReference> types = searched();
+
+            if (holder.key() == Registries.BLOCK) {
+                if (!types.contains(VarTypeManager.BLOCK) || check(S_BRACKET_O)) {
+                    //extend block to be state
+                    expr = new Expr.InstCall(expr, holder.origin(), new Expr[0], VarTypeManager.BLOCK_STATE, "Lnet/minecraft/world/level/block/Block;defaultBlockState()");
+
+                    if (match(S_BRACKET_O)) {
+                        StateDefinition<Block, BlockState> definition = ((Block) holder.entry()).getStateDefinition();
+
+                        //while (!check(S_BRACKET_C)) {
+                        //    Token propertyName = consumeIdentifier();
+
+                        //    Property<?> property = definition.getProperty(propertyName.lexeme());
+                        //    if (property == null)
+                        //        error(propertyName, "unknown BlockState property for block " + holder.objLoc());
+
+                        //    Expr obj = expression();
+
+                        //    property //TODO
+                        //}
+
+                        consume(S_BRACKET_C, "expected ']' after BlockState properties");
+                    }
+
+                    return expr;
+                }
+            }
+        }
+
         if (match(THIS)) return new Expr.VarRef(
                 previous(),
                 (byte)0
@@ -834,6 +841,57 @@ public class ExprParser extends AbstractParser {
         }
 
         throw error(peek(), "Illegal start of expression");
+    }
+
+    private RegistryHolder tryParseRegistry() {
+        if (match(NAMESPACE)) {
+            Token namespace = previous();
+
+            consume(COLON, "expected ':' after namespace");
+
+            List<Token> name = new ArrayList<>();
+
+            name.add(consumeIdentifier());
+
+            //lookup current expected argument types
+            Set<ClassReference> last = searched();
+
+            List<RegistryHolder> holders = new ArrayList<>();
+            ResourceLocation location = ResourceLocation.fromNamespaceAndPath(namespace.lexeme(), name.stream().map(Token::lexeme).collect(Collectors.joining()));
+            for (ClassReference reference : last) {
+                if (!reference.exists()) {
+                    continue;
+                }
+
+                if (!(reference.get() instanceof NativeClassImpl nativeClass))
+                    continue;
+
+                if (nativeClass.getOwner() == null)
+                    continue;
+
+                Registry<?> registry = BuiltInRegistries.REGISTRY.get(nativeClass.getOwner().location());
+
+
+                Object o = registry.get(location);
+
+                if (o != null) {
+                    RegistryHolder h = new RegistryHolder(reference, namespace, registry, nativeClass.getOwner(), location, o);
+
+                    holders.add(h);
+                }
+            }
+
+            if (holders.size() > 1) {
+                error(namespace, "ambiguous registry entry. all of " + holders.stream().map(RegistryHolder::key).map(ResourceKey::location).map(ResourceLocation::toString).collect(Collectors.joining("[", ",", "]")) + " match");
+            }
+
+            if (holders.isEmpty()) {
+                error(namespace, "no registry entry for " + location + " found");
+            }
+
+            return holders.getFirst();
+        }
+        return null;
     }
 
     private ScriptedCallable tryGetConstructorMethod(Expr[] args, ClassReference type, ScriptedClass scriptedClass, Token loc) {
@@ -854,7 +912,8 @@ public class ExprParser extends AbstractParser {
 
     private Expr statics() {
         ClassReference target = consumeVarType(generics).getReference();
-        Token name = previous();
+        consume(DOT, "'.' expected");
+        Token name = consumeIdentifier();
         if (match(BRACKET_O)) return finishCall(name, target, null);
         if (match(ASSIGN) || match(OPERATION_ASSIGN)) return staticAssign(target, name);
         if (match(GROW, SHRINK)) return staticSpecialAssign(target, name);

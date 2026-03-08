@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit;
 
 import net.minecraft.ChatFormatting;
 
-public record Token(String value, net.kapitencraft.scripted.edit.Token.Type type) {
+public record ParseToken(String value, ParseToken.Type type) {
 
     @Override
     public String toString() {

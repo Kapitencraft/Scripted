@@ -64,4 +64,8 @@ public class CompileField implements ScriptedField {
     public Expr getInit() {
         return init;
     }
+
+    public RuntimeField convert() {
+        return new RuntimeField(this.type, this.modifiers);
+    }
 }

@@ -9,6 +9,8 @@ import net.kapitencraft.scripted.lang.holder.baked.BakedClass;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
+import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
+import net.kapitencraft.scripted.lang.oop.clazz.generated.RuntimeClass;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.io.File;
@@ -123,5 +125,10 @@ public class CompilerLoaderHolder extends ClassLoaderHolder<CompilerLoaderHolder
 
     public void printErrors(ServerPlayer errorSink) {
         this.storage.printAll(errorSink);
+    }
+
+    public void publish() {
+        RuntimeClass runtimeClass = ((CompileClass) this.target).convert();
+        this.holder.target().setTarget(runtimeClass);
     }
 }

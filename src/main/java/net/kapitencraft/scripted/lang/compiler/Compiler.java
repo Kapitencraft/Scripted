@@ -75,6 +75,7 @@ public class Compiler {
     public static void compileAll(File src, ServerPlayer errorSink) {
         Compiler.src = new File(src, "src");
         Compiler.cache = new File(src, "cache");
+        errorCount = 0;
 
         LOGGER.info("Compiling...");
 
@@ -256,7 +257,8 @@ public class Compiler {
         VALIDATE(CompilerLoaderHolder::validate),
         CONSTRUCT(CompilerLoaderHolder::construct),
         FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad),
-        CACHE(CompilerLoaderHolder::cache);
+        CACHE(CompilerLoaderHolder::cache),
+        PUBLISH(CompilerLoaderHolder::publish);
 
         private final Consumer<CompilerLoaderHolder> action;
 

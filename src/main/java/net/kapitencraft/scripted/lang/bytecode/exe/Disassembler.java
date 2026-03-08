@@ -63,8 +63,16 @@ public class Disassembler {
             case SWITCH -> switchInstruction(opcode, chunk, offset);
             case GET_FIELD, PUT_FIELD -> fieldOp(opcode, chunk, offset);
             case GET_STATIC, PUT_STATIC -> staticFieldOp(opcode, chunk, offset);
+            case REGISTRY -> registry(opcode, chunk, offset);
             //case RA_NEW -> newArray(opcode, chunk, offset);
         };
+    }
+
+    private static int registry(Opcode opcode, Chunk chunk, int offset) {
+        int regKey = read2b(chunk.code(), offset + 1);
+        int valKey = read2b(chunk.code(), offset + 3);
+        System.out.printf("%-16s registry=%4d entry=%4d\n", opcode, regKey, valKey);
+        return offset + 5;
     }
 
     private static int switchInstruction(Opcode opcode, Chunk chunk, int offset) {

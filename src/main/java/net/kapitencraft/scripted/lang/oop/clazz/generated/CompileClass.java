@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.lang.oop.clazz.generated;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import net.kapitencraft.kap_lib.core.collection.MapStream;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.CacheBuilder;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
@@ -10,6 +11,9 @@ import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.CompileField;
+import net.kapitencraft.scripted.lang.oop.field.RuntimeField;
+import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
+import net.kapitencraft.scripted.lang.oop.method.RuntimeCallable;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
@@ -20,7 +24,6 @@ import java.util.Map;
 
 public final class CompileClass implements CacheableClass, ScriptedClass {
     private final GeneratedMethodMap methods;
-    private final Map<String, DataMethodContainer> allMethods;
 
     private final Map<String, CompileField> allFields;
 
@@ -39,7 +42,6 @@ public final class CompileClass implements CacheableClass, ScriptedClass {
                         ClassReference[] implemented,
                         short modifiers, Annotation[] annotations) {
         this.methods = new GeneratedMethodMap(methods);
-        this.allMethods = methods;
         this.allFields = fields;
         this.superclass = superclass;
         this.name = name;
@@ -73,6 +75,31 @@ public final class CompileClass implements CacheableClass, ScriptedClass {
         return object;
     }
 
+    public RuntimeClass convert() {
+        return new RuntimeClass(
+                convertMethods(methods),
+                convertFields(allFields),
+                VarTypeManager.getClassName(superclass),
+                this.name,
+                this.pck(),
+                Arrays.stream(this.implemented).map(VarTypeManager::getClassName).toArray(String[]::new),
+                this.modifiers,
+                this.annotations
+        );
+    }
+
+    private Map<String, DataMethodContainer> convertMethods(GeneratedMethodMap methods) {
+        return MapStream.of(methods.asMap()).mapValues(this::convertMethodContainer).toMap();
+    }
+
+    private DataMethodContainer convertMethodContainer(DataMethodContainer d) {
+        return DataMethodContainer.of(Arrays.stream(d.methods()).map(CompileCallable.class::cast).map(CompileCallable::convert).toArray(RuntimeCallable[]::new));
+    }
+
+    private Map<String, RuntimeField> convertFields(Map<String, CompileField> allFields) {
+        return MapStream.of(allFields).mapValues(CompileField::convert).toMap();
+    }
+
     @Override
     public ClassReference reference() {
         return CacheableClass.super.reference();
@@ -81,7 +108,7 @@ public final class CompileClass implements CacheableClass, ScriptedClass {
     @Override
     public String toString() { //jesus
         return "GeneratedClass{" + name + "}[" +
-                "methods=" + allMethods + ", " +
+                "methods=" + methods + ", " +
                 "fields=" + allFields + ", " +
                 "superclass=" + superclass + ']';
     }

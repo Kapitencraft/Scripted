@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class GenerateAst {
     private static final Gson GSON = new GsonBuilder().create();
 
-    public static final String DIRECTORY = "src/main/java/net/kapitencraft/lang/holder/ast";
+    public static final String DIRECTORY = "src/main/java/net/kapitencraft/scripted/lang/holder/ast";
     private static final String SOURCE = "src/generate_ast.json";
 
     public static void main(String[] args) throws IOException {
@@ -63,7 +63,7 @@ public class GenerateAst {
             return;
         }
 
-        writer.println("package net.kapitencraft.lang.holder.ast;");
+        writer.println("package net.kapitencraft.scripted.lang.holder.ast;");
         writer.println();
         for (String s : defaultImports.get()) {
             writer.print("import ");

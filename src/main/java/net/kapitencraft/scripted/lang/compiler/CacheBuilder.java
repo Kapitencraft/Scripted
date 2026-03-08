@@ -394,6 +394,15 @@ public class CacheBuilder implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         return null;
     }
 
+    @Override
+    public Void visitRegistryAccessExpr(Expr.RegistryAccess expr) {
+        builder.changeLineIfNecessary(expr.origin());
+        builder.addCode(Opcode.REGISTRY);
+        builder.addStringConstant(expr.regKey());
+        builder.addStringConstant(expr.valKey());
+        return null;
+    }
+
     private void specialAssign(ClassReference reference, Token token, Opcode get, Opcode set, Consumer<Chunk.Builder> meta) {
         builder.addCode(get);
         meta.accept(builder);

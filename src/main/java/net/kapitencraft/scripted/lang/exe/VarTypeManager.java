@@ -46,6 +46,14 @@ public class VarTypeManager {
 
     public static final ClassReference STRING = getMainClass("String");
 
+    public static final ClassReference BLOCK = getOrCreateClass("Block", "net.minecraft.world.level.block");
+    public static final ClassReference BLOCK_STATE = getOrCreateClass("BlockState", "net.minecraft.world.level.block.state");
+
+    public static final ClassReference ITEM = getOrCreateClass("Item", "net.minecraft.world");
+
+    public static final ClassReference COMMAND_SCRIPT = getOrCreateClass("CommandScript", "scripted.exe");
+    public static final ClassReference COMMAND_DATA = getOrCreateClass("CommandData", "scripted.exe");
+
     public static final ClassReference THROWABLE = getMainClass("Throwable");
     public static final ClassReference STACK_OVERFLOW_ERROR = getMainClass("StackOverflowError");
     public static final ClassReference UNKNOWN_ERROR = getMainClass("UnknownError");
@@ -162,6 +170,7 @@ public class VarTypeManager {
     private static ClassReference getMainClass(String name) {
         return LANG_ROOT.getClass(name);
     }
+
 
     private static ClassReference getAnnotationClass(String name) {
         return ANNOTATION_PCK.getClass(name);

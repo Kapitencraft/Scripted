@@ -133,7 +133,7 @@ public interface Stmt {
 
     record Try(
         Block body, 
-        Pair<Pair<ClassReference[],Token>,Block>[] catches,
+        Pair<Pair<ClassReference[],Token>,Block>[] catches, 
         Block finale
     ) implements Stmt {
 

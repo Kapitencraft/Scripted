@@ -49,6 +49,11 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
     }
 
     @Override
+    public Void visitRegistryAccessExpr(Expr.RegistryAccess expr) {
+        return null;
+    }
+
+    @Override
     public Void visitInstCallExpr(Expr.InstCall expr) {
         analyse(expr.callee());
         for (Expr arg : expr.args()) {

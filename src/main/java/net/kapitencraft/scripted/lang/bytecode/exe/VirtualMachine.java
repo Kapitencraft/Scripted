@@ -13,6 +13,8 @@ import net.kapitencraft.scripted.lang.oop.clazz.inst.ClassInstance;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.DynamicClassInstance;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.kapitencraft.scripted.lang.tool.Util;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -179,6 +181,33 @@ public class VirtualMachine {
                 }, () -> System.err.printf("could not find executable main method inside class '%s'", target.absoluteName()));
     }
 
+    public static void executeMethod(String signature, Object... args) {
+        StringReader reader = new StringReader(signature);
+        VarTypeManager.flatParse(reader);
+
+        ClassInstance instance = (ClassInstance) args[0];
+        ScriptedCallable callable = instance.getType().getMethod(reader.getRemaining()); //virtual invoke of the method
+
+        init(new CallFrame(signature, callable, 0));
+
+        try {
+            Interpreter.start();
+            for (Object arg : args) {
+                push(arg);
+            }
+            run();
+            if (!tableData.isEmpty()) {
+
+                for (TraceTable table : tableData.values()) {
+                    table.print();
+                }
+            }
+        } finally {
+            callStackTop = 0;
+            stackIndex = 0;
+        }
+    }
+
     @SuppressWarnings("ExpressionComparedToItself")
     public static void run() {
         func:
@@ -228,6 +257,12 @@ public class VirtualMachine {
                         stack[stackIndex++] = obj1;
                     }
                     //endregion
+                    case REGISTRY -> {
+                        String regKey = constString(constants, read2Byte());
+                        String valKey = constString(constants, read2Byte());
+
+                        push(BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(regKey)).get(ResourceLocation.parse(valKey)));
+                    }
                     case TRACE -> {
                         TraceTable table;
                         if (tableData.containsKey(ip + 2)) {

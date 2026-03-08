@@ -57,7 +57,10 @@ public class RetTypeAnalyser implements Expr.Visitor<ClassReference> {
 
     @Override
     public ClassReference visitStaticGetExpr(Expr.StaticGet expr) {
-        return expr.target() == null ? VarTypeManager.VOID.reference() : expr.target().get().getFieldType(expr.name().lexeme());
+        if (expr.target() == null) return VarTypeManager.VOID.reference();
+
+        ClassReference reference = expr.target().get().getFieldType(expr.name().lexeme());
+        return reference == null ? VarTypeManager.VOID.reference() : reference;
     }
 
     @Override
@@ -93,6 +96,11 @@ public class RetTypeAnalyser implements Expr.Visitor<ClassReference> {
     @Override
     public ClassReference visitArraySpecialExpr(Expr.ArraySpecial expr) {
         return findRetType(expr.object()).get().getComponentType().reference();
+    }
+
+    @Override
+    public ClassReference visitRegistryAccessExpr(Expr.RegistryAccess expr) {
+        return expr.type();
     }
 
     @Override

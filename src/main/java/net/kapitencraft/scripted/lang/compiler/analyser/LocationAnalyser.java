@@ -90,6 +90,11 @@ public class LocationAnalyser implements Stmt.Visitor<Token>, Expr.Visitor<Token
     }
 
     @Override
+    public Token visitRegistryAccessExpr(Expr.RegistryAccess expr) {
+        return expr.origin();
+    }
+
+    @Override
     public Token visitSliceExpr(Expr.Slice expr) {
         return find(expr.object());
     }

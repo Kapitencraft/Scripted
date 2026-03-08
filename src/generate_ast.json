@@ -1,0 +1,239 @@
+{
+  "values": {
+    "Expr": {
+      "values": {
+        "Assign": {
+          "name": "Token",
+          "value": "Expr",
+          "type": "Token",
+          "ordinal": "byte",
+          "executor": "ClassReference"
+        },
+        "SpecialAssign": {
+          "name": "Token",
+          "assignType": "Token",
+          "ordinal": "int",
+          "executor": "ClassReference"
+        },
+        "Binary": {
+          "left": "Expr",
+          "right": "Expr",
+          "operator": "Token",
+          "executor": "ClassReference",
+          "retType": "ClassReference"
+        },
+        "When": {
+          "condition": "Expr",
+          "ifTrue": "Expr",
+          "ifFalse": "Expr"
+        },
+        "InstCall": {
+          "callee": "Expr",
+          "name": "Token",
+          "args": "Expr[]",
+          "retType": "ClassReference",
+          "id": "String"
+        },
+        "StaticCall": {
+          "target": "ClassReference",
+          "name": "Token",
+          "args": "Expr[]",
+          "retType": "ClassReference",
+          "id": "String"
+        },
+        "SuperCall": {
+          "callee": "Expr",
+          "type": "ClassReference",
+          "name": "Token",
+          "args": "Expr[]",
+          "retType": "ClassReference",
+          "id": "String"
+        },
+        "Get": {
+          "object": "Expr",
+          "name": "Token",
+          "type": "ClassReference"
+        },
+        "StaticGet": {
+          "target": "ClassReference",
+          "name": "Token"
+        },
+        "ArrayGet": {
+          "object": "Expr",
+          "index": "Expr",
+          "type": "ClassReference"
+        },
+        "Set": {
+          "object": "Expr",
+          "name": "Token",
+          "value": "Expr",
+          "assignType": "Token",
+          "executor": "ClassReference"
+        },
+        "SpecialSet": {
+          "callee": "Expr",
+          "name": "Token",
+          "assignType": "Token",
+          "retType": "ClassReference"
+        },
+        "StaticSet": {
+          "target": "ClassReference",
+          "name": "Token",
+          "value": "Expr",
+          "assignType": "Token",
+          "executor": "ClassReference"
+        },
+        "StaticSpecial": {
+          "target": "ClassReference",
+          "name": "Token",
+          "assignType": "Token",
+          "executor": "ClassReference"
+        },
+        "ArraySet": {
+          "object": "Expr",
+          "index": "Expr",
+          "value": "Expr",
+          "assignType": "Token",
+          "executor": "ClassReference"
+        },
+        "ArraySpecial": {
+          "object": "Expr",
+          "index": "Expr",
+          "assignType": "Token",
+          "executor": "ClassReference"
+        },
+        "Slice": {
+          "object": "Expr",
+          "start": "Expr",
+          "end": "Expr",
+          "interval": "Expr"
+        },
+        "Switch": {
+          "provider": "Expr",
+          "params": "Map<Integer,Expr>",
+          "defaulted": "Expr",
+          "keyword": "Token"
+        },
+        "CastCheck": {
+          "object": "Expr",
+          "targetType": "ClassReference",
+          "patternVarName": "Token"
+        },
+        "Grouping": {
+          "expression": "Expr"
+        },
+        "Literal": {
+          "literal": "Token"
+        },
+        "Logical": {
+          "left": "Expr",
+          "operator": "Token",
+          "right": "Expr"
+        },
+        "Unary": {
+          "operator": "Token",
+          "right": "Expr",
+          "executor": "ClassReference"
+        },
+        "VarRef": {
+          "name": "Token",
+          "ordinal": "byte"
+        },
+        "ArrayConstructor": {
+          "keyword": "Token",
+          "compoundType": "ClassReference",
+          "size": "Expr",
+          "obj": "Expr[]"
+        },
+        "Constructor": {
+          "keyword": "Token",
+          "target": "ClassReference",
+          "args": "Expr[]",
+          "signature": "String"
+        },
+        "RegistryAccess": {
+          "type": "ClassReference",
+          "origin": "Token",
+          "regKey": "String",
+          "valKey": "String"
+        }
+      },
+      "imports": [
+        "java.util.Map"
+      ]
+    },
+    "Stmt": {
+      "values": {
+        "Block": {
+          "statements": "Stmt[]"
+        },
+        "Expression": {
+          "expression": "Expr"
+        },
+        "If": {
+          "condition": "Expr",
+          "thenBranch": "Stmt",
+          "elseBranch": "Stmt",
+          "elifs": "ElifBranch[]",
+          "keyword": "Token"
+        },
+        "Return": {
+          "keyword": "Token",
+          "value": "Expr"
+        },
+        "Throw": {
+          "keyword": "Token",
+          "value": "Expr"
+        },
+        "VarDecl": {
+          "name": "Token",
+          "type": "ClassReference",
+          "initializer": "Expr",
+          "isFinal": "boolean",
+          "localId": "int"
+        },
+        "While": {
+          "condition": "Expr",
+          "body": "Stmt",
+          "keyword": "Token"
+        },
+        "For": {
+          "init": "Stmt",
+          "condition": "Expr",
+          "increment": "Expr",
+          "body": "Stmt",
+          "keyword": "Token"
+        },
+        "ForEach": {
+          "type": "ClassReference",
+          "name": "Token",
+          "initializer": "Expr",
+          "body": "Stmt",
+          "baseVar": "int"
+        },
+        "LoopInterruption": {
+          "type": "Token"
+        },
+        "Try": {
+          "body": "Block",
+          "catches": "Pair<Pair<ClassReference[],Token>,Block>[]",
+          "finale": "Block"
+        },
+        "ClearLocals": {
+          "amount": "int"
+        },
+        "DebugTrace": {
+          "keyword": "Token",
+          "locals": "byte[]"
+        }
+      },
+      "imports": [
+        "com.mojang.datafixers.util.Pair"
+      ]
+    }
+  },
+  "imports": [
+    "net.kapitencraft.lang.holder.token.Token",
+    "net.kapitencraft.lang.holder.class_ref.ClassReference"
+  ]
+}

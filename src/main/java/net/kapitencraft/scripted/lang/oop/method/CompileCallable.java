@@ -13,6 +13,7 @@ import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CompileCallable implements ScriptedCallable {
     private final ClassReference retType;
@@ -20,6 +21,7 @@ public class CompileCallable implements ScriptedCallable {
     private final Stmt[] body;
     private final short modifiers;
     private final Annotation[] annotations;
+    private Chunk compiled;
 
     public CompileCallable(ClassReference retType, List<? extends Pair<? extends ClassReference, String>> params, Stmt[] body, short modifiers, Annotation[] annotations) {
         this.retType = retType;
@@ -51,7 +53,8 @@ public class CompileCallable implements ScriptedCallable {
             for (Stmt compileStmt : body) {
                 builder.cache(compileStmt);
             }
-            object.add("body", chunk.build().save());
+            this.compiled = chunk.build();
+            object.add("body", compiled.save());
         }
         if (this.modifiers != 0) object.addProperty("modifiers", this.modifiers);
 
@@ -87,5 +90,15 @@ public class CompileCallable implements ScriptedCallable {
     @Override
     public ClassReference[] argTypes() {
         return params.stream().map(Pair::getFirst).toArray(ClassReference[]::new);
+    }
+
+    public RuntimeCallable convert() {
+        return new RuntimeCallable(
+                this.retType,
+                this.params.stream().map(Pair::getFirst).collect(Collectors.toUnmodifiableList()),
+                this.compiled,
+                this.modifiers,
+                this.annotations
+        );
     }
 }
