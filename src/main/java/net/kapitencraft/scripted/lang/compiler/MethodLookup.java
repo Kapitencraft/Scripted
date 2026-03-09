@@ -15,16 +15,22 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class MethodLookup {
-    private final List<Pair<ScriptedClass, AbstractMethodMap>> lookup;
-    private final Map<String, ScriptedCallable> exposed;
+    //time to sacrifice even more runtime speed due to load issues :hypers:
+    //let's make that shit lazy-loaded
+    private final ScriptedClass clazz;
+    private final ClassReference[] interfaces;
 
-    public MethodLookup(List<Pair<ScriptedClass, AbstractMethodMap>> lookup) {
-        this.lookup = lookup;
-        exposed = this.createExposed();
+    private List<Pair<ScriptedClass, AbstractMethodMap>> lookup;
+    private Map<String, ScriptedCallable> exposed;
+
+    public MethodLookup(ScriptedClass clazz, ClassReference... interfaces) {
+        this.clazz = clazz;
+        this.interfaces = interfaces;
     }
 
     //region compile
 
+    //TODO
     public void checkFinal(Compiler.ErrorStorage logger, Pair<Token, CompileCallable>[] map) {
         for (Pair<Token, CompileCallable> pair : map) {
             for (Pair<ScriptedClass, AbstractMethodMap> lookupElement : lookup) {
@@ -80,7 +86,7 @@ public class MethodLookup {
 
     //endregion
 
-    public static MethodLookup createFromClass(ScriptedClass scriptedClass, ClassReference... interfaces) {
+    private void createFromClass(ScriptedClass scriptedClass, ClassReference... interfaces) {
         List<ScriptedClass> parentMap = createParentMap(scriptedClass);
         List<ScriptedClass> allParents = new ArrayList<>();
         for (ClassReference i : interfaces) {
@@ -91,8 +97,8 @@ public class MethodLookup {
             addInterfaces(parent, allParents::add);
             allParents.add(parent);
         }
-        List<Pair<ScriptedClass, AbstractMethodMap>> lookup = allParents.stream().collect(Util.toPairList(Function.identity(), ScriptedClass::getMethods));
-        return new MethodLookup(lookup);
+        this.lookup = allParents.stream().collect(Util.toPairList(Function.identity(), ScriptedClass::getMethods));
+        this.exposed = this.createExposed();
     }
 
     private static void addInterfaces(ScriptedClass target, Consumer<ScriptedClass> sink) {
@@ -123,6 +129,8 @@ public class MethodLookup {
     }
 
     public ScriptedCallable get(String signature) {
+        if (exposed == null)
+            createFromClass(this.clazz, this.interfaces);
         return exposed.get(signature);
     }
 }

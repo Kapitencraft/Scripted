@@ -112,14 +112,14 @@ public class Holder {
                     args = prefixEnumConstructorCallArgs(stmtParser.args(), decl);
                 }
 
-                ScriptedCallable callable = Util.getVirtualMethod(target.get(), "<init>", stmtParser.argTypes(args));
+                Pair<ScriptedCallable, ScriptedClass> methodInfo = Util.getVirtualMethod(target.get(), "<init>", stmtParser.argTypes(args));
 
                 String signature;
-                if (args.length == 0 && callable.isNative())
+                if (args.length == 0 && methodInfo.getFirst().isNative())
                     signature = null;
                 else {
-                    signature = VarTypeManager.getMethodSignature(target.get(), "<init>", stmtParser.argTypes(args));
-                    stmtParser.checkArguments(args, callable, null, decl.name());
+                    signature = VarTypeManager.getMethodSignature(methodInfo.getSecond(), "<init>", stmtParser.argTypes(args));
+                    stmtParser.checkArguments(args, methodInfo.getFirst(), null, decl.name());
                 }
                 statics.add(new Stmt.Expression(new Expr.StaticSet(
                         target, decl.name,

@@ -17,7 +17,6 @@ import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
@@ -106,9 +105,7 @@ public class Compiler {
         }
 
         executor.shutdownNow();
-        if (errorCount > 0) {
-            errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
-        }
+        errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
     }
 
     /**

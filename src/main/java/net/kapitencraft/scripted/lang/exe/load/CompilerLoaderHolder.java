@@ -5,14 +5,12 @@ import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.lang.compiler.*;
 import net.kapitencraft.scripted.lang.compiler.parser.HolderParser;
 import net.kapitencraft.scripted.lang.compiler.parser.StmtParser;
-import net.kapitencraft.scripted.lang.holder.baked.BakedClass;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.RuntimeClass;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.server.level.ServerPlayer;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,11 +106,12 @@ public class CompilerLoaderHolder extends ClassLoaderHolder<CompilerLoaderHolder
         if (!checkHolderCreated()) return;
 
         if (builder.superclass() != null) {
-            MethodLookup lookup = MethodLookup.createFromClass(builder.superclass().get(), builder.interfaces());
-            lookup.checkAbstract(storage, builder.name(), builder.methods());
-            if (builder instanceof BakedClass) {
-                lookup.checkFinal(storage, builder.methods());
-            }
+            MethodLookup lookup = new MethodLookup(builder.superclass().get(), builder.interfaces());
+            //TODO
+            //lookup.checkAbstract(storage, builder.name(), builder.methods());
+            //if (builder instanceof BakedClass) {
+            //    lookup.checkFinal(storage, builder.methods());
+            //}
         }
         target = builder.build();
         this.holder.target().setTarget((ScriptedClass) target);

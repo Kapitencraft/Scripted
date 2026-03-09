@@ -52,7 +52,7 @@ public final class RuntimeClass implements ScriptedClass {
         this.packageRepresentation = packageRepresentation;
         this.implemented = implemented;
         this.modifiers = modifiers;
-        this.lookup = MethodLookup.createFromClass(this);
+        this.lookup = new MethodLookup(this);
         this.annotations = annotations;
     }
 

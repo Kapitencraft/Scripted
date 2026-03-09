@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.lang.compiler.parser;
 
+import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
@@ -683,18 +684,19 @@ public class ExprParser extends AbstractParser {
             }
 
             String signature = null;
-            ScriptedCallable callable = tryGetConstructorMethod(args, type.getReference(), type.get(), type.getToken());
+            Pair<ScriptedCallable, ScriptedClass> methodInfo = tryGetConstructorMethod(args, type.getReference(), type.get(), type.getToken());
 
             ClassReference typeRef = type.getReference();
-            if (callable != null) {
-                signature = VarTypeManager.getMethodSignature(type.get(), "<init>", callable.argTypes());
-                checkArguments(args, callable, null, type.getToken());
+            if (methodInfo != null) {
+                ClassReference[] argTypes = methodInfo.getFirst().argTypes();
+                signature = VarTypeManager.getMethodSignature(type.get(), "<init>", argTypes);
+                checkArguments(args, methodInfo.getFirst(), null, type.getToken());
 
                 Holder.Generics classGenerics = type.get().getGenerics();
                 if (classGenerics != null) {
                     Map<String, ClassReference> types = new HashMap<>();
-                    for (int i = 0; i < callable.argTypes().length; i++) {
-                        if (callable.argTypes()[i] instanceof GenericClassReference genericClassReference) {
+                    for (int i = 0; i < argTypes.length; i++) {
+                        if (argTypes[i] instanceof GenericClassReference genericClassReference) {
                             types.put(
                                     genericClassReference.getTypeName(),
                                     finder.findRetType(args[i])
@@ -894,7 +896,7 @@ public class ExprParser extends AbstractParser {
         return null;
     }
 
-    private ScriptedCallable tryGetConstructorMethod(Expr[] args, ClassReference type, ScriptedClass scriptedClass, Token loc) {
+    private Pair<ScriptedCallable, ScriptedClass> tryGetConstructorMethod(Expr[] args, ClassReference type, ScriptedClass scriptedClass, Token loc) {
         DataMethodContainer container = scriptedClass.getMethods().get("<init>");
         if (container == null) {
             if (args.length > 0) {
@@ -931,17 +933,17 @@ public class ExprParser extends AbstractParser {
             consumeBracketClose("arguments");
             return new Expr.StaticCall(objType, name, arguments, WILDCARD, "?");
         }
-        ScriptedCallable callable = Util.getVirtualMethod(targetClass, name.lexeme(), givenTypes);
+        Pair<ScriptedCallable, ScriptedClass> methodInfo = Util.getVirtualMethod(targetClass, name.lexeme(), givenTypes);
         ClassReference retType = VarTypeManager.VOID.reference();
         String signature = null;
-        if (callable != null) {
-            retType = checkArguments(arguments, callable, objType, name);
-            signature = VarTypeManager.getMethodSignature(targetClass, name.lexeme(), callable.argTypes());
+        if (methodInfo != null) {
+            retType = checkArguments(arguments, methodInfo.getFirst(), objType, name);
+            signature = VarTypeManager.getMethodSignature(methodInfo.getSecond(), name.lexeme(), methodInfo.getFirst().argTypes());
         }
 
         consumeBracketClose("arguments");
 
-        if (callable == null || callable.isStatic()) {
+        if (methodInfo == null || methodInfo.getFirst().isStatic()) {
             return new Expr.StaticCall(objType, name, arguments, retType, signature);
         } else {
             if (obj == null) {

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.lang.exe.natives.impl;
 
 import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.compiler.MethodLookup;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
@@ -19,6 +20,7 @@ import java.util.Map;
 @ApiStatus.Internal
 public class NativeClassImpl implements ScriptedClass {
     private final GeneratedMethodMap methods;
+    private final MethodLookup lookup;
     private final Map<String, NativeField> fields;
     private final ClassReference superclass;
     private final ClassReference[] interfaces;
@@ -38,6 +40,7 @@ public class NativeClassImpl implements ScriptedClass {
         this.interfaces = interfaces;
         this.owner = owner;
         this.modifiers = modifiers;
+        this.lookup = new MethodLookup(this);
     }
 
     @Nullable
@@ -72,7 +75,7 @@ public class NativeClassImpl implements ScriptedClass {
 
     @Override
     public ScriptedCallable getMethod(String signature) {
-        return methods.getMethod(signature);
+        return lookup.get(signature);
     }
 
     @Override
