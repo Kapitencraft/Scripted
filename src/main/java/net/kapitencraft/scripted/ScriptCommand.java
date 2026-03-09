@@ -61,7 +61,7 @@ public class ScriptCommand {
                 context.getSource().getServer().getWorldPath(LevelResource.ROOT).toFile(),
                 "scripted"
         );
-        Compiler.compileAll(src, context.getSource().getPlayerOrException());
+        Compiler.compileAll(src, context.getSource());
         return 1;
     }
 }

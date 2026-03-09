@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.RuntimeClass;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.level.ServerPlayer;
 
 import java.io.File;
@@ -123,7 +124,7 @@ public class CompilerLoaderHolder extends ClassLoaderHolder<CompilerLoaderHolder
         this.holder.validate(this.storage);
     }
 
-    public void printErrors(ServerPlayer errorSink) {
+    public void printErrors(CommandSourceStack errorSink) {
         this.storage.printAll(errorSink);
     }
 

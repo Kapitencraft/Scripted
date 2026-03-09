@@ -15,6 +15,7 @@ import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
 import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
@@ -72,7 +73,7 @@ public class Compiler {
         }
     }
 
-    public static void compileAll(File src, ServerPlayer errorSink) {
+    public static void compileAll(File src, CommandSourceStack errorSink) {
         Compiler.src = new File(src, "src");
         Compiler.cache = new File(src, "cache");
         errorCount = 0;
@@ -105,8 +106,9 @@ public class Compiler {
         }
 
         executor.shutdownNow();
-
-        errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
+        if (errorCount > 0) {
+            errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
+        }
     }
 
     /**
@@ -121,7 +123,7 @@ public class Compiler {
         }
     }
 
-    private static void printErrors(ClassLoader.PackageHolder<CompilerLoaderHolder> compileData, ServerPlayer errorSink) {
+    private static void printErrors(ClassLoader.PackageHolder<CompilerLoaderHolder> compileData, CommandSourceStack errorSink) {
         compileData.forEach(c -> c.printErrors(errorSink));
     }
 
@@ -162,7 +164,7 @@ public class Compiler {
             finder = new LocationAnalyser();
         }
 
-        public void printAll(ServerPlayer errorSink) {
+        public void printAll(CommandSourceStack errorSink) {
             for (Message msg : messages) {
                 msg.print(lines, fileLoc, errorSink);
             }
@@ -170,13 +172,13 @@ public class Compiler {
 
         private interface Message {
 
-            void print(String[] lines, String fileLoc, ServerPlayer errorSink);
+            void print(String[] lines, String fileLoc, CommandSourceStack errorSink);
         }
 
         private record Error(int lineIndex, int lineStartIndex, String msg, String line) implements Message {
 
             @Override
-            public void print(String[] lines, String fileLoc, ServerPlayer errorSink) {
+            public void print(String[] lines, String fileLoc, CommandSourceStack errorSink) {
                 Compiler.error(lineIndex, lineStartIndex, msg, fileLoc, line, errorSink);
             }
         }
@@ -184,7 +186,7 @@ public class Compiler {
         private record Warn(int lineIndex, int lineStartIndex, String msg) implements Message {
 
             @Override
-            public void print(String[] lines, String fileLoc, ServerPlayer errorSink) {
+            public void print(String[] lines, String fileLoc, CommandSourceStack errorSink) {
                 Compiler.warn(lineIndex, lineStartIndex, msg, fileLoc, lines[lineIndex], errorSink);
             }
         }
@@ -236,19 +238,19 @@ public class Compiler {
         }
     }
 
-    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line, ServerPlayer errorSink) {
+    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line, CommandSourceStack errorSink) {
         report(errorSink, lineIndex, msg, fileId, lineStartIndex, line, ChatFormatting.RED);
     }
 
-    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line, ServerPlayer player) {
+    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line, CommandSourceStack player) {
         report(player, lineIndex, msg, filedId, lineStartIndex, line, ChatFormatting.YELLOW);
     }
 
-    public static void report(ServerPlayer target, int lineIndex, String message, String fileId, int startIndex, String line, ChatFormatting color) {
+    public static void report(CommandSourceStack target, int lineIndex, String message, String fileId, int startIndex, String line, ChatFormatting color) {
         Component component = Component.literal(lineIndex + ": " + message).withStyle(color);
-        target.sendSystemMessage(component);
-        target.sendSystemMessage(Component.literal(line));
-        target.sendSystemMessage(Component.literal(" ".repeat(startIndex) + "^"));
+        target.sendFailure(component);
+        target.sendFailure(Component.literal(line));
+        target.sendFailure(Component.literal(" ".repeat(startIndex) + "^"));
     }
 
     public enum Stage {
