@@ -202,7 +202,8 @@
           "condition": "Expr",
           "increment": "Expr",
           "body": "Stmt",
-          "keyword": "Token"
+          "keyword": "Token",
+          "popVarCount": "int"
         },
         "ForEach": {
           "type": "ClassReference",

@@ -40,7 +40,8 @@ public interface Stmt {
         Expr condition, 
         Expr increment, 
         Stmt body, 
-        Token keyword
+        Token keyword, 
+        int popVarCount
     ) implements Stmt {
 
         @Override
@@ -62,7 +63,7 @@ public interface Stmt {
     }
 
     record ForEach(
-        ClassReference type, 
+        ClassReference type,
         Token name, 
         Expr initializer, 
         Stmt body, 

@@ -45,10 +45,15 @@ public class StmtParser extends ExprParser {
         seenReturn.add(false);
     }
 
-    private Stmt popScope() {
+    private int popScope() {
         seenReturn.pop();
         return varAnalyser.pop();
     }
+
+    private Stmt popScopeStmt() {
+        return new Stmt.ClearLocals(popScope());
+    }
+
 
     private Stmt declaration() {
         if (seenReturn.peek()) {
@@ -146,7 +151,7 @@ public class StmtParser extends ExprParser {
             Stmt.Block block = new Stmt.Block(block("catch statement"));
             block = new Stmt.Block(new Stmt[] {
                     block,
-                    popScope()
+                    popScopeStmt()
             });
             catches.add(Pair.of(
                     Pair.of(
@@ -229,7 +234,7 @@ public class StmtParser extends ExprParser {
                 stmt = new Stmt.Block(
                         new Stmt[] {
                                 stmt,
-                                popScope()
+                                popScopeStmt()
                         }
                 );
                 return new Stmt.ForEach(reference, name, init, stmt, baseVar);
@@ -264,12 +269,20 @@ public class StmtParser extends ExprParser {
         }
         consumeBracketClose("for clauses");
 
+        pushScope();
+
         Stmt body = statement();
 
-        popScope();
+        body = new Stmt.Block(new Stmt[] {
+                body,
+                popScopeStmt()
+        });
+
         loopIndex--;
 
-        return new Stmt.For(initializer, condition, increment, body, keyword);
+        int localsCleared = popScope();
+
+        return new Stmt.For(initializer, condition, increment, body, keyword, localsCleared);
     }
 
     private Stmt ifStatement() {
@@ -285,7 +298,7 @@ public class StmtParser extends ExprParser {
         thenBranch = new Stmt.Block(
                 new Stmt[] {
                         thenBranch,
-                        popScope()
+                        popScopeStmt()
                 }
         );
         Stmt elseBranch = null;
@@ -301,7 +314,7 @@ public class StmtParser extends ExprParser {
             branchSeenReturn &= seenReturn;
             elifStmt = new Stmt.Block(new Stmt[] {
                     elifStmt,
-                    popScope()
+                    popScopeStmt()
             });
             elifs.add(new ElifBranch(elifCondition, elifStmt, seenReturn));
         }
@@ -313,7 +326,7 @@ public class StmtParser extends ExprParser {
             elseBranch = new Stmt.Block(
                     new Stmt[] {
                             elseBranch,
-                            popScope()
+                            popScopeStmt()
                     }
             );
         } else
@@ -336,7 +349,7 @@ public class StmtParser extends ExprParser {
         Stmt body = statement();
         body = new Stmt.Block(new Stmt[]{
                 body,
-                popScope()
+                popScopeStmt()
         });
         this.loopIndex--;
 

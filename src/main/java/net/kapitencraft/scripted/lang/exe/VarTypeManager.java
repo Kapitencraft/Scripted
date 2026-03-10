@@ -36,13 +36,13 @@ public class VarTypeManager {
     public static final PrimitiveClass CHAR = registerPrimitive(new CharacterClass());
     public static final PrimitiveClass VOID = registerPrimitive(new VoidClass());
 
+    public static final ClassReference OBJECT = getOrCreateClass("Object", "scripted.lang");
+
+    public static final ClassReference ENUM = getOrCreateClass("Enum", "scripted.lang");
+
     static {
         NativeClassLoader.load(); //load natives before actual java project
     }
-
-    public static final ClassReference OBJECT = getMainClass("Object");
-
-    public static final ClassReference ENUM = getOrCreateClass("Enum", "scripted.lang");
 
     public static final ClassReference STRING = getMainClass("String");
 

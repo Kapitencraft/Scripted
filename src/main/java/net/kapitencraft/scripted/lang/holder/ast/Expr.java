@@ -9,65 +9,39 @@ public interface Expr {
 
     interface Visitor<R> {
         R visitVarRefExpr(VarRef expr);
-
         R visitSetExpr(Set expr);
-
         R visitArraySpecialExpr(ArraySpecial expr);
-
         R visitRegistryAccessExpr(RegistryAccess expr);
-
         R visitInstCallExpr(InstCall expr);
-
         R visitLogicalExpr(Logical expr);
-
         R visitSuperCallExpr(SuperCall expr);
-
         R visitCastCheckExpr(CastCheck expr);
-
         R visitArrayGetExpr(ArrayGet expr);
-
         R visitLiteralExpr(Literal expr);
-
         R visitArrayConstructorExpr(ArrayConstructor expr);
-
         R visitStaticSpecialExpr(StaticSpecial expr);
-
         R visitSpecialSetExpr(SpecialSet expr);
-
         R visitArraySetExpr(ArraySet expr);
-
         R visitSpecialAssignExpr(SpecialAssign expr);
-
         R visitConstructorExpr(Constructor expr);
-
         R visitStaticSetExpr(StaticSet expr);
-
         R visitGroupingExpr(Grouping expr);
-
         R visitUnaryExpr(Unary expr);
-
         R visitWhenExpr(When expr);
-
         R visitStaticGetExpr(StaticGet expr);
-
         R visitSwitchExpr(Switch expr);
-
         R visitSliceExpr(Slice expr);
-
         R visitGetExpr(Get expr);
-
         R visitAssignExpr(Assign expr);
-
         R visitStaticCallExpr(StaticCall expr);
-
         R visitBinaryExpr(Binary expr);
     }
 
     <R> R accept(Visitor<R> visitor);
 
     record VarRef(
-            Token name,
-            byte ordinal
+        Token name, 
+        byte ordinal
     ) implements Expr {
 
         @Override
@@ -77,11 +51,11 @@ public interface Expr {
     }
 
     record Set(
-            Expr object,
-            Token name,
-            Expr value,
-            Token assignType,
-            ClassReference executor
+        Expr object, 
+        Token name, 
+        Expr value, 
+        Token assignType, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -91,10 +65,10 @@ public interface Expr {
     }
 
     record ArraySpecial(
-            Expr object,
-            Expr index,
-            Token assignType,
-            ClassReference executor
+        Expr object, 
+        Expr index, 
+        Token assignType, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -104,10 +78,10 @@ public interface Expr {
     }
 
     record RegistryAccess(
-            ClassReference type,
-            Token origin,
-            String regKey,
-            String valKey
+        ClassReference type, 
+        Token origin, 
+        String regKey, 
+        String valKey
     ) implements Expr {
 
         @Override
@@ -117,11 +91,11 @@ public interface Expr {
     }
 
     record InstCall(
-            Expr callee,
-            Token name,
-            Expr[] args,
-            ClassReference retType,
-            String id
+        Expr callee, 
+        Token name, 
+        Expr[] args, 
+        ClassReference retType, 
+        String id
     ) implements Expr {
 
         @Override
@@ -131,9 +105,9 @@ public interface Expr {
     }
 
     record Logical(
-            Expr left,
-            Token operator,
-            Expr right
+        Expr left, 
+        Token operator, 
+        Expr right
     ) implements Expr {
 
         @Override
@@ -143,12 +117,12 @@ public interface Expr {
     }
 
     record SuperCall(
-            Expr callee,
-            ClassReference type,
-            Token name,
-            Expr[] args,
-            ClassReference retType,
-            String id
+        Expr callee, 
+        ClassReference type, 
+        Token name, 
+        Expr[] args, 
+        ClassReference retType, 
+        String id
     ) implements Expr {
 
         @Override
@@ -158,9 +132,9 @@ public interface Expr {
     }
 
     record CastCheck(
-            Expr object,
-            ClassReference targetType,
-            Token patternVarName
+        Expr object, 
+        ClassReference targetType, 
+        Token patternVarName
     ) implements Expr {
 
         @Override
@@ -170,9 +144,9 @@ public interface Expr {
     }
 
     record ArrayGet(
-            Expr object,
-            Expr index,
-            ClassReference type
+        Expr object, 
+        Expr index, 
+        ClassReference type
     ) implements Expr {
 
         @Override
@@ -182,7 +156,7 @@ public interface Expr {
     }
 
     record Literal(
-            Token literal
+        Token literal
     ) implements Expr {
 
         @Override
@@ -192,10 +166,10 @@ public interface Expr {
     }
 
     record ArrayConstructor(
-            Token keyword,
-            ClassReference compoundType,
-            Expr size,
-            Expr[] obj
+        Token keyword, 
+        ClassReference compoundType, 
+        Expr size, 
+        Expr[] obj
     ) implements Expr {
 
         @Override
@@ -205,10 +179,10 @@ public interface Expr {
     }
 
     record StaticSpecial(
-            ClassReference target,
-            Token name,
-            Token assignType,
-            ClassReference executor
+        ClassReference target, 
+        Token name, 
+        Token assignType, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -218,10 +192,10 @@ public interface Expr {
     }
 
     record SpecialSet(
-            Expr callee,
-            Token name,
-            Token assignType,
-            ClassReference retType
+        Expr callee, 
+        Token name, 
+        Token assignType, 
+        ClassReference retType
     ) implements Expr {
 
         @Override
@@ -231,11 +205,11 @@ public interface Expr {
     }
 
     record ArraySet(
-            Expr object,
-            Expr index,
-            Expr value,
-            Token assignType,
-            ClassReference executor
+        Expr object, 
+        Expr index, 
+        Expr value, 
+        Token assignType, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -245,10 +219,10 @@ public interface Expr {
     }
 
     record SpecialAssign(
-            Token name,
-            Token assignType,
-            int ordinal,
-            ClassReference executor
+        Token name, 
+        Token assignType, 
+        int ordinal, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -258,10 +232,10 @@ public interface Expr {
     }
 
     record Constructor(
-            Token keyword,
-            ClassReference target,
-            Expr[] args,
-            String signature
+        Token keyword, 
+        ClassReference target, 
+        Expr[] args, 
+        String signature
     ) implements Expr {
 
         @Override
@@ -271,11 +245,11 @@ public interface Expr {
     }
 
     record StaticSet(
-            ClassReference target,
-            Token name,
-            Expr value,
-            Token assignType,
-            ClassReference executor
+        ClassReference target, 
+        Token name, 
+        Expr value, 
+        Token assignType, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -285,7 +259,7 @@ public interface Expr {
     }
 
     record Grouping(
-            Expr expression
+        Expr expression
     ) implements Expr {
 
         @Override
@@ -295,9 +269,9 @@ public interface Expr {
     }
 
     record Unary(
-            Token operator,
-            Expr right,
-            ClassReference executor
+        Token operator, 
+        Expr right, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -307,9 +281,9 @@ public interface Expr {
     }
 
     record When(
-            Expr condition,
-            Expr ifTrue,
-            Expr ifFalse
+        Expr condition, 
+        Expr ifTrue, 
+        Expr ifFalse
     ) implements Expr {
 
         @Override
@@ -319,8 +293,8 @@ public interface Expr {
     }
 
     record StaticGet(
-            ClassReference target,
-            Token name
+        ClassReference target, 
+        Token name
     ) implements Expr {
 
         @Override
@@ -330,10 +304,10 @@ public interface Expr {
     }
 
     record Switch(
-            Expr provider,
-            Map<Integer, Expr> params,
-            Expr defaulted,
-            Token keyword
+        Expr provider, 
+        Map<Integer,Expr> params, 
+        Expr defaulted, 
+        Token keyword
     ) implements Expr {
 
         @Override
@@ -343,10 +317,10 @@ public interface Expr {
     }
 
     record Slice(
-            Expr object,
-            Expr start,
-            Expr end,
-            Expr interval
+        Expr object, 
+        Expr start, 
+        Expr end, 
+        Expr interval
     ) implements Expr {
 
         @Override
@@ -356,9 +330,9 @@ public interface Expr {
     }
 
     record Get(
-            Expr object,
-            Token name,
-            ClassReference type
+        Expr object, 
+        Token name, 
+        ClassReference type
     ) implements Expr {
 
         @Override
@@ -368,11 +342,11 @@ public interface Expr {
     }
 
     record Assign(
-            Token name,
-            Expr value,
-            Token type,
-            byte ordinal,
-            ClassReference executor
+        Token name, 
+        Expr value, 
+        Token type, 
+        byte ordinal, 
+        ClassReference executor
     ) implements Expr {
 
         @Override
@@ -382,11 +356,11 @@ public interface Expr {
     }
 
     record StaticCall(
-            ClassReference target,
-            Token name,
-            Expr[] args,
-            ClassReference retType,
-            String id
+        ClassReference target, 
+        Token name, 
+        Expr[] args, 
+        ClassReference retType, 
+        String id
     ) implements Expr {
 
         @Override
@@ -396,11 +370,11 @@ public interface Expr {
     }
 
     record Binary(
-            Expr left,
-            Expr right,
-            Token operator,
-            ClassReference executor,
-            ClassReference retType
+        Expr left, 
+        Expr right, 
+        Token operator, 
+        ClassReference executor, 
+        ClassReference retType
     ) implements Expr {
 
         @Override

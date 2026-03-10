@@ -217,10 +217,11 @@ public class ExprParser extends AbstractParser {
                 return new Expr.Assign(name, value, assign, variable.ordinal(), executor.executor);
             } else if (expr instanceof Expr.Get get) {
                 ClassReference target = finder.findRetType(get.object());
-                expectType(get.name(), target.get().getFieldType(get.name().lexeme()), finder.findRetType(value));
+                ClassReference fieldType = target.get().getFieldType(get.name().lexeme());
+                expectType(get.name(), fieldType, finder.findRetType(value));
 
                 Executor executor;
-                if (assign.type() != ASSIGN) executor = getExecutor(target.get().getFieldType(get.name().lexeme()), assign, value);
+                if (assign.type() != ASSIGN) executor = getExecutor(fieldType, assign, value);
                 else executor = Executor.UNKNOWN;
                 return new Expr.Set(get.object(), get.name(), value, assign, executor.executor);
             } else if (expr instanceof Expr.ArrayGet get) {
@@ -228,6 +229,11 @@ public class ExprParser extends AbstractParser {
                 if (assign.type() != ASSIGN) executor = getExecutor(get, assign, value);
                 else executor = Executor.UNKNOWN;
                 return new Expr.ArraySet(get.object(), get.index(), value, assign, executor.executor);
+            } else if (expr instanceof Expr.StaticGet(ClassReference target, Token name)) {
+                Executor executor;
+                if (assign.type() != ASSIGN) executor = getExecutor(expr, assign, value);
+                else executor = Executor.UNKNOWN;
+                return new Expr.StaticSet(target, name, value, assign, executor.executor);
             }
 
             error(assign, "Invalid assignment target.");

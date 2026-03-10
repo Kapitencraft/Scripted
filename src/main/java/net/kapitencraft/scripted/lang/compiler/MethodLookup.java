@@ -116,7 +116,8 @@ public class MethodLookup {
                 parents.add(scriptedClass);
                 scriptedClass = scriptedClass.superclass().get();
             } while (scriptedClass != null && scriptedClass.superclass() != null);
-        }
+        } else
+            parents.add(scriptedClass);
         return Util.invert(parents);
     }
 

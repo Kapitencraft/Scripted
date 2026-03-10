@@ -760,6 +760,15 @@ public class CacheBuilder implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         loops.pop().patchBoth(increment);
         builder.patchJumpCurrent(jump1);
         builder.patchJump(returnIndex, (short) result);
+
+        int amount = stmt.popVarCount();
+        while (amount >= 2) {
+            builder.addCode(Opcode.POP_2);
+            amount -= 2;
+        }
+        if (amount > 0)
+            builder.addCode(Opcode.POP);
+
         return null;
     }
 

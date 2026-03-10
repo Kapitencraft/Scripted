@@ -362,7 +362,7 @@ public class Holder {
                     annotations.add(stmtParser.parseAnnotation(obj, parser));
                 }
 
-                short mods = Modifiers.fromJavaMods(field.modifiers);
+                short mods = field.modifiers;
                 CompileField fieldDecl = new CompileField(field.name, initializer, field.type().getReference(), mods, annotations.toArray(Annotation[]::new));
                 fields.put(field.name, fieldDecl);
             }
@@ -462,7 +462,7 @@ public class Holder {
                     annotations.add(stmtParser.parseAnnotation(obj, parser));
                 }
 
-                short mods = Modifiers.fromJavaMods(field.modifiers);
+                short mods = field.modifiers;
                 CompileField fieldDecl = new CompileField(field.name, initializer, field.type().getReference(), mods, annotations.toArray(Annotation[]::new));
                 if (Modifiers.isStatic(field.modifiers)) staticFields.put(field.name.lexeme(), fieldDecl);
                 else logger.error(field.name, "fields on interfaces must be static");
@@ -565,7 +565,7 @@ public class Holder {
             //fields
             ImmutableMap.Builder<String, SkeletonField> staticFields = new ImmutableMap.Builder<>();
             for (Field field : this.fields()) {
-                if (Modifiers.isStatic(field.modifiers)) staticFields.put(field.name().lexeme(), new SkeletonField(field.type().getReference(), Modifiers.fromJavaMods(field.modifiers)));
+                if (Modifiers.isStatic(field.modifiers)) staticFields.put(field.name().lexeme(), new SkeletonField(field.type().getReference(), field.modifiers));
                 else {
                     logger.error(field.name(), "fields inside Interfaces must always be static");
                 }
@@ -602,7 +602,7 @@ public class Holder {
             ImmutableMap.Builder<String, SkeletonField> fields = new ImmutableMap.Builder<>();
             List<Token> finalFields = new ArrayList<>();
             for (Field field : this.fields()) {
-                SkeletonField skeletonField = new SkeletonField(field.type().getReference(), Modifiers.fromJavaMods(field.modifiers));
+                SkeletonField skeletonField = new SkeletonField(field.type().getReference(), field.modifiers);
                 fields.put(field.name().lexeme(), skeletonField);
                 if (skeletonField.isFinal() && field.body() == null) //add non-defaulted final fields to extra list to check constructors init
                     finalFields.add(field.name());
