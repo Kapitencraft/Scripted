@@ -113,22 +113,22 @@ public class StmtParser extends ExprParser {
 
     private Stmt debugTrace() {
         Token keyword = previous();
-        List<String> locals = new ArrayList<>();
+        List<Pair<Byte, String>> locals = new ArrayList<>();
         if (match(S_BRACKET_O)) {
             do {
                 Token token = consumeIdentifier();
-                if (this.varAnalyser.get(token.lexeme()) == BytecodeVars.FetchResult.FAIL) {
+                BytecodeVars.FetchResult fetchResult = this.varAnalyser.get(token.lexeme());
+                if (fetchResult == BytecodeVars.FetchResult.FAIL) {
                     error(token, "no local variable named '" + token.lexeme() + "'");
                 }
-                locals.add(token.lexeme());
+                locals.add(Pair.of(fetchResult.ordinal(), token.lexeme()));
             } while (match(COMMA));
             consume(S_BRACKET_C, "expected ']' after trace debug");
         } else {
             locals = this.varAnalyser.dumpNames();
         }
         consumeEndOfArg();
-        byte[] localIndexes = this.varAnalyser.gatherLocalIndexes(locals);
-        return new Stmt.DebugTrace(keyword, localIndexes);
+        return new Stmt.DebugTrace(keyword, locals);
     }
 
     private Stmt tryStatement() {

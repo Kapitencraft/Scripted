@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.lang.compiler.analyser;
 
+import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 
@@ -53,10 +54,10 @@ public class BytecodeVars {
         locals[ordinal & 255].assigned = true;
     }
 
-    public List<String> dumpNames() {
-        List<String> names = new ArrayList<>();
+    public List<Pair<Byte, String>> dumpNames() {
+        List<Pair<Byte, String>> names = new ArrayList<>();
         for (int i = 0; i < localCount; i++) {
-            names.add(locals[i].name);
+            names.add(Pair.of((byte) i, locals[i].name));
         }
         return names;
     }

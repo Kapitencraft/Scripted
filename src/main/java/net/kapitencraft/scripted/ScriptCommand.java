@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.kapitencraft.scripted.lang.bytecode.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;
 import net.kapitencraft.scripted.lang.exe.natives.scripted.exe.CommandData;
@@ -28,6 +29,10 @@ public class ScriptCommand {
                 ).then(Commands.literal("run")
                         .then(Commands.argument("id", StringArgumentType.string())
                                 .executes(ScriptCommand::run)
+                        )
+                ).then(Commands.literal("list")
+                        .then(Commands.argument("name", StringArgumentType.string())
+                                .executes(ScriptCommand::list)
                         )
                 )
         );
@@ -62,6 +67,11 @@ public class ScriptCommand {
                 "scripted"
         );
         Compiler.compileAll(src, context.getSource());
+        return 1;
+    }
+
+    private static int list(CommandContext<CommandSourceStack> context) {
+        ClassLoader.list(StringArgumentType.getString(context, "name"));
         return 1;
     }
 }

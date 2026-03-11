@@ -615,7 +615,7 @@ public class VirtualMachine {
 
     private static void get(int i) {
         push(stack[stackBottom + i]);
-        if (DEBUG) System.out.printf("[DEBUG]:%s GET: %s\n", visualStackSize(), i);
+        if (DEBUG) System.out.printf("[DEBUG]:%s GET: %s (%s)\n", visualStackSize(), i, frame.callable.getChunk().localVariableTable().get(ip, i).getFirst());
     }
 
     private static void assign(int i) {

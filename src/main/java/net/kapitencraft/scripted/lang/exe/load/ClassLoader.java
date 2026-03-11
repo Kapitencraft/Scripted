@@ -32,7 +32,7 @@ public class ClassLoader {
         Scripted.LOGGER.info("Loading complete.");
     }
 
-    private static void list(String classRef) {
+    public static void list(String classRef) {
         if ("$all".equals(classRef)) {
             VarTypeManager.listFlat();
         } else {

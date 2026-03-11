@@ -4,6 +4,8 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 
+import java.util.List;
+
 public interface Stmt {
 
     interface Visitor<R> {
@@ -78,7 +80,7 @@ public interface Stmt {
 
     record DebugTrace(
         Token keyword, 
-        byte[] locals
+        List<Pair<Byte, String>> locals
     ) implements Stmt {
 
         @Override

@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.oop.clazz.PrimitiveClass;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -39,7 +40,11 @@ public class NativeMethod implements ScriptedCallable {
     @Override
     public Object call(Object[] arguments) {
         try {
-            return new NativeClassInstance((NativeClassImpl) this.type.get(), method.invoke(instance ? NativeClassLoader.extractNative(arguments[0]) : null, NativeClassLoader.extractNatives(arguments, instance)));
+            Object o = method.invoke(instance ? NativeClassLoader.extractNative(arguments[0]) : null, NativeClassLoader.extractNatives(arguments, instance));
+            if (this.type.get() instanceof PrimitiveClass) {
+                return o;
+            }
+            return new NativeClassInstance((NativeClassImpl) this.type.get(), o);
         } catch (IllegalAccessException | InvocationTargetException e) {
             VirtualMachine.handleException(VirtualMachine.createException(VarTypeManager.FUNCTION_CALL_ERROR, e.getMessage()));
         } catch (Throwable e) {
