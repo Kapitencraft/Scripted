@@ -34,8 +34,31 @@ public class ScriptCommand {
                         .then(Commands.argument("name", StringArgumentType.string())
                                 .executes(ScriptCommand::list)
                         )
+                ).then(Commands.literal("debug")
+                        .then(Commands.literal("none")
+                                .executes(ScriptCommand::noneDebug)
+                        ).then(Commands.literal("operations")
+                                .executes(ScriptCommand::operationsDebug)
+                        ).then(Commands.literal("stack")
+                                .executes(ScriptCommand::stackDebug)
+                        )
                 )
         );
+    }
+
+    private static int stackDebug(CommandContext<CommandSourceStack> context) {
+        VirtualMachine.DEBUG = VirtualMachine.DebugType.STACK;
+        return 1;
+    }
+
+    private static int operationsDebug(CommandContext<CommandSourceStack> context) {
+        VirtualMachine.DEBUG = VirtualMachine.DebugType.OPERATIONS;
+        return 1;
+    }
+
+    private static int noneDebug(CommandContext<CommandSourceStack> context) {
+        VirtualMachine.DEBUG = VirtualMachine.DebugType.NONE;
+        return 1;
     }
 
     private static int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {

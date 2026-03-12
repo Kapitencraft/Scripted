@@ -561,20 +561,39 @@ public class CacheBuilder implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
 
     @Override
     public Void visitLogicalExpr(Expr.Logical expr) {
+        //l || r -> l ? true : r
+        //l && r -> l ? r : false
+        //l ^ r  -> l ? r : !r
         boolean hadRetain = retainExprResult;
         retainExprResult = true;
-        cache(expr.right());
         cache(expr.left());
-        if (hadRetain) {
-            builder.changeLineIfNecessary(expr.operator());
-            builder.addCode(switch (expr.operator().type()) {
-                case OR -> Opcode.OR;
-                case XOR -> Opcode.XOR;
-                case AND -> Opcode.AND;
-                default -> throw new IllegalArgumentException("unknown logical type: " + expr.operator());
-            });
-        } else {
-            builder.addCode(Opcode.POP_2);
+        int jumpPatch = builder.addJumpIfFalse();
+        switch (expr.operator().type()) {
+            case XOR -> {
+                cache(expr.right());
+                builder.addCode(Opcode.NOT);
+                int jumpRPatch = builder.addJump();
+                builder.patchJumpCurrent(jumpPatch);
+                cache(expr.right());
+                builder.patchJumpCurrent(jumpRPatch);
+            }
+            case OR -> {
+                builder.addCode(Opcode.TRUE);
+                int jumpRPatch = builder.addJump();
+                builder.patchJumpCurrent(jumpPatch);
+                cache(expr.right());
+                builder.patchJumpCurrent(jumpRPatch);
+            }
+            case AND -> {
+                cache(expr.right());
+                int jumpRPatch = builder.addJump();
+                builder.patchJumpCurrent(jumpPatch);
+                builder.addCode(Opcode.FALSE);
+                builder.patchJumpCurrent(jumpRPatch);
+            }
+        }
+        if (!hadRetain) {
+            builder.addCode(Opcode.POP);
             ignoredExprResult = true;
         }
         return null;
