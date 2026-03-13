@@ -362,10 +362,27 @@ public class ExprParser extends AbstractParser {
     private Expr comparison() {
         Expr expr = term();
 
-        while (match(COMPARATORS)) {
+        if (match(COMPARATORS)) {
             Token operator = previous();
             Expr right = term();
-            expr = parseBinaryExpr(expr, operator, right);
+
+            if (match(COMPARATORS)) {
+                List<Token> operators = new ArrayList<>();
+                operators.add(operator);
+                operators.add(previous());
+                List<Expr> values = new ArrayList<>();
+                values.add(expr);
+                values.add(right);
+                values.add(term());
+                while (match(COMPARATORS)) {
+                    operators.add(previous());
+                    values.add(term());
+                }
+                //TODO add overloads
+                expr = new Expr.ComparisonChain(values.toArray(Expr[]::new), operators.toArray(Token[]::new), VarTypeManager.INTEGER.reference());
+            } else {
+                expr = parseBinaryExpr(expr, operator, right);
+            }
         }
 
         return expr;

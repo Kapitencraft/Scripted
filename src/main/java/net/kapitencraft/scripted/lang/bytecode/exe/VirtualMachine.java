@@ -386,29 +386,104 @@ public class VirtualMachine {
                     case D_CONST -> push(constDouble(constants, read2Byte()));
                     case F_CONST -> push(constFloat(constants, read2Byte()));
                     case S_CONST -> push(NativeClassLoader.wrapString(constString(constants, read2Byte())));
-                    case CONCENTRATION ->
-                            push(NativeClassLoader.wrapString(pop() + (String) ((NativeClassInstance) pop()).getObject()));
-                    case I_NEGATION -> push(-(int) pop());
+                    case CONCENTRATION -> {
+                        String obj = (String) ((NativeClassInstance) pop()).getObject();
+                        Object object = pop();
+
+                        push(NativeClassLoader.wrapString(object + obj));
+                    }                    case I_NEGATION -> push(-(int) pop());
                     case D_NEGATION -> push(-(double) pop());
                     case F_NEGATION -> push(-(float) pop());
-                    case I_POW -> push((int) Math.pow((int) pop(), (int) pop()));
-                    case D_POW -> push(Math.pow((double) pop(), (double) pop()));
-                    case F_POW -> push((float) Math.pow((float) pop(), (float) pop()));
-                    case I_MOD -> push((int) pop() % (int) pop());
-                    case D_MOD -> push((double) pop() % (double) pop());
-                    case F_MOD -> push((float) pop() % (float) pop());
-                    case I_ADD -> push((int) pop() + (int) pop()); //i, i -> i
-                    case D_ADD -> push((double) pop() + (double) pop());
-                    case F_ADD -> push((float) pop() + (float) pop());
-                    case I_DIV -> push((int) pop() / (int) pop());
-                    case D_DIV -> push((double) pop() / (double) pop());
-                    case F_DIV -> push((float) pop() / (float) pop());
-                    case I_MUL -> push((int) pop() * (int) pop());
-                    case D_MUL -> push((double) pop() * (double) pop());
-                    case F_MUL -> push((float) pop() * (float) pop());
-                    case I_SUB -> push((int) pop() - (int) pop());
-                    case D_SUB -> push((double) pop() - (double) pop());
-                    case F_SUB -> push((float) pop() - (float) pop());
+                    case I_POW -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push((int) Math.pow(value1, value2));
+                    }
+                    case D_POW -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(Math.pow(value1, value2));
+                    }
+                    case F_POW -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push((float) Math.pow(value1, value2));
+                    }
+                    case I_MOD -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 % value2);
+                    }
+                    case D_MOD -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 % value2);
+                    }
+                    case F_MOD -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 % value2);
+                    }
+                    case I_ADD -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 + value2);
+                    }
+                    case D_ADD -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 + value2);
+                    }
+                    case F_ADD -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 + value2);
+                    }
+                    case I_DIV -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 / value2);
+                    }
+                    case D_DIV -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 / value2);
+                    }
+                    case F_DIV -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 / value2);
+                    }
+                    case I_MUL -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 * value2);
+                    }
+                    case D_MUL -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 * value2);
+                    }
+                    case F_MUL -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 * value2);
+                    }
+                    case I_SUB -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 - value2);
+                    }
+                    case D_SUB -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 - value2);
+                    }
+                    case F_SUB -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 - value2);
+                    }
                     case IA_LOAD -> push(((int[]) pop())[(int) pop()]);
                     case DA_LOAD -> push(((double[]) pop())[(int) pop()]);
                     case CA_LOAD -> push(((char[]) pop())[(int) pop()]);
@@ -502,9 +577,6 @@ public class VirtualMachine {
                         push(value1 < value2);
                     }
                     case NOT -> push(!(boolean) pop());
-                    case OR -> push((boolean) pop() || (boolean) pop());
-                    case AND -> push((boolean) pop() && (boolean) pop());
-                    case XOR -> push((boolean) pop() ^ (boolean) pop());
                     case D2F -> push((float) (double) pop());
                     case SWITCH -> {
                         int entry = (int) pop();
@@ -704,6 +776,7 @@ public class VirtualMachine {
     }
 
     private static void init(CallFrame callFrame) {
+        callStackTop = 0;
         frame = callStack[callStackTop++] = callFrame;
         ip = callFrame.ip;
         code = callFrame.code;
