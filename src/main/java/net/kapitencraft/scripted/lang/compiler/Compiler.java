@@ -105,7 +105,10 @@ public class Compiler {
         }
 
         executor.shutdownNow();
-        errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
+        if (errorCount < 1)
+            errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
+        else
+            errorSink.sendFailure(Component.literal("failed to compile with " + errorCount + " errors"));
     }
 
     /**

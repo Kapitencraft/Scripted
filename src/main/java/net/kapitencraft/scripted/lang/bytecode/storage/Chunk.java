@@ -8,7 +8,7 @@ import net.kapitencraft.scripted.lang.bytecode.exe.Opcode;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.util.GsonHelper;
-import org.jetbrains.annotations.UnknownNullability;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -256,10 +256,10 @@ public record Chunk(byte[] code, byte[] constants, ExceptionHandler[] handlers, 
             this.lineNumbers.changeIfNecessary(type.line(), this.currentCodeIndex());
         }
 
-        public void addTraceDebug(@UnknownNullability List<Pair<Byte, String>> ints) {
+        public void addTraceDebug(@NotNull Pair<Byte, String>[] ints) {
             this.addCode(Opcode.TRACE);
             this.addConstantArg();
-            this.constants.add((byte) ints.size());
+            this.constants.add((byte) ints.length);
             for (Pair<Byte, String> pair : ints) {
                 this.constants.add(pair.getFirst());
             }

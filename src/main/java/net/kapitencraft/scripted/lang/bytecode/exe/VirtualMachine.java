@@ -441,18 +441,66 @@ public class VirtualMachine {
                     }
                     case EQUAL -> push(pop() == pop());
                     case NEQUAL -> push(pop() != pop());
-                    case I_GEQUAL -> push((int) pop() >= (int) pop());
-                    case D_GEQUAL -> push((double) pop() >= (double) pop());
-                    case F_GEQUAL -> push((float) pop() >= (float) pop());
-                    case I_LEQUAL -> push((int) pop() <= (int) pop());
-                    case D_LEQUAL -> push((double) pop() <= (double) pop());
-                    case F_LEQUAL -> push((float) pop() <= (float) pop());
-                    case I_GREATER -> push((int) pop() > (int) pop());
-                    case D_GREATER -> push((double) pop() > (double) pop());
-                    case F_GREATER -> push((float) pop() > (float) pop());
-                    case I_LESSER -> push((int) pop() < (int) pop());
-                    case D_LESSER -> push((double) pop() < (double) pop());
-                    case F_LESSER -> push((float) pop() < (float) pop());
+                    case I_GEQUAL -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 >= value2);
+                    }
+                    case D_GEQUAL -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 >= value2);
+                    }
+                    case F_GEQUAL -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 >= value2);
+                    }
+                    case I_LEQUAL -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 <= value2);
+                    }
+                    case D_LEQUAL -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 <= value2);
+                    }
+                    case F_LEQUAL -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 <= value2);
+                    }
+                    case I_GREATER -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 > value2);
+                    }
+                    case D_GREATER -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 > value2);
+                    }
+                    case F_GREATER -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 > value2);
+                    }
+                    case I_LESSER -> {
+                        int value2 = (int) pop();
+                        int value1 = (int) pop();
+                        push(value1 < value2);
+                    }
+                    case D_LESSER -> {
+                        double value2 = (double) pop();
+                        double value1 = (double) pop();
+                        push(value1 < value2);
+                    }
+                    case F_LESSER -> {
+                        float value2 = (float) pop();
+                        float value1 = (float) pop();
+                        push(value1 < value2);
+                    }
                     case NOT -> push(!(boolean) pop());
                     case OR -> push((boolean) pop() || (boolean) pop());
                     case AND -> push((boolean) pop() && (boolean) pop());

@@ -4,8 +4,6 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 
-import java.util.List;
-
 public interface Stmt {
 
     interface Visitor<R> {
@@ -65,7 +63,7 @@ public interface Stmt {
     }
 
     record ForEach(
-        ClassReference type,
+        ClassReference type, 
         Token name, 
         Expr initializer, 
         Stmt body, 
@@ -80,7 +78,7 @@ public interface Stmt {
 
     record DebugTrace(
         Token keyword, 
-        List<Pair<Byte, String>> locals
+        Pair<Byte, String>[] locals
     ) implements Stmt {
 
         @Override

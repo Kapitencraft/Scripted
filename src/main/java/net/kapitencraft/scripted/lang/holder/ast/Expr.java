@@ -15,6 +15,7 @@ public interface Expr {
         R visitInstCallExpr(InstCall expr);
         R visitLogicalExpr(Logical expr);
         R visitSuperCallExpr(SuperCall expr);
+        R visitComparisonChainExpr(ComparisonChain expr);
         R visitCastCheckExpr(CastCheck expr);
         R visitArrayGetExpr(ArrayGet expr);
         R visitLiteralExpr(Literal expr);
@@ -128,6 +129,18 @@ public interface Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitSuperCallExpr(this);
+        }
+    }
+
+    record ComparisonChain(
+        Expr[] entries, 
+        Token[] types, 
+        ClassReference dataType
+    ) implements Expr {
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitComparisonChainExpr(this);
         }
     }
 

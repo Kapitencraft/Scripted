@@ -128,7 +128,7 @@ public class StmtParser extends ExprParser {
             locals = this.varAnalyser.dumpNames();
         }
         consumeEndOfArg();
-        return new Stmt.DebugTrace(keyword, locals);
+        return new Stmt.DebugTrace(keyword, locals.toArray(Pair[]::new));
     }
 
     private Stmt tryStatement() {

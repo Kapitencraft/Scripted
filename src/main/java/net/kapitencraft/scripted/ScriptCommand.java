@@ -80,6 +80,7 @@ public class ScriptCommand {
                 new DynamicClassInstance(c.get()),
                 new NativeClassInstance(((NativeClassImpl) VarTypeManager.COMMAND_DATA.get()), data)
         );
+        context.getSource().sendSuccess(() -> Component.literal("successfully ran Command Script " + id), true);
 
         return 1;
     }
@@ -90,6 +91,8 @@ public class ScriptCommand {
                 "scripted"
         );
         Compiler.compileAll(src, context.getSource());
+
+
         return 1;
     }
 

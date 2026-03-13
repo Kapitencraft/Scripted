@@ -156,6 +156,11 @@
           "origin": "Token",
           "regKey": "String",
           "valKey": "String"
+        },
+        "ComparisonChain": {
+          "entries": "Expr[]",
+          "types": "Token[]",
+          "dataType": "ClassReference"
         }
       },
       "imports": [
@@ -225,7 +230,7 @@
         },
         "DebugTrace": {
           "keyword": "Token",
-          "locals": "byte[]"
+          "locals": "Pair<Byte, String>[] locals"
         }
       },
       "imports": [
@@ -234,7 +239,7 @@
     }
   },
   "imports": [
-    "net.kapitencraft.lang.holder.token.Token",
-    "net.kapitencraft.lang.holder.class_ref.ClassReference"
+    "net.kapitencraft.scripted.lang.holder.token.Token",
+    "net.kapitencraft.scripted.lang.holder.class_ref.ClassReference"
   ]
 }

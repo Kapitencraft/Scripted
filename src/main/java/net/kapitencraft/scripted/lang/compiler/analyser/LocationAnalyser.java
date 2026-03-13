@@ -135,6 +135,11 @@ public class LocationAnalyser implements Stmt.Visitor<Token>, Expr.Visitor<Token
     }
 
     @Override
+    public Token visitComparisonChainExpr(Expr.ComparisonChain expr) {
+        return expr.types()[expr.types().length - 1];
+    }
+
+    @Override
     public Token visitUnaryExpr(Expr.Unary expr) {
         return expr.operator();
     }

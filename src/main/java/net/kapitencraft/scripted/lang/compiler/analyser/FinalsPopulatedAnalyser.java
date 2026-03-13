@@ -79,6 +79,14 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
     }
 
     @Override
+    public Void visitComparisonChainExpr(Expr.ComparisonChain expr) {
+        for (Expr entry : expr.entries()) {
+            analyse(entry);
+        }
+        return null;
+    }
+
+    @Override
     public Void visitCastCheckExpr(Expr.CastCheck expr) {
         analyse(expr.object());
         return null;
