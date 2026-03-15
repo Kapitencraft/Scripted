@@ -352,7 +352,7 @@ public class AbstractParser {
 
         Token last = previous();
         int index = current;
-        while (match(DOT) && reference != null) { //TODO fix token corruption due to consumption
+        while (match(DOT) && reference != null) {
             String enclosingName = consumeIdentifier().lexeme(); //needs to stay here for the mean-time to ensure the compiler doesn't break
             ClassReference name = VarTypeManager.getClassForName(reference.absoluteName() + "." + enclosingName);
             if (name == null) {
