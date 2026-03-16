@@ -4,11 +4,11 @@ import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
@@ -17,7 +17,6 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -106,17 +105,17 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
         int loopWidth = getHeadWidth(font);
         int headHeight = getHeadHeight();
-        graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, headHeight + 3);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
+        graphics.renderLoopHead(renderX, renderY, loopWidth, headHeight + 3);
+        //RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
         int bodyHeight = getBranchHeight();
         if (this.body != null)
-            this.body.render(graphics, font, renderX + 6, renderY + headHeight);
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY + headHeight + bodyHeight, loopWidth, 16);
-        super.render(graphics, font, renderX, renderY);
+            this.body.renderBackground(graphics, font, renderX + 6, renderY + headHeight);
+        graphics.renderScopeEnclosure(renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
+        graphics.renderScopeEnd(renderX, renderY + headHeight + bodyHeight, loopWidth, 16);
+        super.renderBackground(graphics, font, renderX, renderY);
     }
 
     private int getHeadHeight() {

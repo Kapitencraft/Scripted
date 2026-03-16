@@ -2,6 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -24,7 +25,12 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY) {
+
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), renderX, renderY, 0);
     }
 

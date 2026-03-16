@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.client.UsefulTextures;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -53,7 +54,11 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY) {
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
         pose.translate(renderX, renderY, 0);

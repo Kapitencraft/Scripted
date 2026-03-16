@@ -4,14 +4,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -78,11 +77,12 @@ public class MethodStmtWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
 
         int height = getHeight();
-        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, signature, args);
+        graphics.renderSimpleBlock(renderX, renderY, 6 + getWidth(font), 3 + height);
+        //RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7, signature, args);
+        super.renderBackground(graphics, font, renderX, renderY);
     }
 
     @Override

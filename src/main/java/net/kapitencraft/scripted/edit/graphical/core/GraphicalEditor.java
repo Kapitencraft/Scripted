@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
 import net.kapitencraft.kap_lib.core.helpers.ClientHelper;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.BlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -137,23 +136,18 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose(); //reset pose
         pose.scale(scale, scale, 1);
         pose.translate(this.scrollX, this.scrollY, 0);
-        //0 = scale * (translate + aPos)
-        //0 = translate + aPos | -translate
-        //-translate = aPos
-        int minX = -(int) scrollX;
-        int minY = -(int) scrollY;
-        //width = scale * (translate + aPos) | /scale
-        //width / scale = translate + aPos | - translate
-        //width / scale - translate = aPos
-        int maxX = (int) (getWidth() / scale - scrollX);
-        int maxY = (int) (getHeight() / scale - scrollY);
-
+        List<CodeElement> visible = getVisible();
         WidgetRenderer renderer = new WidgetRenderer(Minecraft.getInstance().getGuiSprites(), pose.last().pose());
-        for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
-            CodeElement element = this.elements.get(i);
-            if (element.visible(minX, minY, maxX, maxY)) {
-                element.render(pGuiGraphics, renderer, font, element.x, element.y);
-            }
+        for (CodeElement element : visible) {
+            element.renderDebug(pGuiGraphics, element.x, element.y);
+        }
+
+        for (CodeElement element : visible) {
+            element.renderBackground(renderer, font, element.x, element.y);
+        }
+        renderer.draw();
+        for (CodeElement element : visible) {
+            element.renderForeground(pGuiGraphics, font, element.x, element.y);
         }
 
         pGuiGraphics.disableScissor();
@@ -164,7 +158,12 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
         if (this.draggedWidget != null) {
-            this.draggedWidget.renderBackground(pGuiGraphics, font, (int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale));
+            int dX = (int) ((pMouseX + this.draggedOffsetX) / scale);
+            int dY = (int) ((pMouseY + this.draggedOffsetY) / scale);
+            WidgetRenderer renderer1 = new WidgetRenderer(Minecraft.getInstance().getGuiSprites(), pose.last().pose());
+            this.draggedWidget.renderBackground(renderer1, font, dX, dY);
+            renderer1.draw();
+            this.draggedWidget.renderText(pGuiGraphics, font, dX, dY);
         }
         pose.popPose();
         //endregion
@@ -196,17 +195,20 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(0.75f, 0.75f, 1);
         pose.translate(0, this.selectionScroll, 0);
         int yO = 1;
+        WidgetRenderer renderer1 = new WidgetRenderer(Minecraft.getInstance().getGuiSprites(), pGuiGraphics.pose().last().pose());
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
             yO += 10;
             for (int i1 = 0; i1 < value.size(); i1++) {
                 CodeWidget widget = value.get(i1);
-                widget.renderBackground(pGuiGraphics, font, 0, yO);
+                widget.renderBackground(renderer1, font, 0, yO);
+                widget.renderText(pGuiGraphics, font, 0, yO);
                 yO += widget.getHeight();
                 yO += 10;
             }
         }
+        renderer1.draw();
         pose.popPose();
         pGuiGraphics.disableScissor();
 
@@ -216,6 +218,30 @@ public class GraphicalEditor extends AbstractWidget {
             this.widget.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
             pose.popPose();
         }
+    }
+
+    private @NotNull List<CodeElement> getVisible() {
+        //0 = scale * (translate + aPos)
+        //0 = translate + aPos | -translate
+        //-translate = aPos
+        int minX = -(int) scrollX;
+        int minY = -(int) scrollY;
+        //width = scale * (translate + aPos) | /scale
+        //width / scale = translate + aPos | - translate
+        //width / scale - translate = aPos
+        int maxX = (int) (getWidth() / scale - scrollX);
+        int maxY = (int) (getHeight() / scale - scrollY);
+
+
+        List<CodeElement> visible = new ArrayList<>();
+
+        for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
+            CodeElement element = this.elements.get(i);
+            if (element.visible(minX, minY, maxX, maxY)) {
+                visible.add(element);
+            }
+        }
+        return visible;
     }
 
     @Override
@@ -498,10 +524,9 @@ public class GraphicalEditor extends AbstractWidget {
             this.widget.registerInteractions(this.x, this.y, font, this.interactions::add);
         }
 
-        public void render(GuiGraphics pGuiGraphics, WidgetRenderer renderer, Font font, int x, int y) {
+        public void renderDebug(GuiGraphics pGuiGraphics, int x, int y) {
             if (renderDebug)
                 pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
-            this.widget.renderBackground(renderer, font, x, y);
             if (renderDebug) {
                 PoseStack pose = pGuiGraphics.pose();
                 pose.pushPose();
@@ -525,6 +550,14 @@ public class GraphicalEditor extends AbstractWidget {
                 }
             }
             return false;
+        }
+
+        public void renderBackground(WidgetRenderer renderer, Font font, int x, int y) {
+            this.widget().renderBackground(renderer, font, x, y);
+        }
+
+        public void renderForeground(GuiGraphics pGuiGraphics, Font font, int x, int y) {
+            this.widget().renderText(pGuiGraphics, font, x, y);
         }
     }
 
@@ -618,7 +651,7 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public void renderBackground(WidgetRenderer renderer, Font font, int renderX, int renderY) {
             int height = getHeight();
-            graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
+            renderer.renderSimpleBlock(renderX, renderY, 6 + getWidth(font), 3 + height);
             super.renderBackground(renderer, font, renderX, renderY);
         }
 
@@ -662,7 +695,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
+
+        }
+
+        @Override
+        public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
 
         }
 

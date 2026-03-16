@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
-import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -68,8 +68,12 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(ExprCategory.OTHER.getSpriteLocation(), renderX, renderY, getWidth(font), 10);
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
+        graphics.renderGenericExpr(renderX, renderY, getWidth(font), 10);
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.drawString(font, textProvider.apply(entries.get(index)), renderX + 2, renderY + 1, -1);
     }
 

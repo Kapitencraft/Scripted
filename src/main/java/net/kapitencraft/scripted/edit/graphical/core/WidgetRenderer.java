@@ -2,6 +2,8 @@ package net.kapitencraft.scripted.edit.graphical.core;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.minecraft.client.gui.GuiSpriteManager;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -13,6 +15,17 @@ public class WidgetRenderer {
     private final GuiSpriteManager sprites;
     private final Matrix4f pose;
     private final BufferBuilder builder;
+    private final TextureAtlasSprite boolExpr;
+    private final TextureAtlasSprite elseConditionHead;
+    private final TextureAtlasSprite genericExpr;
+    private final TextureAtlasSprite loopHead;
+    private final TextureAtlasSprite methodHead;
+    private final TextureAtlasSprite numberExpr;
+    private final TextureAtlasSprite scopeEnclosure;
+    private final TextureAtlasSprite scopeEnd;
+    private final TextureAtlasSprite scopeEndWithCode;
+    private final TextureAtlasSprite simpleBlock;
+    private final TextureAtlasSprite modifyIf;
 
     public WidgetRenderer(GuiSpriteManager sprites, Matrix4f pose) {
         this.sprites = sprites;
@@ -20,27 +33,81 @@ public class WidgetRenderer {
         RenderSystem.setShaderTexture(0, ResourceLocation.withDefaultNamespace("textures/atlas/gui.png"));
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         builder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+        this.boolExpr = sprites.getSprite(CodeWidgetSprites.BOOL_EXPR);
+        this.elseConditionHead = sprites.getSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD);
+        this.genericExpr = sprites.getSprite(CodeWidgetSprites.GENERIC_EXPR);
+        this.loopHead = sprites.getSprite(CodeWidgetSprites.LOOP_HEAD);
+        this.methodHead = sprites.getSprite(CodeWidgetSprites.METHOD_HEAD);
+        this.numberExpr = sprites.getSprite(CodeWidgetSprites.NUMBER_EXPR);
+        this.scopeEnclosure = sprites.getSprite(CodeWidgetSprites.SCOPE_ENCLOSURE);
+        this.scopeEnd = sprites.getSprite(CodeWidgetSprites.SCOPE_END);
+        this.scopeEndWithCode = sprites.getSprite(CodeWidgetSprites.SCOPE_END_WITH_CODE);
+        this.simpleBlock = sprites.getSprite(CodeWidgetSprites.SIMPLE_BLOCK);
+        this.modifyIf = sprites.getSprite(CodeWidgetSprites.MODIFY_IF);
     }
 
-    public void draw() {
-        BufferUploader.drawWithShader(builder.buildOrThrow());
+    public void renderBoolExpr(int x, int y, int width, int height) {
+        renderSprite(this.boolExpr, x, y, width, height);
     }
 
-    public void blitSprite(ResourceLocation sprite, int x, int y, int width, int height) {
-        this.blitSprite(sprite, x, y, 0, width, height);
+    public void renderElseConditionHead(int x, int y, int width, int height) {
+        renderSprite(this.elseConditionHead, x, y, width, height);
     }
 
-    public void blitSprite(ResourceLocation sprite, int x, int y, int blitOffset, int width, int height) {
-        TextureAtlasSprite textureatlassprite = this.sprites.getSprite(sprite);
-        GuiSpriteScaling guispritescaling = this.sprites.getSpriteScaling(textureatlassprite);
-        switch (guispritescaling) {
+    public void renderGenericExpr(int x, int y, int width, int height) {
+        renderSprite(this.genericExpr, x, y, width, height);
+    }
+
+    public void renderLoopHead(int x, int y, int width, int height) {
+        renderSprite(this.loopHead, x, y, width, height);
+    }
+
+    public void renderMethodHead(int x, int y, int width, int height) {
+        renderSprite(this.methodHead, x, y, width, height);
+    }
+
+    public void renderNumberExpr(int x, int y, int width, int height) {
+        renderSprite(this.numberExpr, x, y, width, height);
+    }
+
+    public void renderScopeEnclosure(int x, int y, int width, int height) {
+        renderSprite(this.scopeEnclosure, x, y, width, height);
+    }
+
+    public void renderScopeEnd(int x, int y, int width, int height) {
+        renderSprite(scopeEnd, x, y, width, height);
+    }
+
+    public void renderScopeEndWithCode(int x, int y, int width, int height) {
+        renderSprite(scopeEndWithCode, x, y, width, height);
+    }
+
+    public void renderSimpleBlock(int x, int y, int width, int height) {
+        renderSprite(simpleBlock, x, y, width, height);
+    }
+
+    public void renderModifyIf(int x, int y, int width, int height) {
+        renderSprite(modifyIf, x, y, width, height);
+    }
+
+
+    public void renderExpr(ExprCategory type, int x, int y, int width, int height) {
+        renderSprite(switch (type) {
+            case NUMBER -> numberExpr;
+            case BOOLEAN -> boolExpr;
+            case OTHER -> genericExpr;
+        }, x, y, width, height);
+    }
+
+    private void renderSprite(TextureAtlasSprite sprite, int x, int y, int width, int height) {
+        GuiSpriteScaling scaling = this.sprites.getSpriteScaling(sprite);
+        switch (scaling) {
             case GuiSpriteScaling.Stretch ignored ->
-                    this.blitSprite(textureatlassprite, x, y, blitOffset, width, height);
+                    this.blitSprite(sprite, x, y, width, height);
             case GuiSpriteScaling.Tile guispritescaling$tile -> this.blitTiledSprite(
-                    textureatlassprite,
+                    sprite,
                     x,
                     y,
-                    blitOffset,
                     width,
                     height,
                     0,
@@ -51,14 +118,20 @@ public class WidgetRenderer {
                     guispritescaling$tile.height()
             );
             case GuiSpriteScaling.NineSlice guispritescaling$nineslice ->
-                    this.blitNineSlicedSprite(textureatlassprite, guispritescaling$nineslice, x, y, blitOffset, width, height);
+                    this.blitNineSlicedSprite(sprite, guispritescaling$nineslice, x, y, width, height);
             default -> {
             }
         }
     }
 
+    public void draw() {
+        RenderSystem.setShaderTexture(0, ResourceLocation.withDefaultNamespace("textures/atlas/gui.png"));
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        BufferUploader.drawWithShader(builder.buildOrThrow());
+    }
+
     private void blitNineSlicedSprite(
-            TextureAtlasSprite sprite, GuiSpriteScaling.NineSlice nineSlice, int x, int y, int blitOffset, int width, int height
+            TextureAtlasSprite sprite, GuiSpriteScaling.NineSlice nineSlice, int x, int y, int width, int height
     ) {
         GuiSpriteScaling.NineSlice.Border guispritescaling$nineslice$border = nineSlice.border();
         int left = Math.min(guispritescaling$nineslice$border.left(), width / 2);
@@ -66,14 +139,13 @@ public class WidgetRenderer {
         int top = Math.min(guispritescaling$nineslice$border.top(), height / 2);
         int bottom = Math.min(guispritescaling$nineslice$border.bottom(), height / 2);
         if (width == nineSlice.width() && height == nineSlice.height()) {
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, blitOffset, width, height);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, width, height);
         } else if (height == nineSlice.height()) {
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, blitOffset, left, height);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, left, height);
             this.blitTiledSprite(
                     sprite,
                     x + left,
                     y,
-                    blitOffset,
                     width - right - left,
                     height,
                     left,
@@ -84,15 +156,14 @@ public class WidgetRenderer {
                     nineSlice.height()
             );
             this.blitSprite(
-                    sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - right, 0, x + width - right, y, blitOffset, right, height
+                    sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - right, 0, x + width - right, y, right, height
             );
         } else if (width == nineSlice.width()) {
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, blitOffset, width, top);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, width, top);
             this.blitTiledSprite(
                     sprite,
                     x,
                     y + top,
-                    blitOffset,
                     width,
                     height - bottom - top,
                     0,
@@ -103,24 +174,23 @@ public class WidgetRenderer {
                     nineSlice.height()
             );
             this.blitSprite(
-                    sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - bottom, x, y + height - bottom, blitOffset, width, bottom
+                    sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - bottom, x, y + height - bottom, width, bottom
             );
         } else {
             //top left
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, blitOffset, left, top);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, 0, x, y, left, top);
             //top middle
             this.blitTiledSprite(
-                    sprite, x + left, y, blitOffset, width - right - left, top, left, 0, nineSlice.width() - right - left, top, nineSlice.width(), nineSlice.height()
+                    sprite, x + left, y, width - right - left, top, left, 0, nineSlice.width() - right - left, top, nineSlice.width(), nineSlice.height()
             );
             //top right
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - right, 0, x + width - right, y, blitOffset, right, top);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), nineSlice.width() - right, 0, x + width - right, y, right, top);
             //bottom left
-            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - bottom, x, y + height - bottom, blitOffset, left, bottom);
+            this.blitSprite(sprite, nineSlice.width(), nineSlice.height(), 0, nineSlice.height() - bottom, x, y + height - bottom, left, bottom);
             this.blitTiledSprite(
                     sprite,
                     x + left,
                     y + height - bottom,
-                    blitOffset,
                     width - right - left,
                     bottom,
                     left,
@@ -138,7 +208,6 @@ public class WidgetRenderer {
                     nineSlice.height() - bottom,
                     x + width - right,
                     y + height - bottom,
-                    blitOffset,
                     right,
                     bottom
             );
@@ -146,7 +215,6 @@ public class WidgetRenderer {
                     sprite,
                     x,
                     y + top,
-                    blitOffset,
                     left,
                     height - bottom - top,
                     0,
@@ -160,7 +228,6 @@ public class WidgetRenderer {
                     sprite,
                     x + left,
                     y + top,
-                    blitOffset,
                     width - right - left,
                     height - bottom - top,
                     left,
@@ -174,7 +241,6 @@ public class WidgetRenderer {
                     sprite,
                     x + width - right,
                     y + top,
-                    blitOffset,
                     left,
                     height - bottom - top,
                     nineSlice.width() - right,
@@ -191,7 +257,6 @@ public class WidgetRenderer {
             TextureAtlasSprite sprite,
             int x,
             int y,
-            int blitOffset,
             int width,
             int height,
             int uPosition,
@@ -208,7 +273,7 @@ public class WidgetRenderer {
 
                     for (int k = 0; k < height; k += spriteHeight) {
                         int l = Math.min(spriteHeight, height - k);
-                        this.blitSprite(sprite, nineSliceWidth, nineSliceHeight, uPosition, vPosition, x + i, y + k, blitOffset, j, l);
+                        this.blitSprite(sprite, nineSliceWidth, nineSliceHeight, uPosition, vPosition, x + i, y + k, j, l);
                     }
                 }
             } else {
@@ -217,14 +282,13 @@ public class WidgetRenderer {
         }
     }
 
-    private void blitSprite(TextureAtlasSprite sprite, int x, int y, int blitOffset, int width, int height) {
+    private void blitSprite(TextureAtlasSprite sprite, int x, int y, int width, int height) {
         if (width != 0 && height != 0) {
             this.innerBlit(
                     x,
                     x + width,
                     y,
                     y + height,
-                    blitOffset,
                     sprite.getU0(),
                     sprite.getU1(),
                     sprite.getV0(),
@@ -241,7 +305,6 @@ public class WidgetRenderer {
             int vPosition,
             int x,
             int y,
-            int blitOffset,
             int uWidth,
             int vHeight
     ) {
@@ -251,7 +314,6 @@ public class WidgetRenderer {
                     x + uWidth,
                     y,
                     y + vHeight,
-                    blitOffset,
                     sprite.getU((float)uPosition / (float)textureWidth),
                     sprite.getU((float)(uPosition + uWidth) / (float)textureWidth),
                     sprite.getV((float)vPosition / (float)textureHeight),
@@ -265,15 +327,14 @@ public class WidgetRenderer {
             int x2,
             int y1,
             int y2,
-            int blitOffset,
             float minU,
             float maxU,
             float minV,
             float maxV
     ) {
-        builder.addVertex(pose, (float)x1, (float)y1, (float)blitOffset).setUv(minU, minV);
-        builder.addVertex(pose, (float)x1, (float)y2, (float)blitOffset).setUv(minU, maxV);
-        builder.addVertex(pose, (float)x2, (float)y2, (float)blitOffset).setUv(maxU, maxV);
-        builder.addVertex(pose, (float)x2, (float)y1, (float)blitOffset).setUv(maxU, minV);
+        builder.addVertex(pose, (float)x1, (float)y1, 0).setUv(minU, minV);
+        builder.addVertex(pose, (float)x1, (float)y2, 0).setUv(minU, maxV);
+        builder.addVertex(pose, (float)x2, (float)y2, 0).setUv(maxU, maxV);
+        builder.addVertex(pose, (float)x2, (float)y1, 0).setUv(maxU, minV);
     }
 }

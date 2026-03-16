@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
@@ -79,10 +79,15 @@ public class HeadWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, renderX, renderY, getWidth(font), 3 + getHeight());
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
+        graphics.renderMethodHead(renderX, renderY, getWidth(font), 3 + getHeight());
+        super.renderBackground(graphics, font, renderX, renderY);
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 15, this.translationKey, this.args);
-        super.render(graphics, font, renderX, renderY);
+        super.renderText(graphics, font, renderX, renderY);
     }
 
     @Override

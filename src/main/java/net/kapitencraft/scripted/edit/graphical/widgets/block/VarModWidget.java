@@ -4,9 +4,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
@@ -16,7 +16,6 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,11 +78,11 @@ public class VarModWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
-        graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 6, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
-        super.render(graphics, font, renderX, renderY);
+        graphics.renderSimpleBlock(renderX, renderY, getWidth(font), 3 + height);
+        //RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 6, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
+        super.renderBackground(graphics, font, renderX, renderY);
     }
 
     @Override

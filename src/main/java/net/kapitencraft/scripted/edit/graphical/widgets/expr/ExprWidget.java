@@ -9,7 +9,7 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.connector.ExprChainConnector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -80,8 +80,12 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
+        graphics.renderExpr(type, renderX, renderY, getWidth(font), getHeight());
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
     }

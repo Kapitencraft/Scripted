@@ -7,6 +7,7 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.core.WidgetRenderer;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -43,8 +44,12 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
+    public void renderBackground(WidgetRenderer graphics, Font font, int renderX, int renderY) {
+        graphics.renderExpr(this.exprCategory, renderX, renderY, getWidth(font), getHeight());
+    }
+
+    @Override
+    public void renderText(GuiGraphics graphics, Font font, int renderX, int renderY) {
         RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5, "§get", Map.of("var", this.nameSelector));
     }
 
