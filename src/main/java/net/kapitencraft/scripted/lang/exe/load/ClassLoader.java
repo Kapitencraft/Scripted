@@ -50,7 +50,7 @@ public class ClassLoader {
                         String name = string + "(" + VarTypeManager.getArgsSignature(method.argTypes()) + ")" + VarTypeManager.getClassName(method.retType().get());
                         if (method.isNative()) {
                             System.out.println("== " + name + " ==");
-                            System.out.println("<Native>");
+                            System.out.println("<native>");
                         } else {
                             Disassembler.disassemble(method.getChunk(), name);
                         }
@@ -114,14 +114,14 @@ public class ClassLoader {
         List<Pair<PackageHolder<T>, Package>> packageData = new ArrayList<>();
         packageData.add(Pair.of(root, VarTypeManager.rootPackage()));
         while (!packageData.isEmpty()) {
-            Pair<PackageHolder<T>, Package> data = packageData.get(0);
+            Pair<PackageHolder<T>, Package> data = packageData.getFirst();
             PackageHolder<T> holder = data.getFirst();
             Package pck = data.getSecond();
             consumer.accept(holder.classes, pck);
             holder.packages.forEach((name, holder1) ->
                     packageData.add(Pair.of(holder1, pck.getOrCreatePackage(name))) //adding all packages back to the queue
             );
-            packageData.remove(0);
+            packageData.removeFirst();
         }
     }
 

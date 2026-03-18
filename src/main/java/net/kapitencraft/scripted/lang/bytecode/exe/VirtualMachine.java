@@ -650,6 +650,12 @@ public class VirtualMachine {
 
     private static final Set<ScriptedClass> initialized = new HashSet<>();
 
+    /**
+     * attempts to invoke the class initializer of the given class, a synthetic method named {@code <clinit>}
+     * @param scriptedClass the class to initialize
+     * @param opcodeOffset the current offset of the invoked opcode, necessary to revert to the given opcode in order to prevent IP corruption
+     * @return whether a static init was deemed necessary
+     */
     private static boolean invokeStaticInitIfNecessary(ScriptedClass scriptedClass, int opcodeOffset) {
         if (scriptedClass.isNative() || initialized.contains(scriptedClass)) return false;
         initialized.add(scriptedClass); //add it before so it doesn't create a recursion loop when a static call / get is executed from within the <clinit> method
