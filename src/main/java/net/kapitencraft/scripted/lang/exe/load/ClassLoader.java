@@ -4,7 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.Scripted;
-import net.kapitencraft.scripted.lang.bytecode.exe.Disassembler;
+import net.kapitencraft.scripted.lang.exe.Disassembler;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;

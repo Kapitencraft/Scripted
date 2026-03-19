@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.func;
 
-import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
+import net.kapitencraft.scripted.lang.holder.Chunk;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;

@@ -21,23 +21,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public abstract class BlockCodeWidget implements CodeWidget {
-    public static final Codec<BlockCodeWidget> CODEC = Type.CODEC.dispatch(BlockCodeWidget::getType, Type::getEntryCodec);
+public abstract class StmtCodeWidget implements CodeWidget {
+    public static final Codec<StmtCodeWidget> CODEC = Type.CODEC.dispatch(StmtCodeWidget::getType, Type::getEntryCodec);
 
-    protected static <T extends BlockCodeWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<BlockCodeWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
+    protected static <T extends StmtCodeWidget> Products.P1<RecordCodecBuilder.Mu<T>, Optional<StmtCodeWidget>> commonFields(RecordCodecBuilder.Instance<T> instance) {
         return instance.group(
                 CODEC.optionalFieldOf("child")
                         .forGetter(w -> Optional.ofNullable(w.getChild())));
     }
 
-    private BlockCodeWidget child;
+    private StmtCodeWidget child;
 
-    public void setChild(BlockCodeWidget child) {
+    public void setChild(StmtCodeWidget child) {
         this.child = child;
     }
 
-    public void setBottomChild(BlockCodeWidget ghostTarget) {
-        BlockCodeWidget parent = this;
+    public void setBottomChild(StmtCodeWidget ghostTarget) {
+        StmtCodeWidget parent = this;
         while (parent.child != null) {
             parent = parent.child;
         }
@@ -69,9 +69,9 @@ public abstract class BlockCodeWidget implements CodeWidget {
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
-        private final Supplier<MapCodec<? extends BlockCodeWidget>> entryCodec;
+        private final Supplier<MapCodec<? extends StmtCodeWidget>> entryCodec;
 
-        Type(Supplier<MapCodec<? extends BlockCodeWidget>> entryCodec) {
+        Type(Supplier<MapCodec<? extends StmtCodeWidget>> entryCodec) {
             this.entryCodec = entryCodec;
         }
 
@@ -80,7 +80,7 @@ public abstract class BlockCodeWidget implements CodeWidget {
             return this.name().toLowerCase();
         }
 
-        public MapCodec<? extends BlockCodeWidget> getEntryCodec() {
+        public MapCodec<? extends StmtCodeWidget> getEntryCodec() {
             return entryCodec.get();
         }
     }
@@ -89,23 +89,23 @@ public abstract class BlockCodeWidget implements CodeWidget {
 
     public abstract int getHeight();
 
-    public @Nullable BlockCodeWidget getChild() {
+    public @Nullable StmtCodeWidget getChild() {
         return child;
     }
 
-    protected @Nullable BlockCodeWidget getChildCopy() {
+    protected @Nullable StmtCodeWidget getChildCopy() {
         return this.getChild() != null ? this.getChild() : null;
     }
 
-    public abstract BlockCodeWidget copy();
+    public abstract StmtCodeWidget copy();
 
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         WidgetFetchResult result = this.child.fetchAndRemoveHovered(x, y, font);
         if (result == null) return null;
         if (!result.removed()) {
-            BlockCodeWidget target = null;
+            StmtCodeWidget target = null;
             if (Screen.hasControlDown()) {
-                BlockCodeWidget bcW = (BlockCodeWidget) result.widget();
+                StmtCodeWidget bcW = (StmtCodeWidget) result.widget();
                 target = bcW.child;
                 bcW.setChild(null);
             }
@@ -116,7 +116,7 @@ public abstract class BlockCodeWidget implements CodeWidget {
 
     public int getHeightWithChildren() {
         int height = this.getHeight();
-        BlockCodeWidget widget = this.getChild();
+        StmtCodeWidget widget = this.getChild();
         while (widget != null) {
             height += widget.getHeight();
             widget = widget.getChild();
@@ -124,7 +124,7 @@ public abstract class BlockCodeWidget implements CodeWidget {
         return height;
     }
 
-    public void insertChildMiddle(BlockCodeWidget widget) {
+    public void insertChildMiddle(StmtCodeWidget widget) {
         widget.setChild(this.child);
         this.setChild(widget);
     }
@@ -142,7 +142,7 @@ public abstract class BlockCodeWidget implements CodeWidget {
         }
     }
 
-    public interface Builder<T extends BlockCodeWidget> {
+    public interface Builder<T extends StmtCodeWidget> {
         T build();
     }
 }

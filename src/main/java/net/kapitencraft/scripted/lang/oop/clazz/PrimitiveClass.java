@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.oop.clazz;
 
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.PrimitiveClassReference;

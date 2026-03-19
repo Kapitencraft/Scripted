@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.exe.natives.impl;
 
-import net.kapitencraft.scripted.lang.bytecode.exe.VirtualMachine;
+import net.kapitencraft.scripted.lang.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;

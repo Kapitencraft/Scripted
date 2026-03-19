@@ -9,11 +9,11 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.connector.ExprChainConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -24,19 +24,19 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 //TODO removing expression crashes the game
-public class ExprWidget implements ExprCodeWidget {
-    public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+public class MethodInvokeWidget implements ExprCodeWidget {
+    public static final MapCodec<MethodInvokeWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
             Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
-    ).apply(i, ExprWidget::new));
+    ).apply(i, MethodInvokeWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
-    private ExprWidget child;
+    private MethodInvokeWidget child;
 
-    public ExprWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
+    public MethodInvokeWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
@@ -52,11 +52,11 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public ExprWidget copy() {
-        ExprWidget exprWidget = new ExprWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+    public MethodInvokeWidget copy() {
+        MethodInvokeWidget methodInvokeWidget = new MethodInvokeWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
         if (this.child != null)
-            exprWidget.setChild(this.child.copy());
-        return exprWidget;
+            methodInvokeWidget.setChild(this.child.copy());
+        return methodInvokeWidget;
     }
 
     @Override
@@ -111,15 +111,20 @@ public class ExprWidget implements ExprCodeWidget {
         RenderHelper.registerAllInteractions(xOrigin, yOrigin, font, sink, translationKey, args);
     }
 
-    public void setChild(@Nullable ExprWidget codeWidget) {
+    public void setChild(@Nullable MethodInvokeWidget codeWidget) {
         this.child = codeWidget;
     }
 
-    public @Nullable ExprWidget getChild() {
+    public @Nullable MethodInvokeWidget getChild() {
         return this.child;
     }
 
-    public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {
+    public static Expr parse(ExprCodeWidget exprCodeWidget) {
+        MethodInvokeWidget widget = (MethodInvokeWidget) exprCodeWidget;
+        return null; //new Expr.StaticCall(this.); //TODO
+    }
+
+    public static class Builder implements ExprCodeWidget.Builder<MethodInvokeWidget> {
         private ExprCategory type;
         private String translationKey;
         private final Map<String, ExprCodeWidget> args = new HashMap<>();
@@ -144,8 +149,8 @@ public class ExprWidget implements ExprCodeWidget {
         }
 
         @Override
-        public ExprWidget build() {
-            return new ExprWidget(type, translationKey, args);
+        public MethodInvokeWidget build() {
+            return new MethodInvokeWidget(type, translationKey, args);
         }
     }
 

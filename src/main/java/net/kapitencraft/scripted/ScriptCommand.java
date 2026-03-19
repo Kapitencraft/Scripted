@@ -4,7 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.kapitencraft.scripted.lang.bytecode.exe.VirtualMachine;
+import net.kapitencraft.scripted.lang.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.load.ClassLoader;

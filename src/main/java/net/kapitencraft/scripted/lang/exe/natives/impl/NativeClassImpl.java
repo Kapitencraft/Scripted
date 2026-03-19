@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.exe.natives.impl;
 
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.MethodLookup;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;

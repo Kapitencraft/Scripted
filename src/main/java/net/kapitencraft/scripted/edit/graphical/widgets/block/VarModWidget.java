@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class VarModWidget extends BlockCodeWidget {
+public class VarModWidget extends StmtCodeWidget {
     public static final MapCodec<VarModWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
                     Codec.STRING.optionalFieldOf("name").forGetter(w -> Optional.ofNullable(w.varNameSelectorWidget.getSelected()))
@@ -36,20 +36,20 @@ public class VarModWidget extends BlockCodeWidget {
     private ExprCodeWidget expr;
     private final VarNameSelectorWidget varNameSelectorWidget = new VarNameSelectorWidget();
 
-    private VarModWidget(BlockCodeWidget child, String varName, ExprCodeWidget expr) {
+    private VarModWidget(StmtCodeWidget child, String varName, ExprCodeWidget expr) {
         this.expr = expr;
         this.setChild(child);
         this.varNameSelectorWidget.setSelected(varName);
     }
 
-    public VarModWidget(Optional<BlockCodeWidget> child, Optional<String> varName, ExprCodeWidget expr) {
+    public VarModWidget(Optional<StmtCodeWidget> child, Optional<String> varName, ExprCodeWidget expr) {
         this.expr = expr;
         child.ifPresent(this::setChild);
         varName.ifPresent(this.varNameSelectorWidget::setSelected);
     }
 
     @Override
-    public BlockCodeWidget copy() {
+    public StmtCodeWidget copy() {
         return new VarModWidget(
                 getChildCopy(),
                 this.varNameSelectorWidget.getVisualSelected(),
@@ -125,8 +125,8 @@ public class VarModWidget extends BlockCodeWidget {
         super.update(context);
     }
 
-    public static class Builder implements BlockCodeWidget.Builder<VarModWidget> {
-        private BlockCodeWidget child;
+    public static class Builder implements StmtCodeWidget.Builder<VarModWidget> {
+        private StmtCodeWidget child;
         private String varName;
         private ExprCodeWidget expr = new ParamWidget(ExprCategory.NUMBER);
 
@@ -144,7 +144,7 @@ public class VarModWidget extends BlockCodeWidget {
             return this.setExpr(builder.build());
         }
 
-        public Builder setChild(BlockCodeWidget.Builder<?> builder) {
+        public Builder setChild(StmtCodeWidget.Builder<?> builder) {
             this.child = builder.build();
             return this;
         }

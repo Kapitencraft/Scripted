@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.lang.exe.natives;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multimap;
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;

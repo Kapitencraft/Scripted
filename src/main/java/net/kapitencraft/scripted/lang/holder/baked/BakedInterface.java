@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.lang.holder.baked;
 
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;

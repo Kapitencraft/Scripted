@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -32,6 +33,7 @@ public class GetVarWidget implements ExprCodeWidget {
     private final @Nullable String name;
     private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget();
     private ExprCategory exprCategory = ExprCategory.OTHER;
+    private byte ordinal;
 
     public GetVarWidget(@Nullable String name) {
         this.name = name;
@@ -68,6 +70,10 @@ public class GetVarWidget implements ExprCodeWidget {
 
     }
 
+    private byte getOrdinal() {
+        return this.ordinal;
+    }
+
     @Override
     public int getWidth(Font font) {
         return 6 + RenderHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
@@ -92,5 +98,9 @@ public class GetVarWidget implements ExprCodeWidget {
     public void update(@Nullable MethodContext context) {
         this.nameSelector.update(context);
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
+    }
+
+    public static Expr parse(ExprCodeWidget widget) {
+        return new Expr.VarRef(, ((GetVarWidget) widget).getOrdinal());
     }
 }

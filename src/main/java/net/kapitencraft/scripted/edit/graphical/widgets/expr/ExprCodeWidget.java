@@ -2,8 +2,9 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.code.ExprCodeVisitor;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -12,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public interface ExprCodeWidget extends CodeWidget {
@@ -30,19 +31,21 @@ public interface ExprCodeWidget extends CodeWidget {
 
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
-    enum Type implements StringRepresentable {
-        PARAM(() -> ParamWidget.CODEC),
-        EXPR(() -> ExprWidget.CODEC),
-        GET_VAR(() -> GetVarWidget.CODEC),
-        BINARY(() -> BinaryOperationWidget.CODEC),
-        SELECT_BLOCK(() -> BlockSelectWidget.CODEC);
+    enum Type implements StringRepresentable, ExprCodeVisitor {
+        PARAM(() -> ParamWidget.CODEC, ParamWidget::parse),
+        EXPR(() -> MethodInvokeWidget.CODEC, MethodInvokeWidget::parse),
+        GET_VAR(() -> GetVarWidget.CODEC, GetVarWidget::parse),
+        BINARY(() -> BinaryOperationWidget.CODEC, BinaryOperationWidget::parse),
+        SELECT_BLOCK(() -> BlockSelectWidget.CODEC, BlockSelectWidget::parse);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
         private final Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec;
+        private final Function<ExprCodeWidget, Expr> parser;
 
-        Type(Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec) {
+        Type(Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec, Function<ExprCodeWidget, Expr> parser, Function<Expr, ExprCodeVisitor> decoder) {
             this.entryCodec = entryCodec;
+            this.parser = parser;
         }
 
         @Override
@@ -52,6 +55,16 @@ public interface ExprCodeWidget extends CodeWidget {
 
         public MapCodec<? extends ExprCodeWidget> getEntryCodec() {
             return entryCodec.get();
+        }
+
+        @Override
+        public Expr parse(ExprCodeWidget widget) {
+            return null;
+        }
+
+        @Override
+        public ExprCodeWidget decode(Expr expr) {
+            return null;
         }
     }
 

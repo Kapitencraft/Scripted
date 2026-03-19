@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -28,15 +29,18 @@ public class BinaryOperationWidget implements ExprCodeWidget {
     ).apply(i, BinaryOperationWidget::new));
 
     private ExprCodeWidget left = ParamWidget.NUM;
+    private Operation operation;
     private final ListSelectionWidget<Operation> operatorWidget = new ListSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
     private ExprCodeWidget right = ParamWidget.NUM;
 
     private BinaryOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
         this.left = left;
+        this.operation = operation;
         this.right = right;
     }
 
-    public BinaryOperationWidget() {
+    public BinaryOperationWidget(ExprCodeWidget left, TokenType operation, ExprCodeWidget right) {
+        this(left, Operation.of(operation), right);
     }
 
     @Override
@@ -117,7 +121,10 @@ public class BinaryOperationWidget implements ExprCodeWidget {
         MUL("*"),
         DIV("/"),
         MOD("%"),
-        POW("**");
+        POW("**"),
+        AND("&&"),
+        OR("||"),
+        XOR("^");
 
         public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
 
@@ -125,6 +132,21 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
         Operation(String literal) {
             this.literal = literal;
+        }
+
+        public static Operation of(TokenType type) {
+            return switch (type) {
+                case ADD -> ADD;
+                case SUB -> SUB;
+                case MUL -> MUL;
+                case DIV -> DIV;
+                case MOD -> MOD;
+                case POW -> POW;
+                case AND -> AND;
+                case OR -> OR;
+                case XOR -> XOR;
+                default -> throw new IllegalArgumentException("not an operation: " + type);
+            };
         }
 
         @Override

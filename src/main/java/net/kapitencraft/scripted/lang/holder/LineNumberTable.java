@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.lang.bytecode.storage;
+package net.kapitencraft.scripted.lang.holder;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

@@ -6,6 +6,4 @@ import net.kapitencraft.scripted.lang.holder.ast.Expr;
 public interface ExprCodeVisitor {
 
     Expr parse(ExprCodeWidget widget);
-
-    ExprCodeWidget decode(Expr expr);
 }

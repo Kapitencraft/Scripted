@@ -22,7 +22,7 @@ import java.util.Optional;
 
 //the difference to ExprCodeWidget?
 //idk
-public class MethodStmtWidget extends BlockCodeWidget {
+public class MethodStmtWidget extends StmtCodeWidget {
     public static final MapCodec<MethodStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i)
                     .and(Codec.STRING.fieldOf("signature").forGetter(w -> w.signature))
@@ -33,20 +33,20 @@ public class MethodStmtWidget extends BlockCodeWidget {
     private final String signature;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
 
-    public MethodStmtWidget(Optional<BlockCodeWidget> child, String signature, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(Optional<StmtCodeWidget> child, String signature, Map<String, ExprCodeWidget> args) {
         this.signature = signature;
         this.args.putAll(args);
         child.ifPresent(this::setChild);
     }
 
-    public MethodStmtWidget(BlockCodeWidget child, String sig, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(StmtCodeWidget child, String sig, Map<String, ExprCodeWidget> args) {
         this.setChild(child);
         this.signature = sig;
         this.args.putAll(args);
     }
 
     @Override
-    public BlockCodeWidget copy() {
+    public StmtCodeWidget copy() {
         return new MethodStmtWidget(
                 this.getChildCopy(),
                 this.signature,
@@ -106,17 +106,17 @@ public class MethodStmtWidget extends BlockCodeWidget {
         super.update(context);
     }
 
-    public static class Builder implements BlockCodeWidget.Builder<MethodStmtWidget> {
-        private BlockCodeWidget child = null;
+    public static class Builder implements StmtCodeWidget.Builder<MethodStmtWidget> {
+        private StmtCodeWidget child = null;
         private String signature = null;
         private final Map<String, ExprCodeWidget> arguments = new HashMap<>();
 
-        public Builder setChild(BlockCodeWidget child) {
+        public Builder setChild(StmtCodeWidget child) {
             this.child = child;
             return this;
         }
 
-        public Builder setChild(BlockCodeWidget.Builder<?> child) {
+        public Builder setChild(StmtCodeWidget.Builder<?> child) {
             return this.setChild(child.build());
         }
 

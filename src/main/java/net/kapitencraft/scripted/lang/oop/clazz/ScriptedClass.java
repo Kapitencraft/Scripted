@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.oop.clazz;
 
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.Interpreter;

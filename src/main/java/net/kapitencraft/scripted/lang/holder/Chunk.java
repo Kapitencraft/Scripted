@@ -1,10 +1,10 @@
-package net.kapitencraft.scripted.lang.bytecode.storage;
+package net.kapitencraft.scripted.lang.holder;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.bytecode.exe.Opcode;
+import net.kapitencraft.scripted.lang.exe.Opcode;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.util.GsonHelper;

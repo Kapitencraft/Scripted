@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.oop.clazz.primitive;
 
-import net.kapitencraft.scripted.lang.bytecode.exe.VirtualMachine;
+import net.kapitencraft.scripted.lang.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.algebra.Operand;
 import net.kapitencraft.scripted.lang.exe.algebra.OperationType;

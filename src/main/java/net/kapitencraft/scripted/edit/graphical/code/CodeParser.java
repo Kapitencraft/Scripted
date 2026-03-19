@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.code;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.StmtCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
@@ -10,30 +10,16 @@ public interface CodeParser {
     //TODO
 
     static Expr parseExpr(ExprCodeWidget widget) {
+        return widget.getType().parse(widget);
+    }
+
+    static Stmt parseStmtList(StmtCodeWidget widget) {
         return null;
     }
 
-    static Stmt parseStmtList(BlockCodeWidget widget) {
-        return null;
-    }
-
-    static Stmt parseOptionalStmtList(@Nullable BlockCodeWidget widget) {
+    static Stmt parseOptionalStmtList(@Nullable StmtCodeWidget widget) {
         if (widget == null)
             return null;
         return parseStmtList(widget);
-    }
-
-    static ExprCodeWidget decodeExpr(Expr condition) {
-        return null;
-    }
-
-    static BlockCodeWidget decodeStmtList(Stmt body) {
-        return null;
-    }
-
-    static @Nullable BlockCodeWidget decodeOptionalStmtList(Stmt stmt) {
-        if (stmt == null)
-            return null;
-        return decodeStmtList(stmt);
     }
 }

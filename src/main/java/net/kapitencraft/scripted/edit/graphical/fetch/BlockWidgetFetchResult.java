@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.fetch;
 
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.StmtCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
@@ -11,8 +11,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.regex.Matcher;
 
 public record BlockWidgetFetchResult(boolean removed, int x, int y,
-                                     BlockCodeWidget widget) implements WidgetFetchResult {
-    public static BlockWidgetFetchResult notRemoved(BlockCodeWidget exprWidget, int x, int y) {
+                                     StmtCodeWidget widget) implements WidgetFetchResult {
+    public static BlockWidgetFetchResult notRemoved(StmtCodeWidget exprWidget, int x, int y) {
         return new BlockWidgetFetchResult(false, x, y, exprWidget);
     }
 
@@ -20,7 +20,7 @@ public record BlockWidgetFetchResult(boolean removed, int x, int y,
         return new BlockWidgetFetchResult(true, this.x, this.y, this.widget);
     }
 
-    public static WidgetFetchResult fromExprList(int minWidth, int x, int y, @NotNull Font font, @NotNull BlockCodeWidget self, @NotNull String translation, @NotNull ArgumentStorage args) {
+    public static WidgetFetchResult fromExprList(int minWidth, int x, int y, @NotNull Font font, @NotNull StmtCodeWidget self, @NotNull String translation, @NotNull ArgumentStorage args) {
         if (x < minWidth) return BlockWidgetFetchResult.notRemoved(self, x, y);
         x -= minWidth;
         String inst = Language.getInstance().getOrDefault(translation);

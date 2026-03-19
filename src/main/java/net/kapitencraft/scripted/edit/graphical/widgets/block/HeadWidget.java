@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public class HeadWidget extends BlockCodeWidget {
+public class HeadWidget extends StmtCodeWidget {
     public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            BlockCodeWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
+            StmtCodeWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
             Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("children").forGetter(w -> w.args)
     ).apply(i, HeadWidget::new));
@@ -31,25 +31,25 @@ public class HeadWidget extends BlockCodeWidget {
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
 
-    public HeadWidget(Optional<BlockCodeWidget> child, String translationKey, Map<String, ExprCodeWidget> map) {
+    public HeadWidget(Optional<StmtCodeWidget> child, String translationKey, Map<String, ExprCodeWidget> map) {
         this.translationKey = translationKey;
         this.args.putAll(map);
         child.ifPresent(this::setChild);
     }
 
-    public HeadWidget(BlockCodeWidget child, String translationKey, Map<String, ExprCodeWidget> map) {
+    public HeadWidget(StmtCodeWidget child, String translationKey, Map<String, ExprCodeWidget> map) {
         this.translationKey = translationKey;
         this.args.putAll(map);
         this.setChild(child);
     }
 
-    public HeadWidget(BlockCodeWidget widget, String translationKey) {
+    public HeadWidget(StmtCodeWidget widget, String translationKey) {
         this.translationKey = translationKey;
         this.setChild(widget);
     }
 
     @Override
-    public BlockCodeWidget copy() {
+    public StmtCodeWidget copy() {
         return new HeadWidget(
                 getChildCopy(),
                 this.translationKey
@@ -108,10 +108,10 @@ public class HeadWidget extends BlockCodeWidget {
         return null;
     }
 
-    public static class Builder implements BlockCodeWidget.Builder<HeadWidget> {
+    public static class Builder implements StmtCodeWidget.Builder<HeadWidget> {
         private String translationKey;
         private final Map<String, ExprCodeWidget> expr = new HashMap<>();
-        private BlockCodeWidget child;
+        private StmtCodeWidget child;
 
         public Builder withExpr(String argName, ExprCodeWidget widget) {
             expr.put(argName, widget);
@@ -123,7 +123,7 @@ public class HeadWidget extends BlockCodeWidget {
             return this;
         }
 
-        public Builder setChild(BlockCodeWidget widget) {
+        public Builder setChild(StmtCodeWidget widget) {
             this.child = widget;
             return this;
         }

@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.connector;
 
-import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.StmtCodeWidget;
 import net.minecraft.client.gui.GuiGraphics;
 
 public abstract class BlockConnector extends Connector {
@@ -9,7 +9,7 @@ public abstract class BlockConnector extends Connector {
     }
 
     @Override
-    public BlockCodeWidget get() {
+    public StmtCodeWidget get() {
         return null;
     }
 

@@ -29,32 +29,32 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class WhileLoopWidget extends BlockCodeWidget {
+public class WhileLoopWidget extends StmtCodeWidget {
     public static final MapCodec<WhileLoopWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
-            BlockCodeWidget.commonFields(i).and(
+            StmtCodeWidget.commonFields(i).and(
                     ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
-                    BlockCodeWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
+                    StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
             ).apply(i, WhileLoopWidget::new)
     );
 
     @NotNull
     private ExprCodeWidget condition;
-    private @Nullable BlockCodeWidget body;
+    private @Nullable StmtCodeWidget body;
 
-    public WhileLoopWidget(@NotNull ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
+    public WhileLoopWidget(@NotNull ExprCodeWidget condition, @Nullable StmtCodeWidget body) {
         this.condition = condition;
         this.body = body;
     }
 
-    private WhileLoopWidget(BlockCodeWidget child, @NotNull ExprCodeWidget condition, @Nullable BlockCodeWidget body) {
+    private WhileLoopWidget(StmtCodeWidget child, @NotNull ExprCodeWidget condition, @Nullable StmtCodeWidget body) {
         Preconditions.checkNotNull(condition);
         this.condition = condition;
         this.body = body;
         this.setChild(child);
     }
 
-    public WhileLoopWidget(Optional<BlockCodeWidget> blockWidget, @NotNull ExprCodeWidget condition, Optional<BlockCodeWidget> body) {
+    public WhileLoopWidget(Optional<StmtCodeWidget> blockWidget, @NotNull ExprCodeWidget condition, Optional<StmtCodeWidget> body) {
         blockWidget.ifPresent(this::setChild);
         Preconditions.checkNotNull(condition);
         this.condition = condition;
@@ -62,7 +62,7 @@ public class WhileLoopWidget extends BlockCodeWidget {
     }
 
     @Override
-    public BlockCodeWidget copy() {
+    public StmtCodeWidget copy() {
         return new WhileLoopWidget(
                 this.getChildCopy(),
                 this.condition.copy(),
@@ -152,11 +152,11 @@ public class WhileLoopWidget extends BlockCodeWidget {
                 getBranchHeight() + 13;
     }
 
-    public void setBody(@Nullable BlockCodeWidget target) {
+    public void setBody(@Nullable StmtCodeWidget target) {
         this.body = target;
     }
 
-    public void insertBodyMiddle(BlockCodeWidget widget) {
+    public void insertBodyMiddle(StmtCodeWidget widget) {
         widget.setChild(this.body);
         this.body = widget;
     }
@@ -191,17 +191,17 @@ public class WhileLoopWidget extends BlockCodeWidget {
         this.condition = target == null ? ParamWidget.CONDITION : target;
     }
 
-    public static class Builder implements BlockCodeWidget.Builder<WhileLoopWidget> {
-        private BlockCodeWidget child;
+    public static class Builder implements StmtCodeWidget.Builder<WhileLoopWidget> {
+        private StmtCodeWidget child;
         private ExprCodeWidget condition = ParamWidget.CONDITION;
-        private BlockCodeWidget body;
+        private StmtCodeWidget body;
 
-        public Builder setBody(BlockCodeWidget.Builder<?> widget) {
+        public Builder setBody(StmtCodeWidget.Builder<?> widget) {
             this.body = widget.build();
             return this;
         }
 
-        public Builder setChild(BlockCodeWidget.Builder<?> widget) {
+        public Builder setChild(StmtCodeWidget.Builder<?> widget) {
             this.child = widget.build();
             return this;
         }
@@ -245,14 +245,6 @@ public class WhileLoopWidget extends BlockCodeWidget {
                     CodeParser.parseExpr(widget.condition),
                     CodeParser.parseOptionalStmtList(widget.body),
                     Token.createNative("whi")
-            );
-        }
-
-        @Override
-        public WhileLoopWidget decode(Stmt.While stmt) {
-            return new WhileLoopWidget(
-                    CodeParser.decodeExpr(stmt.condition()),
-                    CodeParser.decodeOptionalStmtList(stmt.body())
             );
         }
     }

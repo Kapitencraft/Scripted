@@ -1,9 +1,7 @@
-package net.kapitencraft.scripted.lang.bytecode.exe;
+package net.kapitencraft.scripted.lang.exe;
 
-import net.kapitencraft.scripted.lang.bytecode.storage.Chunk;
-import net.kapitencraft.scripted.lang.bytecode.storage.LocalVariableTable;
-import net.kapitencraft.scripted.lang.exe.Interpreter;
-import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.holder.Chunk;
+import net.kapitencraft.scripted.lang.holder.LocalVariableTable;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;

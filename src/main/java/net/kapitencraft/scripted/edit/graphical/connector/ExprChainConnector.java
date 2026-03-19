@@ -1,21 +1,21 @@
 package net.kapitencraft.scripted.edit.graphical.connector;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.MethodInvokeWidget;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.Nullable;
 
 public class ExprChainConnector extends ExprConnector {
-    private final ExprWidget expr;
+    private final MethodInvokeWidget expr;
 
-    public ExprChainConnector(int x, int y, ExprWidget widget) {
+    public ExprChainConnector(int x, int y, MethodInvokeWidget widget) {
         super(x, y);
         expr = widget;
     }
 
     @Override
     public void insert(@Nullable CodeWidget widget) {
-        this.expr.setChild((ExprWidget) widget);
+        this.expr.setChild((MethodInvokeWidget) widget);
     }
 
     @Override

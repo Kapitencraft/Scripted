@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.lang.bytecode.exe;
+package net.kapitencraft.scripted.lang.exe;
 
 public enum Opcode {
     RETURN, RETURN_ARG, THROW,

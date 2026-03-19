@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.lang.oop.field;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.bytecode.storage.annotation.Annotation;
+import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.CacheBuilder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
