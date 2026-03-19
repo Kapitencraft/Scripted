@@ -10,11 +10,11 @@ public interface CodeParser {
     //TODO
 
     static Expr parseExpr(ExprCodeWidget widget) {
-        return widget.getType().parse(widget);
+        return widget.parse();
     }
 
     static Stmt parseStmtList(StmtCodeWidget widget) {
-        return null;
+        return widget.parse();
     }
 
     static Stmt parseOptionalStmtList(@Nullable StmtCodeWidget widget) {

@@ -10,13 +10,19 @@ import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
+import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.token.Token;
+import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,23 +32,23 @@ public class MethodStmtWidget extends StmtCodeWidget {
     public static final MapCodec<MethodStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i)
                     .and(Codec.STRING.fieldOf("signature").forGetter(w -> w.signature))
-                    .and(Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args))
+                    .and(ExprCodeWidget.CODEC.listOf().fieldOf("args").forGetter(w -> w.args))
                     .apply(i, MethodStmtWidget::new)
     );
 
     private final String signature;
-    private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private final List<ExprCodeWidget> args = new ArrayList<>();
 
-    public MethodStmtWidget(Optional<StmtCodeWidget> child, String signature, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(Optional<StmtCodeWidget> child, String signature, List<ExprCodeWidget> args) {
         this.signature = signature;
-        this.args.putAll(args);
+        this.args.addAll(args);
         child.ifPresent(this::setChild);
     }
 
-    public MethodStmtWidget(StmtCodeWidget child, String sig, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(StmtCodeWidget child, String sig, List<ExprCodeWidget> args) {
         this.setChild(child);
         this.signature = sig;
-        this.args.putAll(args);
+        this.args.addAll(args);
     }
 
     @Override
@@ -56,7 +62,7 @@ public class MethodStmtWidget extends StmtCodeWidget {
 
     @Override
     public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (args.containsKey(arg)) {
+        if (args.containsKey(arg)) { //TODO
             args.put(arg, obj);
         } else {
             throw new IllegalArgumentException("unknown argument in expr '" + this.signature + "': " + arg);
@@ -73,8 +79,23 @@ public class MethodStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    protected @NotNull Type getType() {
+    @NotNull
+    protected Type getType() {
         return Type.METHOD_STMT;
+    }
+
+    @Override
+    public Stmt parse() {
+        StringReader reader = new StringReader(signature);
+        ClassReference reference = VarTypeManager.parseType(reader);
+        String mName = reader.readUntil('(');
+
+        return new Stmt.Expression(
+                new Expr.StaticCall(
+                        reference,
+                        Token.createNative(mName),
+                )
+        );
     }
 
     @Override
@@ -109,7 +130,7 @@ public class MethodStmtWidget extends StmtCodeWidget {
     public static class Builder implements StmtCodeWidget.Builder<MethodStmtWidget> {
         private StmtCodeWidget child = null;
         private String signature = null;
-        private final Map<String, ExprCodeWidget> arguments = new HashMap<>();
+        private final List<ExprCodeWidget> arguments = new ArrayList<>();
 
         public Builder setChild(StmtCodeWidget child) {
             this.child = child;

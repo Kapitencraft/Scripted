@@ -12,12 +12,14 @@ import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.StmtCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.HeadWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.StmtCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -595,7 +597,8 @@ public class GraphicalEditor extends AbstractWidget {
 
         @SuppressWarnings("DataFlowIssue")
         @Override
-        public @NotNull Type getType() {
+        @NotNull
+        protected Type getType() {
             return null;
         }
 
@@ -611,6 +614,11 @@ public class GraphicalEditor extends AbstractWidget {
 
         @Override
         public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        }
+
+        @Override
+        public Stmt parse() {
+            throw new IllegalAccessError("can not parse ghost stmt!");
         }
 
         @Override
@@ -673,6 +681,11 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public ExprCodeWidget copy() {
             return null;
+        }
+
+        @Override
+        public Expr parse() {
+            throw new IllegalAccessError("can not parse ghost expr!");
         }
 
         @Override

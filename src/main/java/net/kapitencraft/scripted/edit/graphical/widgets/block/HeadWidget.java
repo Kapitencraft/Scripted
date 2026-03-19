@@ -11,6 +11,7 @@ import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -74,8 +75,14 @@ public class HeadWidget extends StmtCodeWidget {
     }
 
     @Override
-    protected @NotNull Type getType() {
+    @NotNull
+    protected Type getType() {
         return Type.HEAD;
+    }
+
+    @Override
+    public Stmt parse() {
+        return null;
     }
 
     @Override

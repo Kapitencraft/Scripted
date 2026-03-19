@@ -15,6 +15,9 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +79,17 @@ public class VarModWidget extends StmtCodeWidget {
     @Override
     protected @NotNull Type getType() {
         return Type.BODY;
+    }
+
+    @Override
+    public Stmt parse() {
+        return new Stmt.Expression(
+                new Expr.Assign(
+                        Token.createNative(this.varNameSelectorWidget.getSelected()),
+                        this.expr.parse(),
+
+                )
+        );
     }
 
     @Override

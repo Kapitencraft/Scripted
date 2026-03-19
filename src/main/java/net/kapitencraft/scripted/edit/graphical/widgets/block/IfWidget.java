@@ -8,7 +8,6 @@ import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.code.CodeParser;
-import net.kapitencraft.scripted.edit.graphical.code.StmtCodeVisitor;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
@@ -28,9 +27,11 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class IfWidget extends StmtCodeWidget {
     public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
@@ -126,7 +127,8 @@ public class IfWidget extends StmtCodeWidget {
     }
 
     @Override
-    protected @NotNull Type getType() {
+    @NotNull
+    protected Type getType() {
         return Type.IF;
     }
 
@@ -182,6 +184,26 @@ public class IfWidget extends StmtCodeWidget {
             ));
         }
         super.collectConnectors(aX, aY, font, collector);
+    }
+
+    @Override
+    public Stmt parse() {
+        ElifBranch[] branches =
+                elseIfs.stream()
+                        .map(entry -> new ElifBranch(
+                                CodeParser.parseExpr(entry.condition),
+                                CodeParser.parseStmtList(entry.body),
+                                false
+                                )).toArray(ElifBranch[]::new);
+
+        return new Stmt.If(
+                CodeParser.parseExpr(condition),
+                CodeParser.parseOptionalStmtList(conditionBody),
+                CodeParser.parseOptionalStmtList(elseBody),
+                branches,
+                Token.createNative("if")
+        );
+
     }
 
     //region size
@@ -479,19 +501,22 @@ public class IfWidget extends StmtCodeWidget {
     public static final class ElseIfEntry {
         private static final Codec<ElseIfEntry> CODEC = RecordCodecBuilder.create(i -> i.group(
                 ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(ElseIfEntry::condition),
-                StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(e -> Optional.ofNullable(e.body))
+                StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(e -> Optional.ofNullable(e.body)),
+                Codec.BOOL.optionalFieldOf("ended", false).forGetter(e -> e.ended)
         ).apply(i, ElseIfEntry::fromCodec));
 
-        private static ElseIfEntry fromCodec(ExprCodeWidget widget, Optional<StmtCodeWidget> blockCodeWidget) {
-            return new ElseIfEntry(widget, blockCodeWidget.orElse(null));
+        private static ElseIfEntry fromCodec(ExprCodeWidget widget, Optional<StmtCodeWidget> blockCodeWidget, boolean ended) {
+            return new ElseIfEntry(widget, blockCodeWidget.orElse(null), ended);
         }
 
         private @NotNull ExprCodeWidget condition;
         private StmtCodeWidget body;
+        private boolean ended;
 
-        public ElseIfEntry(@NotNull ExprCodeWidget condition, StmtCodeWidget body) {
+        public ElseIfEntry(@NotNull ExprCodeWidget condition, StmtCodeWidget body, boolean ended) {
             this.condition = condition;
             this.body = body;
+            this.ended = ended;
         }
 
         public ExprCodeWidget condition() {
@@ -514,7 +539,7 @@ public class IfWidget extends StmtCodeWidget {
         }
 
         public ElseIfEntry copy() {
-            return new ElseIfEntry(this.condition, this.body);
+            return new ElseIfEntry(this.condition.copy(), this.body.copy(), this.ended);
         }
     }
 
@@ -539,12 +564,12 @@ public class IfWidget extends StmtCodeWidget {
         }
 
         public Builder withElseIf(ExprCodeWidget condition) {
-            this.elifs.add(new ElseIfEntry(condition, null));
+            this.elifs.add(new ElseIfEntry(condition, null, false));
             return this;
         }
 
         public Builder withElseIfNoCondition() {
-            this.elifs.add(new ElseIfEntry(ParamWidget.CONDITION, null));
+            this.elifs.add(new ElseIfEntry(ParamWidget.CONDITION, null, false));
             return this;
         }
 
@@ -569,29 +594,4 @@ public class IfWidget extends StmtCodeWidget {
             return new IfWidget(child, condition, branch, showElse ? elseBranch : null, showElse, elifs);
         }
     }
-
-    private static final class CodeVisitor implements StmtCodeVisitor<IfWidget, Stmt.If> {
-
-        @Override
-        public Stmt.If parse(IfWidget widget) {
-
-            ElifBranch[] branches =
-                    widget.elseIfs.stream()
-                            .map(entry -> new ElifBranch(
-                                    CodeParser.parseExpr(entry.condition),
-                                    CodeParser.parseStmtList(entry.body),
-
-                            )).toArray(ElifBranch[]::new);
-
-            return new Stmt.If(
-                    CodeParser.parseExpr(widget.condition),
-                    CodeParser.parseOptionalStmtList(widget.conditionBody),
-                    CodeParser.parseOptionalStmtList(widget.elseBody),
-                    branches,
-                    Token.createNative("if")
-            );
-        }
-    }
-
-    private static final CodeVisitor VISITOR = new CodeVisitor();
 }

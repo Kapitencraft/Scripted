@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -58,9 +59,11 @@ public abstract class StmtCodeWidget implements CodeWidget {
         }
     }
 
+    public abstract Stmt parse();
+
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
-    protected enum Type implements StringRepresentable {
+    public enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         WHILE_LOOP(() -> WhileLoopWidget.CODEC),
         IF(() -> IfWidget.CODEC),
