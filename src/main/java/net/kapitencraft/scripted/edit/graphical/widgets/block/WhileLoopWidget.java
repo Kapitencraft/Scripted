@@ -19,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -243,7 +244,7 @@ public class WhileLoopWidget extends BlockCodeWidget {
             return new Stmt.While(
                     CodeParser.parseExpr(widget.condition),
                     CodeParser.parseOptionalStmtList(widget.body),
-
+                    Token.createNative("whi")
             );
         }
 
