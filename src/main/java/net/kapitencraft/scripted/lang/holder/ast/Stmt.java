@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.holder.ast;
 
-import net.kapitencraft.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.lang.holder.token.Token;
-import net.kapitencraft.tool.Pair;
+import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 
 public interface Stmt {
 
@@ -40,7 +40,8 @@ public interface Stmt {
         Expr condition, 
         Expr increment, 
         Stmt body, 
-        Token keyword
+        Token keyword,
+        int popVarCount
     ) implements Stmt {
 
         @Override
@@ -77,7 +78,7 @@ public interface Stmt {
 
     record DebugTrace(
         Token keyword, 
-        byte[] locals
+        Pair<Byte, String>[] locals
     ) implements Stmt {
 
         @Override

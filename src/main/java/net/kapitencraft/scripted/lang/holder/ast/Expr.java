@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.lang.holder.ast;
 
-import net.kapitencraft.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.lang.holder.token.Token;
+import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 
 import java.util.Map;
 
@@ -11,9 +11,11 @@ public interface Expr {
         R visitVarRefExpr(VarRef expr);
         R visitSetExpr(Set expr);
         R visitArraySpecialExpr(ArraySpecial expr);
+        R visitRegistryAccessExpr(RegistryAccess expr);
         R visitInstCallExpr(InstCall expr);
         R visitLogicalExpr(Logical expr);
         R visitSuperCallExpr(SuperCall expr);
+        R visitComparisonChainExpr(ComparisonChain expr);
         R visitCastCheckExpr(CastCheck expr);
         R visitArrayGetExpr(ArrayGet expr);
         R visitLiteralExpr(Literal expr);
@@ -76,6 +78,19 @@ public interface Expr {
         }
     }
 
+    record RegistryAccess(
+        ClassReference type,
+        Token origin,
+        String regKey,
+        String valKey
+    ) implements Expr {
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitRegistryAccessExpr(this);
+        }
+    }
+
     record InstCall(
         Expr callee, 
         Token name, 
@@ -114,6 +129,18 @@ public interface Expr {
         @Override
         public <R> R accept(Visitor<R> visitor) {
             return visitor.visitSuperCallExpr(this);
+        }
+    }
+
+    record ComparisonChain(
+        Expr[] entries,
+        Token[] types,
+        ClassReference dataType
+    ) implements Expr {
+
+        @Override
+        public <R> R accept(Visitor<R> visitor) {
+            return visitor.visitComparisonChainExpr(this);
         }
     }
 

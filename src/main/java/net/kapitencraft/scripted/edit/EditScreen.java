@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit;
 
+import net.kapitencraft.kap_lib.core.client.widget.text.MultiLineTextBox;
 import net.kapitencraft.scripted.edit.graphical.core.GraphicalEditor;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.registry.ModRegistries;
@@ -14,6 +15,7 @@ public class EditScreen extends Screen {
         super(Component.empty());
     }
 
+    MultiLineTextBox box;
 
     @Override
     protected void init() {
@@ -34,5 +36,11 @@ public class EditScreen extends Screen {
     public void mouseMoved(double mouseX, double mouseY) {
         this.children().forEach(l -> l.mouseMoved(mouseX, mouseY));
         super.mouseMoved(mouseX, mouseY);
+    }
+
+    @Override
+    public void onClose() {
+        //Compiler
+        super.onClose();
     }
 }
