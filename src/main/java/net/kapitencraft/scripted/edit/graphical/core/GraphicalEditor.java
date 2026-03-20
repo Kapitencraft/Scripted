@@ -24,7 +24,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -40,7 +39,8 @@ import java.util.function.Consumer;
 public class GraphicalEditor extends AbstractWidget {
     public static boolean renderDebug = true;
 
-    private final Registry<SelectionTab> tabs;
+    private final List<SelectionTab> tabs;
+    private final Registry<SelectionTab> registry;
 
     private @Nullable PositionedWidget widget;
     private CodeWidget draggedWidget;
@@ -58,8 +58,12 @@ public class GraphicalEditor extends AbstractWidget {
 
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
         super(pX, pY, pWidth, pHeight, pMessage);
-        this.tabs = tabs;
+        this.registry = tabs;
+        this.tabs = tabs.stream().toList();
         this.font = font;
+        for (SelectionTab tab : this.tabs) {
+            tab.update(font);
+        }
 
         this.elements.add(
                 new BlockCodeElement(HeadWidget.builder()
@@ -170,15 +174,14 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.translate(x + 1, y + 1, 0);
         pose.scale(.75f, .75f, 1);
-        Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
-        for (int i = 0; i < tabs.length; i++) {
+        for (int i = 0; i < tabs.size(); i++) {
             Style style = Style.EMPTY;
             if (pMouseX > x + 1 && pMouseX < x + 50 && pMouseY >= y + 10 * i + 1 && pMouseY <= y + 10 * i + 9) {
                 style = style.withBold(true);
             }
             pGuiGraphics.drawString(font,
                     Component.translatable(
-                            Util.makeDescriptionId("selection_tab", tabs[i].getKey().location())
+                            Util.makeDescriptionId("selection_tab", this.registry.getKey(tabs.get(i)))
                     ).withStyle(style),
                     0,
                     i * 10,
@@ -194,12 +197,11 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(0.75f, 0.75f, 1);
         pose.translate(0, this.selectionScroll, 0);
         int yO = 1;
-        for (Holder<SelectionTab> tab : tabs) {
-            SelectionTab value = tab.value();
-            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
+        for (SelectionTab tab : tabs) {
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", this.registry.getKey(tab))), 2, y, -1, false);
             yO += 10;
-            for (int i1 = 0; i1 < value.size(); i1++) {
-                CodeWidget widget = value.get(i1);
+            for (int i1 = 0; i1 < tab.size(); i1++) {
+                CodeWidget widget = tab.get(i1);
                 widget.render(pGuiGraphics, font, 0, yO);
                 yO += widget.getHeight();
                 yO += 10;
@@ -318,12 +320,10 @@ public class GraphicalEditor extends AbstractWidget {
         //vPos * (4 / 3) = translate + aPos | - translate
         //vPos * (4 / 3) - translate = aPos
         int uY = (int) mouseY * 4 / 3 - (int) selectionScroll;
-        Holder<SelectionTab>[] tabs = this.tabs.holders().toArray(Holder[]::new);
-        for (Holder<SelectionTab> tab : tabs) {
-            SelectionTab value = tab.value();
+        for (SelectionTab tab : tabs) {
             uY -= 10;
-            for (int i1 = 0; i1 < value.size(); i1++) {
-                CodeWidget widget = value.get(i1);
+            for (int i1 = 0; i1 < tab.size(); i1++) {
+                CodeWidget widget = tab.get(i1);
                 if (uY > 0 && uY < widget.getHeight()) {
                     this.draggedWidget = widget.copy();
                     this.draggedOffsetX = -uX;
@@ -378,6 +378,7 @@ public class GraphicalEditor extends AbstractWidget {
                             }
                             this.connector = connector;
                             this.ghostTargetElement = element;
+                            element.update();
                             return;
                         }
                     }
@@ -485,11 +486,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         public void update() {
-            this.width = calculateWidgetWidth();
-            this.height = calculateWidgetHeight();
             this.updateInteractions();
             this.connectors.clear();
             this.widget().collectConnectors(0, 0, font, this.connectors::add);
+            this.widget.update(null, font);
+            this.width = calculateWidgetWidth();
+            this.height = calculateWidgetHeight();
         }
 
         protected void updateInteractions() {
@@ -680,7 +682,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void update(@Nullable MethodContext context) {
+        public void update(@Nullable MethodContext context, Font font) {
 
         }
 

@@ -101,9 +101,9 @@ public class MethodStmtWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.args.values().forEach(c -> c.update(context));
-        super.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.args.values().forEach(c -> c.update(context, font));
+        super.update(context, font);
     }
 
     public static class Builder implements BlockCodeWidget.Builder<MethodStmtWidget> {

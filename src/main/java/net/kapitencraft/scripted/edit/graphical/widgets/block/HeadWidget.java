@@ -67,10 +67,10 @@ public class HeadWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
         MethodContext nC = new MethodContext();
-        this.args.values().forEach(w -> w.update(nC));
-        super.update(nC);
+        this.args.values().forEach(w -> w.update(nC, font));
+        super.update(nC, font);
     }
 
     @Override

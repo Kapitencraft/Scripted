@@ -7,6 +7,7 @@ import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.BlockCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.minecraft.client.gui.Font;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,6 +45,12 @@ public record SelectionTab(List<Entry> widgets) {
 
         public SelectionTab build() {
             return new SelectionTab(ImmutableList.copyOf(this.widgets));
+        }
+    }
+
+    public void update(Font font) {
+        for (Entry widget : this.widgets) {
+            widget.value().update(null, font);
         }
     }
 

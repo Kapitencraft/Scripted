@@ -130,9 +130,9 @@ public abstract class BlockCodeWidget implements CodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
         if (this.child != null)
-            this.child.update(context);
+            this.child.update(context, font);
     }
 
     @Override

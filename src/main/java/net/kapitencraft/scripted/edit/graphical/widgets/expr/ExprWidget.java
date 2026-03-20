@@ -9,7 +9,6 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.connector.ExprChainConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -150,7 +149,7 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.args.values().forEach(c -> c.update(context));
+    public void update(@Nullable MethodContext context, Font font) {
+        this.args.values().forEach(c -> c.update(context, font));
     }
 }

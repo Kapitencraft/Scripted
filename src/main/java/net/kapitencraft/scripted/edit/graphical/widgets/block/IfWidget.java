@@ -50,7 +50,11 @@ public class IfWidget extends BlockCodeWidget {
     private @Nullable BlockCodeWidget elseBody;
     private final List<ElseIfEntry> elseIfs = new ArrayList<>();
 
+    //region size attributes
+    private int globalWidth;
     private int globalHeadWidth;
+    private int headWidth;
+    private int elseHeadWidth;
 
     public IfWidget(ExprCodeWidget condition) {
         this.condition = condition;
@@ -80,7 +84,7 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public BlockCodeWidget copy() {
-        return new IfWidget(
+        IfWidget widget = new IfWidget(
                 this.getChildCopy(),
                 this.condition.copy(),
                 this.conditionBody != null ? this.conditionBody.copy() : null,
@@ -88,6 +92,11 @@ public class IfWidget extends BlockCodeWidget {
                 this.elseVisible,
                 copyElifs(this.elseIfs)
         );
+        widget.globalWidth = this.globalWidth;
+        widget.globalHeadWidth = this.globalHeadWidth;
+        widget.headWidth = this.headWidth;
+        widget.elseHeadWidth = this.elseHeadWidth;
+        return widget;
     }
 
     private List<ElseIfEntry> copyElifs(List<ElseIfEntry> elseIfs) {
@@ -185,8 +194,12 @@ public class IfWidget extends BlockCodeWidget {
     //TODO store sizes, this is getting ridiculous
     @Override
     public int getWidth(Font font) {
-        int width = getHeadWidth(font);
-        int elseHeadWidth = getElseHeadWidth(font);
+        return this.globalWidth;
+    }
+
+    private int calculateWidth(Font font) {
+        int width = this.headWidth;
+        int elseHeadWidth = this.elseHeadWidth;
         if (elseHeadWidth > width) width = elseHeadWidth;
         if (this.conditionBody != null) {
             int i = this.conditionBody.getWidth(font) + 6;
@@ -199,7 +212,7 @@ public class IfWidget extends BlockCodeWidget {
                 width = i;
         }
         for (ElseIfEntry elseIf : this.elseIfs) {
-            int i = this.getElseIfHeadWidth(font, elseIf);
+            int i = elseIf.headWidth;
             if (i > width)
                 width = i;
             if (elseIf.body != null) {
@@ -212,14 +225,14 @@ public class IfWidget extends BlockCodeWidget {
         return width;
     }
 
-    private int getGlobalHeadWidth(Font font) {
-        int width = this.getHeadWidth(font);
+    private int getGlobalHeadWidth() {
+        int width = headWidth;
         if (elseVisible) {
-            int i = this.getElseHeadWidth(font);
+            int i = this.elseHeadWidth;
             if (i > width)
                 width = i;
         }
-        return Math.max(width, this.elseIfs.stream().mapToInt(e -> this.getElseIfHeadWidth(font, e)).max().orElse(0));
+        return Math.max(width, this.elseIfs.stream().mapToInt(e -> e.headWidth).max().orElse(0));
     }
 
     private int getHeadWidth(Font font) {
@@ -274,7 +287,7 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int globalHeadWidth = getGlobalHeadWidth(font);
+        int globalHeadWidth = this.globalHeadWidth;
         int headHeight = getHeadHeight();
         //head
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, globalHeadWidth, headHeight + 3);
@@ -366,6 +379,7 @@ public class IfWidget extends BlockCodeWidget {
         return null;
     }
 
+    //region interaction
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         //TODO
@@ -415,6 +429,7 @@ public class IfWidget extends BlockCodeWidget {
             callbacks.openWidget(new ModifyBranchesWidget(this.x + 10, this.y + 10, 50, 50));
         }
     }
+    //endregion
 
     //region mod
     public void setBody(@Nullable BlockCodeWidget conditionBody) {
@@ -441,12 +456,12 @@ public class IfWidget extends BlockCodeWidget {
     //endregion
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.condition.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.condition.update(context, font);
         if (this.conditionBody != null) {
             if (context != null)
                 context.lvt.push();
-            this.conditionBody.update(context);
+            this.conditionBody.update(context, font);
             if (context != null) {
                 context.lvt.pop();
             }
@@ -455,22 +470,28 @@ public class IfWidget extends BlockCodeWidget {
             if (this.elseBody != null) {
                 if (context != null)
                     context.lvt.push();
-                this.elseBody.update(context);
+                this.elseBody.update(context, font);
                 if (context != null) {
                     context.lvt.pop();
                 }
             }
         }
         for (ElseIfEntry elseIf : this.elseIfs) {
-            elseIf.condition.update(context);
+            elseIf.headWidth = getElseIfHeadWidth(font, elseIf);
+            elseIf.condition.update(context, font);
             if (context != null)
                 context.lvt.push();
-            elseIf.body.update(context);
+            if (elseIf.body != null)
+                elseIf.body.update(context, font);
             if (context != null) {
                 context.lvt.pop();
             }
         }
-        super.update(context);
+        this.globalWidth = this.calculateWidth(font);
+        this.headWidth = this.getHeadWidth(font);
+        this.elseHeadWidth = this.getElseHeadWidth(font);
+        this.globalHeadWidth = this.getGlobalHeadWidth();
+        super.update(context, font);
     }
 
     private static final class ElseIfEntry {
@@ -485,6 +506,7 @@ public class IfWidget extends BlockCodeWidget {
 
         private @NotNull ExprCodeWidget condition;
         private BlockCodeWidget body;
+        private int headWidth;
 
         private ElseIfEntry(@NotNull ExprCodeWidget condition, BlockCodeWidget body) {
             this.condition = condition;

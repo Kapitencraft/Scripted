@@ -48,7 +48,7 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
 
     }
 

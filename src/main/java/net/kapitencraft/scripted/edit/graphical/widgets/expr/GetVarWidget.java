@@ -89,8 +89,8 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.nameSelector.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.nameSelector.update(context, font);
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 }

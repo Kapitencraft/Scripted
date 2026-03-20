@@ -32,7 +32,7 @@ public interface CodeWidget {
     void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector);
     //endregion IO
 
-    void update(@Nullable MethodContext context);
+    void update(@Nullable MethodContext context, Font font);
 
     void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink);
 }

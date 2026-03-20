@@ -68,7 +68,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
         if (context == null) //no method
             status = Status.UNKNOWN;
         else if (context.lvt.has(this.selected))

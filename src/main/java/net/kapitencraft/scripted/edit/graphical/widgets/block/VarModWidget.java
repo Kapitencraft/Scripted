@@ -119,10 +119,10 @@ public class VarModWidget extends BlockCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.varNameSelectorWidget.update(context);
-        this.expr.update(context);
-        super.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.varNameSelectorWidget.update(context, font);
+        this.expr.update(context, font);
+        super.update(context, font);
     }
 
     public static class Builder implements BlockCodeWidget.Builder<VarModWidget> {

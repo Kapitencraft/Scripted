@@ -71,6 +71,7 @@ public class ExprParser extends AbstractParser {
         this.fallback.removeLast();
     }
 
+    //a clean chain-of-responsibility behavior pattern we have here
     public Expr expression() {
         if (match(SWITCH)) {
             return switchExpr();

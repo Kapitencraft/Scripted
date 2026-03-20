@@ -65,9 +65,9 @@ public class BinaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.left.update(context);
-        this.right.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.left.update(context, font);
+        this.right.update(context, font);
     }
 
     @Override
