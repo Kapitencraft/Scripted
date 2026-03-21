@@ -713,7 +713,7 @@ public class CacheBuilder implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
         cache(stmt.thenBranch());
         if (stmt.elifs().length > 0 || stmt.elseBranch() != null) {
             List<Integer> branches = new ArrayList<>();
-            branches.add(builder.addJump()); //jump from branch past the IF
+            branches.add(builder.addJump()); //jump from branch past the IF_STMT
             for (int i = 0; i < stmt.elifs().length; i++) {
                 builder.patchJumpCurrent(jumpPatch);
                 ElifBranch branch = stmt.elifs()[i];

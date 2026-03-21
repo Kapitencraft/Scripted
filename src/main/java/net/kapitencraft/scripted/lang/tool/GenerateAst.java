@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public class GenerateAst {
     private static final Gson GSON = new GsonBuilder().create();
 
-    public static final String DIRECTORY = "src/main/java/net/kapitencraft/scripted/lang/holder/ast";
+    public static final String AST_DIRECTORY = "src/main/java/net/kapitencraft/scripted/lang/holder/ast";
     private static final String SOURCE = "src/generate_ast.json";
 
     public static void main(String[] args) throws IOException {
@@ -24,7 +24,7 @@ public class GenerateAst {
         obj.forEach((astType, data) -> {
             Imports imports = Imports.fromJsonElement(data.get("imports"));
             Map<String, AstDef> valueData = createValues(data.get("values"));
-            defineAst(astType, valueData, imports, defaultImports);
+            defineAstFile(astType, valueData, imports, defaultImports);
         });
     }
 
@@ -43,13 +43,9 @@ public class GenerateAst {
         return data;
     }
 
-    private static void defineAst(String baseName, Map<String, AstDef> data, Imports imports, Imports defaultImports) {
-        defineAstFile(baseName, data, imports, defaultImports);
-    }
-
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private static void defineAstFile(String baseName, Map<String, AstDef> data, Imports imports, Imports defaultImports) {
-        String path = DIRECTORY + "/" + baseName + ".java";
+        String path = AST_DIRECTORY + "/" + baseName + ".java";
         PrintWriter writer;
         try {
             File file = new File(path);

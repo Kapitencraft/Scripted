@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.widgets.block.IfWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.block.IfStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.VarModWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.block.WhileLoopWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.BlockSelectWidget;
@@ -41,10 +41,10 @@ public interface SelectionTabs {
                 .build()
         );
         context.register(CONTROL, SelectionTab.builder()
-                .withEntry(IfWidget.builder()
+                .withEntry(IfStmtWidget.builder()
                         .hideElse()
-                ).withEntry(IfWidget.builder())
-                .withEntry(IfWidget.builder().withElseIfNoCondition())
+                ).withEntry(IfStmtWidget.builder())
+                .withEntry(IfStmtWidget.builder().withElseIfNoCondition())
                 .withEntry(WhileLoopWidget.builder())
                 .build()
         );

@@ -63,9 +63,10 @@ public abstract class BlockCodeWidget implements CodeWidget {
     protected enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         WHILE_LOOP(() -> WhileLoopWidget.CODEC),
-        IF(() -> IfWidget.CODEC),
+        IF_STMT(() -> IfStmtWidget.CODEC),
         BODY(() -> VarModWidget.CODEC),
-        METHOD_STMT(() -> MethodStmtWidget.CODEC);
+        METHOD_STMT(() -> MethodStmtWidget.CODEC),
+        TRY_STMT(() -> TryStmtWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 

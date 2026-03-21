@@ -377,6 +377,7 @@ public class GraphicalEditor extends AbstractWidget {
                                     return; //return early before connector & element are put
                             }
                             this.connector = connector;
+                            this.ghostTargetElement.update();
                             this.ghostTargetElement = element;
                             element.update();
                             return;

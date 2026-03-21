@@ -29,8 +29,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class IfWidget extends BlockCodeWidget {
-    public static final MapCodec<IfWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
+public class IfStmtWidget extends BlockCodeWidget {
+    public static final MapCodec<IfStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
                     ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
@@ -41,7 +41,7 @@ public class IfWidget extends BlockCodeWidget {
                     BlockCodeWidget.CODEC.optionalFieldOf("else_body").forGetter(w -> Optional.ofNullable(w.elseBody))
             ).and(
                     ElseIfEntry.CODEC.listOf().fieldOf("elifs").forGetter(w -> w.elseIfs)
-            ).apply(i, IfWidget::new)
+            ).apply(i, IfStmtWidget::new)
     );
 
     private ExprCodeWidget condition;
@@ -56,11 +56,11 @@ public class IfWidget extends BlockCodeWidget {
     private int headWidth;
     private int elseHeadWidth;
 
-    public IfWidget(ExprCodeWidget condition) {
+    public IfStmtWidget(ExprCodeWidget condition) {
         this.condition = condition;
     }
 
-    private IfWidget(BlockCodeWidget child, ExprCodeWidget condition, @Nullable BlockCodeWidget conditionBody, @Nullable BlockCodeWidget elseBody, boolean showElse, List<ElseIfEntry> elifs) {
+    private IfStmtWidget(BlockCodeWidget child, ExprCodeWidget condition, @Nullable BlockCodeWidget conditionBody, @Nullable BlockCodeWidget elseBody, boolean showElse, List<ElseIfEntry> elifs) {
         this(condition);
         this.conditionBody = conditionBody;
         this.elseBody = elseBody;
@@ -69,7 +69,7 @@ public class IfWidget extends BlockCodeWidget {
         this.elseIfs.addAll(elifs);
     }
 
-    public IfWidget(Optional<BlockCodeWidget> child, ExprCodeWidget headWidgets, Optional<BlockCodeWidget> conditionBody, boolean elseVisible, Optional<BlockCodeWidget> elseBody, List<ElseIfEntry> elseIfs) {
+    public IfStmtWidget(Optional<BlockCodeWidget> child, ExprCodeWidget headWidgets, Optional<BlockCodeWidget> conditionBody, boolean elseVisible, Optional<BlockCodeWidget> elseBody, List<ElseIfEntry> elseIfs) {
         child.ifPresent(this::setChild);
         this.condition = headWidgets;
         this.elseVisible = elseVisible;
@@ -84,7 +84,7 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     public BlockCodeWidget copy() {
-        IfWidget widget = new IfWidget(
+        IfStmtWidget widget = new IfStmtWidget(
                 this.getChildCopy(),
                 this.condition.copy(),
                 this.conditionBody != null ? this.conditionBody.copy() : null,
@@ -133,7 +133,7 @@ public class IfWidget extends BlockCodeWidget {
 
     @Override
     protected @NotNull Type getType() {
-        return Type.IF;
+        return Type.IF_STMT;
     }
 
     @Override
@@ -407,12 +407,12 @@ public class IfWidget extends BlockCodeWidget {
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             guiGraphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, x + 2, y + 2, 10, 10);
             int yOffset = 12;
-            for (ElseIfEntry elseIf : IfWidget.this.elseIfs) {
+            for (ElseIfEntry elseIf : IfStmtWidget.this.elseIfs) {
                 guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
                 yOffset += 10;
             }
             //TODO
-            if (IfWidget.this.elseVisible) {
+            if (IfStmtWidget.this.elseVisible) {
                 guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
             }
         }
@@ -537,7 +537,7 @@ public class IfWidget extends BlockCodeWidget {
         }
     }
 
-    public static class Builder implements BlockCodeWidget.Builder<IfWidget> {
+    public static class Builder implements BlockCodeWidget.Builder<IfStmtWidget> {
         private ExprCodeWidget condition = ParamWidget.CONDITION;
         private final List<ElseIfEntry> elifs = new ArrayList<>();
         private boolean showElse = true;
@@ -584,8 +584,8 @@ public class IfWidget extends BlockCodeWidget {
         }
 
         @Override
-        public IfWidget build() {
-            return new IfWidget(child, condition, branch, showElse ? elseBranch : null, showElse, elifs);
+        public IfStmtWidget build() {
+            return new IfStmtWidget(child, condition, branch, showElse ? elseBranch : null, showElse, elifs);
         }
     }
 }
