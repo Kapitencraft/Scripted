@@ -51,6 +51,9 @@ public class VarTypeManager {
 
     public static final ClassReference ITEM = getOrCreateClass("Item", "net.minecraft.world");
 
+    public static final ClassReference RESOURCE_LOCATION = getOrCreateClass("ResourceLocation", "net.minecraft.resources");
+    public static final ClassReference BUILTIN_REGISTRIES = getOrCreateClass("BuiltInRegistries", "net.minecraft.core.registries");
+
     public static final ClassReference COMMAND_SCRIPT = getOrCreateClass("CommandScript", "scripted.exe");
     public static final ClassReference COMMAND_DATA = getOrCreateClass("CommandData", "scripted.exe");
 

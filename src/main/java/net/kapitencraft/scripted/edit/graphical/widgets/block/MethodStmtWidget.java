@@ -61,16 +61,16 @@ public class MethodStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (args.containsKey(arg)) { //TODO
-            args.put(arg, obj);
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+        if (args.size() > arg) { //TODO
+            args.set(arg, obj);
         } else {
             throw new IllegalArgumentException("unknown argument in expr '" + this.signature + "': " + arg);
         }
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         return args.get(argName);
     }
 
@@ -94,6 +94,9 @@ public class MethodStmtWidget extends StmtCodeWidget {
                 new Expr.StaticCall(
                         reference,
                         Token.createNative(mName),
+                        this.args.stream().map(ExprCodeWidget::parse).toArray(Expr[]::new),
+                        null,
+                        ""
                 )
         );
     }
@@ -123,7 +126,7 @@ public class MethodStmtWidget extends StmtCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context) {
-        this.args.values().forEach(c -> c.update(context));
+        this.args.forEach(c -> c.update(context));
         super.update(context);
     }
 
@@ -146,8 +149,8 @@ public class MethodStmtWidget extends StmtCodeWidget {
             return this;
         }
 
-        public Builder withArgument(String name, ExprCodeWidget child) {
-            this.arguments.put(name, child);
+        public Builder withArgument(int idx, ExprCodeWidget child) {
+            this.arguments.set(idx, child);
             return this;
         }
 

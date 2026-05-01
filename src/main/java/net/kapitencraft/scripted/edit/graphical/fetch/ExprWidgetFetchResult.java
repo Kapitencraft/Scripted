@@ -6,7 +6,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.locale.Language;
 
-import java.util.Map;
+import java.util.List;
 import java.util.regex.Matcher;
 
 public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidget widget) implements WidgetFetchResult {
@@ -18,7 +18,7 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
         return new ExprWidgetFetchResult(true, this.x, this.y, this.widget);
     }
 
-    public static WidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, ExprCodeWidget self, String translation, Map<String, ExprCodeWidget> expr) {
+    public static WidgetFetchResult fromExprList(int minWidth, int x, int y, Font font, ExprCodeWidget self, String translation, List<ExprCodeWidget> expr) {
         int oX = x;
         if (x < minWidth) return ExprWidgetFetchResult.notRemoved(self, x, y);
         x -= minWidth;
@@ -32,14 +32,14 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
             if (x < font.width(subElement))
                 return ExprWidgetFetchResult.notRemoved(self, oX, y);
             x -= font.width(subElement);
-            String name = matcher.group(1);
+            int name = Integer.parseInt(matcher.group(1));
             ExprCodeWidget widget = expr.get(name);
             if (x < widget.getWidth(font)) {
                 WidgetFetchResult result = widget.fetchAndRemoveHovered(x, y, font);
                 if (result == null)
                     return ExprWidgetFetchResult.notRemoved(self, oX, y);
                 if (!result.removed())
-                    expr.put(name, ParamWidget.OBJ);
+                    expr.set(name, ParamWidget.OBJ);
                 return result.setRemoved();
             }
             x -= widget.getWidth(font);

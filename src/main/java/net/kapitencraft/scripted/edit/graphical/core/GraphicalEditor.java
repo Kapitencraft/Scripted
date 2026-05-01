@@ -644,12 +644,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        public void insertById(int arg, @NotNull ExprCodeWidget obj) {
             throw new IllegalAccessError("can not insert into ghost");
         }
 
         @Override
-        public CodeWidget getByName(String argName) {
+        public CodeWidget getByIndex(int argName) {
             throw new IllegalAccessError("can not get from ghost");
         }
 
@@ -708,12 +708,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+        public void insertById(int arg, @NotNull ExprCodeWidget obj) {
             throw new IllegalAccessError("can not insert into ghost");
         }
 
         @Override
-        public CodeWidget getByName(String argName) {
+        public CodeWidget getByIndex(int argName) {
             throw new IllegalAccessError("can not get from ghost");
         }
     }

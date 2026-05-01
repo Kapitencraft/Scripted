@@ -31,7 +31,7 @@ public class GraphicalConverter implements Expr.Visitor<ExprCodeWidget>, Stmt.Vi
 
     @Override
     public ExprCodeWidget visitSetExpr(Expr.Set expr) {
-        return new ;
+        return null; // new ;
     }
 
     @Override
@@ -155,7 +155,7 @@ public class GraphicalConverter implements Expr.Visitor<ExprCodeWidget>, Stmt.Vi
 
     @Override
     public ExprCodeWidget visitAssignExpr(Expr.Assign expr) {
-        return new ;
+        return null;
     }
 
     @Override
@@ -239,7 +239,8 @@ public class GraphicalConverter implements Expr.Visitor<ExprCodeWidget>, Stmt.Vi
     public StmtCodeWidget visitIfStmt(Stmt.If stmt) {
         List<IfWidget.ElseIfEntry> list = Arrays.stream(stmt.elifs()).map(elifBranch -> new IfWidget.ElseIfEntry(
                 convert(elifBranch.condition()),
-                convert(elifBranch.body())
+                convert(elifBranch.body()),
+                false
         )).collect(Collectors.toCollection(ArrayList::new));
 
         return new IfWidget(

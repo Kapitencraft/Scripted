@@ -25,7 +25,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -71,15 +71,15 @@ public class WhileLoopWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if ("condition".equals(arg)) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 0) {
             this.condition = obj;
         }
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
-        if ("condition".equals(argName)) {
+    public CodeWidget getByIndex(int argName) {
+        if (argName == 0) {
             return this.condition;
         }
         throw new IllegalArgumentException("unknown argument " + argName + " in While");
@@ -93,7 +93,7 @@ public class WhileLoopWidget extends StmtCodeWidget {
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         collector.accept(new SingletonExprConnector(
-                aX + 6 + RenderHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                aX + 6 + RenderHelper.getPartialWidth(font, "§while", List.of(), 0),
                 aY,
                 this::setCondition,
                 () -> this.condition
@@ -110,11 +110,20 @@ public class WhileLoopWidget extends StmtCodeWidget {
     }
 
     @Override
+    public Stmt parse() {
+        return new Stmt.While(
+                this.condition.parse(),
+                this.body != null ? this.body.parse() : null,
+                Token.createNative("while")
+        );
+    }
+
+    @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int loopWidth = getHeadWidth(font);
         int headHeight = getHeadHeight();
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, loopWidth, headHeight + 3);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 18) / 2, "§while", List.of(this.condition));
         int bodyHeight = getBranchHeight();
         if (this.body != null)
             this.body.render(graphics, font, renderX + 6, renderY + headHeight);
@@ -132,7 +141,7 @@ public class WhileLoopWidget extends StmtCodeWidget {
     }
 
     private int getHeadWidth(Font font) {
-        return 4 + RenderHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
+        return 4 + RenderHelper.getVisualTextWidth(font, "§while", List.of(this.condition));
     }
 
     @Override
@@ -164,7 +173,7 @@ public class WhileLoopWidget extends StmtCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
-            return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
+            return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while", ArgumentStorage.createSingle(this::setCondition, () -> this.condition));
         } else if (y > this.getHeight()) {
             return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         } else if (this.body != null) {

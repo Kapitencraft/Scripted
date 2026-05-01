@@ -6,8 +6,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.locale.Language;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -17,7 +16,7 @@ public interface RenderHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("\\{([a-zA-Z0-9_]+)}"); //oooh pattern :pog:
 
-    static void renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, Map<String, ExprCodeWidget> entries) {
+    static void renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, List<ExprCodeWidget> entries) {
         String inst = Language.getInstance().getOrDefault(key);
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
         int j, l;
@@ -27,7 +26,7 @@ public interface RenderHelper {
             String subElement = inst.substring(j, k);
             graphics.drawString(font, subElement, x, y, 0, false);
             x += font.width(subElement);
-            String name = matcher.group(1);
+            int name = Integer.parseInt(matcher.group(1));
             ExprCodeWidget widget = entries.get(name);
 
             widget.render(graphics, font, x, y - (widget.getHeight() - 8) / 2);
@@ -37,7 +36,7 @@ public interface RenderHelper {
         graphics.drawString(font, subElement, x, y, 0, false);
     }
 
-    static int getVisualTextWidth(Font font, String key, Map<String, ExprCodeWidget> map) {
+    static int getVisualTextWidth(Font font, String key, List<ExprCodeWidget> params) {
         String inst = Language.getInstance().getOrDefault(key);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -47,8 +46,8 @@ public interface RenderHelper {
             l = matcher.end();
             String subElement = inst.substring(j, k);
             width += font.width(subElement);
-            String name = matcher.group(1);
-            ExprCodeWidget widget = map.get(name);
+            int name = Integer.parseInt(matcher.group(1));
+            ExprCodeWidget widget = params.get(name);
             width += widget.getWidth(font);
         }
         String subElement = inst.substring(j);
@@ -56,7 +55,7 @@ public interface RenderHelper {
         return width + 1;
     }
 
-    static void forPartialWidth(Font font, String key, Map<String, ExprCodeWidget> args, BiConsumer<String, Integer> offsets) {
+    static void forPartialWidth(Font font, String key, List<ExprCodeWidget> args, BiConsumer<Integer, Integer> offsets) {
         String inst = Language.getInstance().getOrDefault(key);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -66,14 +65,14 @@ public interface RenderHelper {
             l = matcher.end();
             String subElement = inst.substring(j, k);
             width += font.width(subElement);
-            String name = matcher.group(1);
+            int name = Integer.parseInt(matcher.group(1));
             offsets.accept(name, width);
             ExprCodeWidget widget = args.get(name);
             width += widget.getWidth(font);
         }
     }
 
-    static int getPartialWidth(Font font, String key, Map<String, ExprCodeWidget> args, String paramToFind) {
+    static int getPartialWidth(Font font, String key, List<ExprCodeWidget> args, int paramToFind) {
         String inst = Language.getInstance().getOrDefault(key);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -83,8 +82,8 @@ public interface RenderHelper {
             l = matcher.end();
             String subElement = inst.substring(j, k);
             width += font.width(subElement);
-            String name = matcher.group(1);
-            if (Objects.equals(name, paramToFind)) {
+            int name = Integer.parseInt(matcher.group(1));
+            if (name == paramToFind) {
                 return width;
             }
             ExprCodeWidget widget = args.get(name);
@@ -93,7 +92,7 @@ public interface RenderHelper {
         throw new IllegalArgumentException("could not find argument " + paramToFind + " in key " + key + ": " + inst);
     }
 
-    static void registerAllInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink, String translationKey, Map<String, ExprCodeWidget> args) {
+    static void registerAllInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink, String translationKey, List<ExprCodeWidget> args) {
         String inst = Language.getInstance().getOrDefault(translationKey);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -103,7 +102,7 @@ public interface RenderHelper {
             l = matcher.end();
             String subElement = inst.substring(j, k);
             width += font.width(subElement);
-            String name = matcher.group(1);
+            int name = Integer.parseInt(matcher.group(1));
             ExprCodeWidget widget = args.get(name);
             widget.registerInteractions(xOrigin + width, yOrigin, font, sink);
             width += widget.getWidth(font);

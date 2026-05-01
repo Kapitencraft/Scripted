@@ -3,20 +3,20 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {
-        "x": {
+      "args": [
+        {
           "type": "param",
           "category": "number"
         },
-        "y": {
+        {
           "type": "param",
           "category": "number"
         },
-        "z": {
+        {
           "type": "param",
           "category": "number"
         }
-      },
+      ],
       "category": "other",
       "translationKey": "Lnet/minecraft/core/BlockPos;<init>(III)V"
     }
@@ -25,12 +25,12 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {
-        "pos": {
+      "args": [
+        {
           "type": "param",
           "category": "other"
         }
-      },
+      ],
       "category": "other",
       "translationKey": "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;"
     }
@@ -39,12 +39,12 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {
-        "block": {
+      "args": [
+        {
           "type": "select_block",
           "block": "minecraft:stone"
         }
-      },
+      ],
       "category": "boolean",
       "translationKey": "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z"
     }
@@ -53,7 +53,7 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {},
+      "args": [],
       "category": "number",
       "translationKey": "Lnet/minecraft/world/phys/Vec3;x"
     }
@@ -62,7 +62,7 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {},
+      "args": [],
       "category": "number",
       "translationKey": "Lnet/minecraft/world/phys/Vec3;y"
     }
@@ -71,7 +71,7 @@
     "type": "expr",
     "entry": {
       "type": "expr",
-      "args": {},
+      "args": [],
       "category": "number",
       "translationKey": "Lnet/minecraft/world/phys/Vec3;z"
     }

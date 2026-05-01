@@ -45,4 +45,8 @@ public class LocalVariableTable {
     public ExprCategory getType(@Nullable String name) {
         return active().getOrDefault(name, ExprCategory.OTHER);
     }
+
+    public byte getOrdinal(String name) {
+        return 0;
+    }
 }

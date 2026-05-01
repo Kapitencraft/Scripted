@@ -3,7 +3,6 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.kap_lib.core.collection.MapStream;
 import net.kapitencraft.scripted.edit.RenderHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
@@ -19,8 +18,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 //TODO removing expression crashes the game
@@ -28,18 +27,18 @@ public class MethodInvokeWidget implements ExprCodeWidget {
     public static final MapCodec<MethodInvokeWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
+            ExprCodeWidget.CODEC.listOf().fieldOf("args").forGetter(w -> w.args)
     ).apply(i, MethodInvokeWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
-    private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private final List<ExprCodeWidget> args = new ArrayList<>();
     private MethodInvokeWidget child;
 
-    public MethodInvokeWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
+    public MethodInvokeWidget(ExprCategory type, String translationKey, List<ExprCodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
-        this.args.putAll(args);
+        this.args.addAll(args);
     }
 
     public static Builder builder() {
@@ -53,23 +52,23 @@ public class MethodInvokeWidget implements ExprCodeWidget {
 
     @Override
     public MethodInvokeWidget copy() {
-        MethodInvokeWidget methodInvokeWidget = new MethodInvokeWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+        MethodInvokeWidget methodInvokeWidget = new MethodInvokeWidget(this.type, this.translationKey, this.args.stream().map(ExprCodeWidget::copy).toList());
         if (this.child != null)
             methodInvokeWidget.setChild(this.child.copy());
         return methodInvokeWidget;
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (args.containsKey(arg)) {
-            args.put(arg, obj);
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+        if (args.size() > arg) {
+            args.set(arg, obj);
         } else {
             throw new IllegalArgumentException("unknown argument in expr '" + this.translationKey + "': " + arg);
         }
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         return args.get(argName);
     }
 
@@ -119,15 +118,14 @@ public class MethodInvokeWidget implements ExprCodeWidget {
         return this.child;
     }
 
-    public static Expr parse(ExprCodeWidget exprCodeWidget) {
-        MethodInvokeWidget widget = (MethodInvokeWidget) exprCodeWidget;
+    public Expr parse() {
         return null; //new Expr.StaticCall(this.); //TODO
     }
 
     public static class Builder implements ExprCodeWidget.Builder<MethodInvokeWidget> {
         private ExprCategory type;
         private String translationKey;
-        private final Map<String, ExprCodeWidget> args = new HashMap<>();
+        private final List<ExprCodeWidget> args = new ArrayList<>();
 
         public Builder setTranslationKey(String translationKey) {
             this.translationKey = translationKey;
@@ -139,13 +137,13 @@ public class MethodInvokeWidget implements ExprCodeWidget {
             return this;
         }
 
-        public Builder withParam(String argName, ExprCodeWidget entry) {
-            this.args.put(argName, entry);
+        public Builder withParam(int idx, ExprCodeWidget entry) {
+            this.args.set(idx, entry);
             return this;
         }
 
-        public Builder withParam(String argName, ExprCodeWidget.Builder<?> builder) {
-            return this.withParam(argName, builder.build());
+        public Builder withParam(int argIdx, ExprCodeWidget.Builder<?> builder) {
+            return this.withParam(argIdx, builder.build());
         }
 
         @Override
@@ -156,6 +154,6 @@ public class MethodInvokeWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context) {
-        this.args.values().forEach(c -> c.update(context));
+        this.args.forEach(c -> c.update(context));
     }
 }

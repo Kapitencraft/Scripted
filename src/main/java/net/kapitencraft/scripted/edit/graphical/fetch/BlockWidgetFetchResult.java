@@ -33,7 +33,7 @@ public record BlockWidgetFetchResult(boolean removed, int x, int y,
             if (x < font.width(subElement))
                 return BlockWidgetFetchResult.notRemoved(self, x, y);
             x -= font.width(subElement);
-            String name = matcher.group(1);
+            int name = Integer.parseInt(matcher.group(1));
             ExprCodeWidget widget = args.get(name);
             if (x < widget.getWidth(font)) {
                 WidgetFetchResult result = widget.fetchAndRemoveHovered(x, y, font);

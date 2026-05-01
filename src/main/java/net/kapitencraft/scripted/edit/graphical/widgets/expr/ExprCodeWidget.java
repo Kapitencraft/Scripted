@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public interface ExprCodeWidget extends CodeWidget {
@@ -56,8 +55,8 @@ public interface ExprCodeWidget extends CodeWidget {
         }
     }
 
-    static int getHeightFromArgs(Map<String, ExprCodeWidget> widgets) {
-        return getHeightFromEntries(widgets.values());
+    static int getHeightFromArgs(List<ExprCodeWidget> widgets) {
+        return getHeightFromEntries(widgets);
     }
 
     static int getHeightFromEntries(Collection<ExprCodeWidget> widgets) {

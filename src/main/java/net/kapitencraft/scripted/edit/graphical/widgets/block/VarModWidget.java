@@ -18,12 +18,13 @@ import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteract
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.token.Token;
+import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -61,16 +62,16 @@ public class VarModWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (!"value".equals(arg)) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 0) {
             throw new IllegalArgumentException("unknown argument in VarModWidget: " + arg);
         }
         this.expr = obj;
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
-        if ("value".equals(argName)) {
+    public CodeWidget getByIndex(int argName) {
+        if (argName == 0) {
             return this.expr;
         }
         throw new IllegalArgumentException("unknown argument in VarModWidget: " + argName);
@@ -87,7 +88,9 @@ public class VarModWidget extends StmtCodeWidget {
                 new Expr.Assign(
                         Token.createNative(this.varNameSelectorWidget.getSelected()),
                         this.expr.parse(),
-
+                        Token.createNativeWithType("=", TokenType.ASSIGN),
+                        this.varNameSelectorWidget.getOrdinal(),
+                        null
                 )
         );
     }
@@ -96,13 +99,13 @@ public class VarModWidget extends StmtCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, getWidth(font), 3 + height);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 6, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 6, "§assign", List.of(varNameSelectorWidget, expr));
         super.render(graphics, font, renderX, renderY);
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + RenderHelper.getVisualTextWidth(font, "§assign", Map.of("var", varNameSelectorWidget, "value", expr));
+        return 6 + RenderHelper.getVisualTextWidth(font, "§assign", List.of(varNameSelectorWidget, expr));
     }
 
     @Override
@@ -117,7 +120,7 @@ public class VarModWidget extends StmtCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
-        if (x < this.getWidth(font)) return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§assign", ArgumentStorage.createSingle("value", this::setExpr, () -> this.expr));
+        if (x < this.getWidth(font)) return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§assign", ArgumentStorage.createSingle(this::setExpr, () -> this.expr));
         return null;
     }
 

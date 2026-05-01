@@ -10,6 +10,9 @@ import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.LiteralHolder;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class BinaryOperationWidget implements ExprCodeWidget {
@@ -55,7 +57,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 + RenderHelper.getVisualTextWidth(font, "§op", Map.of("left", left, "right", right));
+        return 6 + RenderHelper.getVisualTextWidth(font, "§op", List.of(left, operatorWidget, right));
     }
 
     @Override
@@ -65,7 +67,20 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public ExprCodeWidget copy() {
-        return null;
+        return new BinaryOperationWidget(
+                left, operation, right
+        );
+    }
+
+    @Override
+    public Expr parse() {
+        return new Expr.Binary(
+                this.left.parse(),
+                this.right.parse(),
+                operation.asToken(),
+                null,
+                null
+        );
     }
 
     @Override
@@ -76,62 +91,64 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§op", Map.of("left", left, "op", operatorWidget, "right", right));
+        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§op", List.of(left, operatorWidget, right));
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         this.left.registerInteractions(xOrigin, yOrigin, font, sink);
-        this.operatorWidget.registerInteractions(xOrigin + RenderHelper.getPartialWidth(font, "§op", Map.of("left", left, "op", operatorWidget, "right", right), "op"), yOrigin, font, sink);
+        this.operatorWidget.registerInteractions(xOrigin + RenderHelper.getPartialWidth(font, "§op", List.of(left, operatorWidget, right), 1), yOrigin, font, sink);
         this.right.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        Map<String, ExprCodeWidget> params = Map.of("left", left, "op", operatorWidget, "right", right);
-        RenderHelper.forPartialWidth(font, "§op", params, (s, integer) -> {
-            if (!"op".equals(s)) {
-                collector.accept(new ArgumentExprConnector(aX + integer, aY, this, s));
-                params.get(s).collectConnectors(aX + integer, aY, font, collector);
+        List<ExprCodeWidget> params = List.of(left, operatorWidget, right);
+        RenderHelper.forPartialWidth(font, "§op", params, (argIndex, integer) -> {
+            if (argIndex != 1) {
+                collector.accept(new ArgumentExprConnector(aX + integer, aY, this, argIndex));
+                params.get(argIndex).collectConnectors(aX + integer, aY, font, collector);
             }
         });
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
         switch (arg) {
-            case "left" -> this.left = obj;
-            case "right" -> this.right = obj;
+            case 0 -> this.left = obj;
+            case 2 -> this.right = obj;
             default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
         }
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         return switch (argName) {
-            case "left" -> this.left;
-            case "right" -> this.right;
+            case 0 -> this.left;
+            case 2 -> this.right;
             default -> throw new IllegalArgumentException("unknown arg type for binary: " + argName);
         };
     }
 
     private enum Operation implements StringRepresentable {
-        ADD("+"),
-        SUB("-"),
-        MUL("*"),
-        DIV("/"),
-        MOD("%"),
-        POW("**"),
-        AND("&&"),
-        OR("||"),
-        XOR("^");
+        ADD("+", TokenType.ADD),
+        SUB("-", TokenType.SUB),
+        MUL("*", TokenType.MUL),
+        DIV("/", TokenType.DIV),
+        MOD("%", TokenType.MOD),
+        POW("**", TokenType.POW),
+        AND("&&", TokenType.AND),
+        OR("||", TokenType.OR),
+        XOR("^", TokenType.XOR);
 
         public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
 
         private final String literal;
+        private final TokenType type;
 
-        Operation(String literal) {
+        Operation(String literal, TokenType type) {
             this.literal = literal;
+            this.type = type;
         }
 
         public static Operation of(TokenType type) {
@@ -152,6 +169,16 @@ public class BinaryOperationWidget implements ExprCodeWidget {
         @Override
         public @NotNull String getSerializedName() {
             return literal;
+        }
+
+        public Token asToken() {
+            return new Token(
+                    this.type,
+                    this.literal,
+                    LiteralHolder.EMPTY,
+                    -1,
+                    -1
+            );
         }
     }
 }

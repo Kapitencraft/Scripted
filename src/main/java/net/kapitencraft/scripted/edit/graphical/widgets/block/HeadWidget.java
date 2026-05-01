@@ -17,8 +17,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,21 +26,21 @@ public class HeadWidget extends StmtCodeWidget {
     public static final MapCodec<HeadWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             StmtCodeWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.getChild())),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("children").forGetter(w -> w.args)
+            ExprCodeWidget.CODEC.listOf().fieldOf("children").forGetter(w -> w.args)
     ).apply(i, HeadWidget::new));
 
     private final String translationKey;
-    private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private final List<ExprCodeWidget> args = new ArrayList<>();
 
-    public HeadWidget(Optional<StmtCodeWidget> child, String translationKey, Map<String, ExprCodeWidget> map) {
+    public HeadWidget(Optional<StmtCodeWidget> child, String translationKey, List<ExprCodeWidget> map) {
         this.translationKey = translationKey;
-        this.args.putAll(map);
+        this.args.addAll(map);
         child.ifPresent(this::setChild);
     }
 
-    public HeadWidget(StmtCodeWidget child, String translationKey, Map<String, ExprCodeWidget> map) {
+    public HeadWidget(StmtCodeWidget child, String translationKey, List<ExprCodeWidget> map) {
         this.translationKey = translationKey;
-        this.args.putAll(map);
+        this.args.addAll(map);
         this.setChild(child);
     }
 
@@ -58,19 +58,19 @@ public class HeadWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
         //TODO
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int idx) {
         return null;
     }
 
     @Override
     public void update(@Nullable MethodContext context) {
         MethodContext nC = new MethodContext();
-        this.args.values().forEach(w -> w.update(nC));
+        this.args.forEach(w -> w.update(nC));
         super.update(nC);
     }
 
@@ -117,11 +117,11 @@ public class HeadWidget extends StmtCodeWidget {
 
     public static class Builder implements StmtCodeWidget.Builder<HeadWidget> {
         private String translationKey;
-        private final Map<String, ExprCodeWidget> expr = new HashMap<>();
+        private final List<ExprCodeWidget> args = new ArrayList<>();
         private StmtCodeWidget child;
 
-        public Builder withExpr(String argName, ExprCodeWidget widget) {
-            expr.put(argName, widget);
+        public Builder withExpr(ExprCodeWidget widget) {
+            args.add(widget);
             return this;
         }
 
@@ -137,7 +137,7 @@ public class HeadWidget extends StmtCodeWidget {
 
         @Override
         public HeadWidget build() {
-            return new HeadWidget(child, Objects.requireNonNull(translationKey, "missing translation key!"), expr);
+            return new HeadWidget(child, Objects.requireNonNull(translationKey, "missing translation key!"), args);
         }
     }
 }

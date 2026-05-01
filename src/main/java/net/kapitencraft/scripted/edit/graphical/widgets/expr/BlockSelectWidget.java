@@ -12,10 +12,14 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.kapitencraft.scripted.edit.graphical.widgets.io.SelectBlockWidget;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -79,12 +83,41 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
         throw new IllegalAccessError("can not insert into block select widget");
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public Expr parse() {
+        ResourceLocation location = BuiltInRegistries.BLOCK.getKey(this.value);
+        //ResourceLocation: Lnet/minecraft/resources/ResourceLocation;
+        //BuiltInRegistries: Lnet/minecraft/core/registries/BuiltInRegistries;
+        BuiltInRegistries.BLOCK.get(location);
+        return new Expr.InstCall(
+                new Expr.StaticGet(
+                        VarTypeManager.BUILTIN_REGISTRIES,
+                        Token.createNative("BLOCK")
+                ),
+                Token.createNative("get"),
+                new Expr[]{
+                        new Expr.StaticCall(
+                                VarTypeManager.RESOURCE_LOCATION,
+                                Token.createNative("fromNamespaceAndPath"),
+                                new Expr[] {
+                                        new Expr.Literal(Token.createNativeWithStringLiteral(location.getNamespace())),
+                                        new Expr.Literal(Token.createNativeWithStringLiteral(location.getPath()))
+                                },
+                                VarTypeManager.RESOURCE_LOCATION,
+                                "Lnet/minecraft/resources/ResourceLocation;fromNamespaceAndPath(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation"
+                        )
+                },
+                VarTypeManager.BLOCK,
+                "Lnet/minecraft/core/DefaultedRegistry;get(Lnet/minecraft/resources/ResourceLocation)Lnet/java/lang/Object"
+        );
+    }
+
+    @Override
+    public CodeWidget getByIndex(int argName) {
         throw new IllegalAccessError("can not get from block select widget");
     }
 

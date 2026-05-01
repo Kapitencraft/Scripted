@@ -29,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -99,25 +98,22 @@ public class IfWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (arg.equals("condition")) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 0) {
             this.condition = obj;
-        }
-        if (arg.startsWith("elif-condition")) {
-            int idx = Integer.parseInt(arg.substring(14));
-            this.elseIfs.get(idx).condition = obj;
+        } else if (arg < this.elseIfs.size() + 1) {
+            this.elseIfs.get(arg - 1).condition = obj;
         }
         throw new IllegalArgumentException("unknown argument in if widget: " + arg);
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
-        if ("condition".equals(argName)) {
+    public CodeWidget getByIndex(int argName) {
+        if (argName == 0) {
             return this.condition;
         }
-        if (argName.startsWith("elif-condition")) {
-            int idx = Integer.parseInt(argName.substring(14));
-            return this.elseIfs.get(idx).condition;
+        if (argName < this.elseIfs.size() + 1) {
+            return this.elseIfs.get(argName - 1).condition;
         }
         throw new IllegalArgumentException("unknown argument named " + argName + " in If");
     }
@@ -134,7 +130,7 @@ public class IfWidget extends StmtCodeWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int conditionOffset = aX + 4 + RenderHelper.getPartialWidth(font, "§if", Map.of(), "condition");
+        int conditionOffset = aX + 4 + RenderHelper.getPartialWidth(font, "§if", List.of(), 0);
         collector.accept(new SingletonExprConnector(
                 conditionOffset,
                 aY,
@@ -153,7 +149,7 @@ public class IfWidget extends StmtCodeWidget {
                 collector
         ));
         int yOffset = headHeight + this.getBodyHeight();
-        int cOffset = RenderHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
+        int cOffset = RenderHelper.getPartialWidth(font, "§else_if", List.of(), 0);
         for (ElseIfEntry elseIf : this.elseIfs) {
             collector.accept(new SingletonExprConnector(
                     aX + 4 + cOffset,
@@ -248,15 +244,15 @@ public class IfWidget extends StmtCodeWidget {
     }
 
     private int getHeadWidth(Font font) {
-        return 4 + RenderHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
+        return 4 + RenderHelper.getVisualTextWidth(font, "§if", List.of(condition));
     }
 
     private int getElseHeadWidth(Font font) {
-        return 4 + RenderHelper.getVisualTextWidth(font, "§else", Map.of());
+        return 4 + RenderHelper.getVisualTextWidth(font, "§else", List.of());
     }
 
     private int getElseIfHeadWidth(Font font, ElseIfEntry entry) {
-        return 4 + RenderHelper.getVisualTextWidth(font, "§else_if", Map.of("condition", entry.condition));
+        return 4 + RenderHelper.getVisualTextWidth(font, "§else_if", List.of(entry.condition));
     }
 
     @Override
@@ -303,7 +299,7 @@ public class IfWidget extends StmtCodeWidget {
         int headHeight = getHeadHeight();
         //head
         graphics.blitSprite(CodeWidgetSprites.LOOP_HEAD, renderX, renderY, globalHeadWidth, headHeight + 3);
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 20) / 2, "§if", Map.of("condition", condition));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 7 + (headHeight - 20) / 2, "§if", List.of(condition));
 
         //body
         int bodyHeight = getBodyHeight();
@@ -316,7 +312,7 @@ public class IfWidget extends StmtCodeWidget {
             int elseIfHeadHeight = getElseIfHeadHeight(elseIf);
             graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseIfHeadHeight + 3);
             int elseIfBodyHeight = getElseifBodyHeight(elseIf);
-            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else_if", Map.of("condition", elseIf.condition));
+            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else_if", List.of(elseIf.condition));
             if (elseIf.body != null) {
                 elseIf.body.render(graphics, font, renderX + 6, endY + elseIfHeadHeight);
             }
@@ -329,7 +325,7 @@ public class IfWidget extends StmtCodeWidget {
             int elseHeadHeight = getElseHeadHeight();
             graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
             int elseBodyHeight = getElseBodyHeight();
-            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else", Map.of());
+            RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else", List.of());
             if (this.elseBody != null) {
                 this.elseBody.render(graphics, font, renderX + 6, endY + elseHeadHeight);
             }
@@ -350,7 +346,7 @@ public class IfWidget extends StmtCodeWidget {
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getHeadWidth(font))
-                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
+                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle(this::setCondition, () -> this.condition));
             return null;
         }
 
@@ -539,7 +535,7 @@ public class IfWidget extends StmtCodeWidget {
         }
 
         public ElseIfEntry copy() {
-            return new ElseIfEntry(this.condition.copy(), this.body.copy(), this.ended);
+            return new ElseIfEntry(this.condition.copy(), this.body != null ? this.body.copy() : null, this.ended);
         }
     }
 

@@ -12,12 +12,13 @@ import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -47,7 +48,7 @@ public class GetVarWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5, "§get", Map.of("var", this.nameSelector));
+        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5, "§get", List.of(this.nameSelector));
     }
 
     @Override
@@ -56,12 +57,12 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
         throw new IllegalAccessError("can not insert into get var widget");
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         throw new IllegalAccessError("can not get from get var widget");
     }
 
@@ -76,7 +77,7 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 + RenderHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
+        return 6 + RenderHelper.getVisualTextWidth(font, "§get", List.of(this.nameSelector));
     }
 
     @Override
@@ -100,7 +101,7 @@ public class GetVarWidget implements ExprCodeWidget {
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 
-    public static Expr parse(ExprCodeWidget widget) {
-        return new Expr.VarRef(, ((GetVarWidget) widget).getOrdinal());
+    public Expr parse() {
+        return new Expr.VarRef(Token.createNative(this.name), getOrdinal());
     }
 }

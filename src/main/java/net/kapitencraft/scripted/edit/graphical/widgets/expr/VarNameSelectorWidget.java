@@ -5,6 +5,7 @@ import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,6 +18,7 @@ import java.util.function.Consumer;
 public class VarNameSelectorWidget implements ExprCodeWidget {
     private @NotNull Status status = Status.UNKNOWN;
     private @Nullable String selected;
+    private byte ordinal;
 
     @Override
     public @NotNull Type getType() {
@@ -44,12 +46,17 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public Expr parse() {
+        return null;
+    }
+
+    @Override
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
         throw new IllegalAccessError("can not insert into var name selector widget");
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         throw new IllegalAccessError("can not get from var name selector widget");
     }
 
@@ -71,9 +78,10 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     public void update(@Nullable MethodContext context) {
         if (context == null) //no method
             status = Status.UNKNOWN;
-        else if (context.lvt.has(this.selected))
+        else if (context.lvt.has(this.selected)) {
             status = Status.PRESENT;
-        else
+            ordinal = context.lvt.getOrdinal(this.selected);
+        } else
             status = Status.MISSING;
     }
 
@@ -87,6 +95,10 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     public @Nullable String getSelected() {
         return selected;
+    }
+
+    public byte getOrdinal() {
+        return ordinal;
     }
 
     private enum Status {

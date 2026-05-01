@@ -34,12 +34,17 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public Expr parse() {
+        return null;
+    }
+
+    @Override
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
         throw new IllegalAccessError("can not insert into param widget");
     }
 
     @Override
-    public CodeWidget getByName(String argName) {
+    public CodeWidget getByIndex(int argName) {
         throw new IllegalAccessError("can not get from param widget");
     }
 

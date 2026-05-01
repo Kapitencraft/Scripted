@@ -7,12 +7,20 @@ import org.jetbrains.annotations.Nullable;
 
 public record Token(TokenType type, String lexeme, LiteralHolder literal, int line, int lineStartIndex) {
 
-    public @NotNull String toString() {
-        return String.format("Token{type=%s, lexeme=\"%s\", literal=%s}@line%s", type, lexeme, literal, line);
+    public static Token createNativeWithType(String lexeme, TokenType tokenType) {
+        return new Token(tokenType, lexeme, LiteralHolder.EMPTY, -1, -1);
+    }
+
+    public static Token createNativeWithStringLiteral(String lexeme) {
+        return new Token(TokenType.STR, lexeme, new LiteralHolder(lexeme, VarTypeManager.STRING.get()), -1, -1);
     }
 
     public static Token createNative(String lexeme) {
         return new Token(TokenType.IDENTIFIER, lexeme, LiteralHolder.EMPTY, -1, -1);
+    }
+
+    public @NotNull String toString() {
+        return String.format("Token{type=%s, lexeme=\"%s\", literal=%s}@line%s", type, lexeme, literal, line);
     }
 
     public Token after() {
