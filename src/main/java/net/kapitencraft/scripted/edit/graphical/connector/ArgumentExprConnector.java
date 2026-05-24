@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.connector;
 
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.graphical.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;

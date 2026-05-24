@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit;
+package net.kapitencraft.scripted.edit.graphical;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;

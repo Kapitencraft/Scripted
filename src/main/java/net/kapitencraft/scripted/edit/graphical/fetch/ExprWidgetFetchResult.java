@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.fetch;
 
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.graphical.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.client.gui.Font;

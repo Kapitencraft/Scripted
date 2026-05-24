@@ -1,6 +1,5 @@
-package net.kapitencraft.scripted.edit;
+package net.kapitencraft.scripted.edit.graphical;
 
-import net.kapitencraft.kap_lib.core.client.widget.text.MultiLineTextBox;
 import net.kapitencraft.scripted.edit.graphical.core.GraphicalEditor;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.registry.ModRegistries;
@@ -8,14 +7,12 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 
-public class EditScreen extends Screen {
+public class BlocklyEditScreen extends Screen {
     private GraphicalEditor graphicalEditor;
 
-    protected EditScreen() {
+    public BlocklyEditScreen() {
         super(Component.empty());
     }
-
-    MultiLineTextBox box;
 
     @Override
     protected void init() {
@@ -24,12 +21,6 @@ public class EditScreen extends Screen {
         GraphicalEditor original = graphicalEditor;
         this.addRenderableWidget(this.graphicalEditor = new GraphicalEditor(10, 10, width - 20, height - 20, Component.literal("hi"), this.font, tabs));
         this.graphicalEditor.updateContentFrom(original);
-
-        //this.addRenderableWidget(box = Util.make(() -> {
-        //    MultiLineTextBox box = new MultiLineTextBox(this.font, 10, 10, this.width-20, this.height-20, this.box, null);
-        //    box.setLineRenderType(MultiLineTextBox.LineRenderType.EVERY);
-        //    return box;
-        //}));
     }
 
     @Override
