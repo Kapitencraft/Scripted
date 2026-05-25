@@ -113,8 +113,8 @@ public class WhileLoopWidget extends BlockCodeWidget {
         int bodyHeight = getBranchHeight();
         if (this.body != null)
             this.body.renderBackground(graphics, font, renderX + 6, renderY + headHeight);
-        graphics.renderScopeEnclosure(renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
-        graphics.renderScopeEnd(renderX, renderY + headHeight + bodyHeight, loopWidth, 16);
+        graphics.renderScopeEnclosure(renderX, renderY + headHeight + 3, bodyHeight - 3);
+        graphics.renderScopeEnd(renderX, renderY + headHeight + bodyHeight, loopWidth);
         super.renderBackground(graphics, font, renderX, renderY);
     }
 

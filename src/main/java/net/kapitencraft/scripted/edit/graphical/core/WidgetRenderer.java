@@ -70,12 +70,12 @@ public class WidgetRenderer {
         renderSprite(this.numberExpr, x, y, width, height);
     }
 
-    public void renderScopeEnclosure(int x, int y, int width, int height) {
-        renderSprite(this.scopeEnclosure, x, y, width, height);
+    public void renderScopeEnclosure(int x, int y, int height) {
+        blitTiledSprite(this.scopeEnclosure, x, y, 6, height, 0, 0, 6, 16, 6, 16);
     }
 
-    public void renderScopeEnd(int x, int y, int width, int height) {
-        renderSprite(scopeEnd, x, y, width, height);
+    public void renderScopeEnd(int x, int y, int width) {
+        blitTiledSprite(this.scopeEnd, x, y, width, 16, 0, 0, 48, 16, 48, 16);
     }
 
     public void renderScopeEndWithCode(int x, int y, int width, int height) {

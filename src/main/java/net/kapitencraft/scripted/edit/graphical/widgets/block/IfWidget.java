@@ -284,7 +284,7 @@ public class IfWidget extends BlockCodeWidget {
         int bodyHeight = getBodyHeight();
         if (this.conditionBody != null)
             this.conditionBody.renderBackground(renderer, font, renderX + 6, renderY + headHeight);
-        renderer.renderScopeEnclosure(renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
+        renderer.renderScopeEnclosure(renderX, renderY + headHeight + 3, bodyHeight - 3);
 
         int endY = renderY + headHeight + bodyHeight;
         for (ElseIfEntry elseIf : this.elseIfs) {
@@ -294,7 +294,7 @@ public class IfWidget extends BlockCodeWidget {
             if (elseIf.body != null) {
                 elseIf.body.renderBackground(renderer, font, renderX + 6, endY + elseIfHeadHeight);
             }
-            renderer.renderScopeEnclosure(renderX, endY + elseIfHeadHeight + 3, 6, elseIfBodyHeight - 3);
+            renderer.renderScopeEnclosure(renderX, endY + elseIfHeadHeight + 3, elseIfBodyHeight - 3);
             endY += elseIfHeadHeight + elseIfBodyHeight;
         }
 
@@ -306,7 +306,7 @@ public class IfWidget extends BlockCodeWidget {
             if (this.elseBody != null) {
                 this.elseBody.renderBackground(renderer, font, renderX + 6, endY + elseHeadHeight);
             }
-            renderer.renderScopeEnclosure(renderX, endY + elseHeadHeight + 3, 6, elseBodyHeight - 3);
+            renderer.renderScopeEnclosure(renderX, endY + elseHeadHeight + 3, elseBodyHeight - 3);
             endY += elseHeadHeight + elseBodyHeight;
         }
         //end
@@ -352,7 +352,7 @@ public class IfWidget extends BlockCodeWidget {
     }
 
     private void renderScopeEnd(WidgetRenderer graphics, int renderX, int renderY, int width) {
-        graphics.renderScopeEnd(renderX, renderY, width, 16);
+        graphics.renderScopeEnd(renderX, renderY, width);
         graphics.renderModifyIf(renderX + width - 9, renderY + 4, 7, 7);
     }
 
