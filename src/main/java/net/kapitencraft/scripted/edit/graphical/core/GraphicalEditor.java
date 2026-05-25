@@ -453,6 +453,13 @@ public class GraphicalEditor extends AbstractWidget {
         }
     }
 
+    public void compile() {
+        for (CodeElement element : this.elements) {
+            if (element instanceof BlockCodeElement bCE && bCE.widget instanceof HeadWidget) { //only compile completed methods
+            }
+        }
+    }
+
     //region element
     private abstract class CodeElement {
         protected final int x;

@@ -4,6 +4,7 @@ import net.kapitencraft.kap_lib.core.client.widget.text.MultiLineTextBox;
 import net.kapitencraft.scripted.edit.graphical.core.GraphicalEditor;
 import net.kapitencraft.scripted.edit.graphical.selection.SelectionTab;
 import net.kapitencraft.scripted.registry.ModRegistries;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
@@ -25,6 +26,9 @@ public class EditScreen extends Screen {
         this.addRenderableWidget(this.graphicalEditor = new GraphicalEditor(10, 10, width - 20, height - 20, Component.literal("hi"), this.font, tabs));
         this.graphicalEditor.updateContentFrom(original);
 
+        Button button = Button.builder(Component.translatable("scripted.compile"), b -> this.graphicalEditor.compile())
+                .pos(width - 10, height - 10).build();
+        this.addRenderableWidget(button);
         //this.addRenderableWidget(box = Util.make(() -> {
         //    MultiLineTextBox box = new MultiLineTextBox(this.font, 10, 10, this.width-20, this.height-20, this.box, null);
         //    box.setLineRenderType(MultiLineTextBox.LineRenderType.EVERY);
