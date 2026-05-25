@@ -4,9 +4,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.kapitencraft.scripted.lang.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.exe.VirtualMachine;
 import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;
@@ -15,8 +15,10 @@ import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.DynamicClassInstance;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.LevelResource;
+import net.minecraft.world.phys.Vec3;
 
 import java.io.File;
 
@@ -64,23 +66,24 @@ public class ScriptCommand {
     private static int run(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         String id = StringArgumentType.getString(context, "id");
         ClassReference c = VarTypeManager.getClassForName(id);
+        CommandSourceStack source = context.getSource();
         if (c == null || !c.exists()) {
-            context.getSource().sendFailure(Component.literal("no script for class '" + id + "'"));
+            source.sendFailure(Component.literal("no script for class '" + id + "'"));
             return 1;
         }
 
         if (!c.get().isChildOf(VarTypeManager.COMMAND_SCRIPT.get())) {
-            context.getSource().sendFailure(Component.literal("class not a command script"));
+            source.sendFailure(Component.literal("class not a command script"));
             return 1;
         }
-
-        CommandData data = new CommandData(context.getSource().getPlayerOrException());
+        Vec3 pos = source.getPosition();
+        CommandData data = new CommandData(source.getPlayerOrException(), new BlockPos((int) pos.x, (int) pos.y, (int) pos.z), pos, source.getLevel());
 
         VirtualMachine.executeMethod("Lscripted/exe/CommandScript;execute(Lscripted/exe/CommandData;)",
                 new DynamicClassInstance(c.get()),
                 new NativeClassInstance(((NativeClassImpl) VarTypeManager.COMMAND_DATA.get()), data)
         );
-        context.getSource().sendSuccess(() -> Component.literal("successfully ran Command Script " + id), true);
+        source.sendSuccess(() -> Component.literal("successfully ran Command Script " + id), true);
 
         return 1;
     }
