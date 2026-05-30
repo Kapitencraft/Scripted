@@ -322,7 +322,7 @@ public class IfWidget extends BlockCodeWidget {
         int bodyHeight = getBodyHeight();
         if (this.conditionBody != null)
             this.conditionBody.renderText(graphics, font, renderX + 6, renderY + headHeight);
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
+        //graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
 
         int endY = renderY + headHeight + bodyHeight;
         for (ElseIfEntry elseIf : this.elseIfs) {
@@ -338,13 +338,13 @@ public class IfWidget extends BlockCodeWidget {
         if (elseVisible) {
             //else
             int elseHeadHeight = getElseHeadHeight();
-            graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
+            //graphics.blitSprite(CodeWidgetSprites.ELSE_CONDITION_HEAD, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
             int elseBodyHeight = getElseBodyHeight();
             RenderHelper.renderVisualText(graphics, font, renderX + 4, endY + 7, "§else", Map.of());
             if (this.elseBody != null) {
                 this.elseBody.renderText(graphics, font, renderX + 6, endY + elseHeadHeight);
             }
-            graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseHeadHeight + 3, 6, elseBodyHeight - 3);
+            //graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseHeadHeight + 3, 6, elseBodyHeight - 3);
             endY += elseHeadHeight + elseBodyHeight;
         }
         //end

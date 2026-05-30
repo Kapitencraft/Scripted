@@ -198,12 +198,12 @@ public class GraphicalEditor extends AbstractWidget {
         WidgetRenderer renderer1 = new WidgetRenderer(Minecraft.getInstance().getGuiSprites(), pGuiGraphics.pose().last().pose());
         for (Holder<SelectionTab> tab : tabs) {
             SelectionTab value = tab.value();
-            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, y, -1, false);
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", tab.getKey().location())), 2, yO, -1, false);
             yO += 10;
             for (int i1 = 0; i1 < value.size(); i1++) {
                 CodeWidget widget = value.get(i1);
                 widget.renderBackground(renderer1, font, 0, yO);
-                widget.renderText(pGuiGraphics, font, 0, yO);
+                widget.renderText(pGuiGraphics, font, 0, yO); //TODO render this later; it hides behind the background due to being drawn prematurely
                 yO += widget.getHeight();
                 yO += 10;
             }
@@ -244,6 +244,7 @@ public class GraphicalEditor extends AbstractWidget {
         return visible;
     }
 
+    //region interaction
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (this.widget != null) {
@@ -286,10 +287,6 @@ public class GraphicalEditor extends AbstractWidget {
                 this.scrollY += scrollDelta;
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
-    }
-
-    @Override
-    protected void updateWidgetNarration(@NotNull NarrationElementOutput pNarrationElementOutput) {
     }
 
     @Override
@@ -467,6 +464,11 @@ public class GraphicalEditor extends AbstractWidget {
         }
         return super.mouseReleased(mouseX, mouseY, button);
     }
+    //endregion
+
+    @Override
+    protected void updateWidgetNarration(@NotNull NarrationElementOutput pNarrationElementOutput) {
+    }
 
     private void setWidget(@Nullable PositionedWidget widget) {
         this.widget = widget;
@@ -525,12 +527,11 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         public void renderDebug(GuiGraphics pGuiGraphics, int x, int y) {
-            if (renderDebug)
-                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
             if (renderDebug) {
+                pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
                 PoseStack pose = pGuiGraphics.pose();
                 pose.pushPose();
-                pose.translate(x, y, 0);
+                pose.translate(x, y, 400);
                 for (Connector connector : this.connectors) {
                     connector.renderDebug(pGuiGraphics);
                 }
