@@ -197,7 +197,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.translate(0, this.selectionScroll, 0);
         int yO = 1;
         for (SelectionTab tab : tabs) {
-            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", this.registry.getKey(tab))), 2, y, -1, false);
+            pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", this.registry.getKey(tab))), 2, yO, -1, false);
             yO += 10;
             for (int i1 = 0; i1 < tab.size(); i1++) {
                 CodeWidget widget = tab.get(i1);

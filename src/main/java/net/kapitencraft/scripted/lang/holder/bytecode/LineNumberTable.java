@@ -5,7 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.kap_lib.core.helpers.CollectorHelper;
-import net.kapitencraft.kap_lib.core.helpers.GsonHelper;
+import net.minecraft.util.GsonHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.lang.tool;
 
 import com.google.gson.*;
-import net.kapitencraft.kap_lib.core.helpers.GsonHelper;
+import net.minecraft.util.GsonHelper;
 
 import java.io.File;
 import java.io.FileReader;

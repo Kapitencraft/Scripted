@@ -3,7 +3,6 @@ package net.kapitencraft.scripted.lang.exe.load;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-import net.kapitencraft.kap_lib.core.helpers.GsonHelper;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ClassType;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
@@ -11,6 +10,7 @@ import net.kapitencraft.scripted.lang.oop.clazz.generated.RuntimeClass;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonAnnotation;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonClass;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonInterface;
+import net.minecraft.util.GsonHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
