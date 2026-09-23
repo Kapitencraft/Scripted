@@ -39,7 +39,8 @@ import java.util.function.Consumer;
 public class GraphicalEditor extends AbstractWidget {
     public static boolean renderDebug = true;
 
-    private final List<SelectionTab> tabs;
+    private final SelectionTab[] tabs;
+    private final int[] tabScrolls;
     private final Registry<SelectionTab> registry;
 
     private @Nullable PositionedWidget widget;
@@ -59,10 +60,21 @@ public class GraphicalEditor extends AbstractWidget {
     public GraphicalEditor(int pX, int pY, int pWidth, int pHeight, Component pMessage, Font font, Registry<SelectionTab> tabs) {
         super(pX, pY, pWidth, pHeight, pMessage);
         this.registry = tabs;
-        this.tabs = tabs.stream().toList();
+        this.tabs = tabs.stream().toArray(SelectionTab[]::new);
         this.font = font;
-        for (SelectionTab tab : this.tabs) {
+        int yO = 1;
+        SelectionTab[] selectionTabs = this.tabs;
+        this.tabScrolls = new int[this.tabs.length];
+        for (int i = 0; i < selectionTabs.length; i++) {
+            SelectionTab tab = selectionTabs[i];
             tab.update(font);
+            this.tabScrolls[i] = yO;
+            yO += 10;
+            for (int i1 = 0; i1 < tab.size(); i1++) {
+                CodeWidget widget = tab.get(i1);
+                yO += widget.getHeight();
+                yO += 10;
+            }
         }
 
         this.elements.add(
@@ -173,14 +185,14 @@ public class GraphicalEditor extends AbstractWidget {
         pose.pushPose();
         pose.translate(x + 1, y + 1, 0);
         pose.scale(.75f, .75f, 1);
-        for (int i = 0; i < tabs.size(); i++) {
+        for (int i = 0; i < tabs.length; i++) {
             Style style = Style.EMPTY;
-            if (pMouseX > x + 1 && pMouseX < x + 50 && pMouseY >= y + 10 * i + 1 && pMouseY <= y + 10 * i + 9) {
+            if (pMouseX > x + 1 && pMouseX < x + 50 && pMouseY >= y + 7.5 * i + 1 && pMouseY <= y + 7.5 * i + 9) {
                 style = style.withBold(true);
             }
             pGuiGraphics.drawString(font,
                     Component.translatable(
-                            Util.makeDescriptionId("selection_tab", this.registry.getKey(tabs.get(i)))
+                            Util.makeDescriptionId("selection_tab", this.registry.getKey(tabs[i]))
                     ).withStyle(style),
                     0,
                     i * 10,
@@ -217,6 +229,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
     }
 
+    @SuppressWarnings("SuspiciousNameCombination")
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         if (this.widget != null) {
@@ -252,11 +265,15 @@ public class GraphicalEditor extends AbstractWidget {
                 this.scrollY += relativeY / scale - relativeY / scaleOld;
             }
         } else {
-            float scrollDelta = (float) (scrollY * CoreClientModConfig.getScrollScale());
+            float scrollDeltaY = (float) (scrollY * CoreClientModConfig.getScrollScale());
+            float scrollDeltaX = (float) (scrollX * CoreClientModConfig.getScrollScale());
             if (Screen.hasShiftDown()) {
-                this.scrollX += scrollDelta;
-            } else
-                this.scrollY += scrollDelta;
+                this.scrollX += scrollDeltaY;
+                this.scrollY += scrollDeltaX;
+            } else {
+                this.scrollX += scrollDeltaX;
+                this.scrollY += scrollDeltaY;
+            }
         }
         return super.mouseScrolled(mouseX, mouseY, scrollX, scrollY);
     }
@@ -274,6 +291,10 @@ public class GraphicalEditor extends AbstractWidget {
                 this.widget = null;
             }
             return true;
+        }
+        if (mouseX > getX() + 1 && mouseX < getY() + 50) {
+            int i = ((int) mouseY - getY()) / 10;
+            this.selectionScroll = -tabScrolls[i];
         }
         if (isPoolAreaHovered(mouseX, mouseY)) {
             this.attemptGetWidgetFromPool(mouseX - this.getX() - 60, mouseY - this.getY());
