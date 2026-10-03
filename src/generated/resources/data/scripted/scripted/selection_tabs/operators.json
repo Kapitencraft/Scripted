@@ -2,6 +2,12 @@
   {
     "type": "expr",
     "entry": {
+      "type": "unary"
+    }
+  },
+  {
+    "type": "expr",
+    "entry": {
       "type": "binary"
     }
   }

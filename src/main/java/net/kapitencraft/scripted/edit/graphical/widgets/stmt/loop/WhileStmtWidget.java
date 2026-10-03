@@ -135,7 +135,10 @@ public class WhileStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
+        if (this.body != null) {
+            this.body.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
+        }
+        super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     public static Builder builder() {

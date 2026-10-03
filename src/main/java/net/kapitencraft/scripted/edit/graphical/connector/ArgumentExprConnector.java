@@ -21,8 +21,10 @@ public class ArgumentExprConnector extends ExprConnector {
     }
 
     public static void parse(Font font, int aX, int aY, String key, Map<String, ExprCodeWidget> args, CodeWidget owner, Consumer<Connector> collector) {
+        int connectorOffset = aY + (owner.getHeight() - 20) / 2 ;
         TextRenderHelper.forPartialWidth(font, key, args, (s, integer) -> {
-            collector.accept(new ArgumentExprConnector(aX + integer, aY, owner, s));
+            int finalOffset = connectorOffset - (args.get(s).getHeight() - 8) / 2;
+            collector.accept(new ArgumentExprConnector(aX + integer, aY + finalOffset, owner, s));
             args.get(s).collectConnectors(aX + integer, aY, font, collector);
         });
     }

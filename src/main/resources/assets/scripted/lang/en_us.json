@@ -36,7 +36,8 @@
   "§continue": "continue with next loop iteration",
   "§else_if": "else if {condition} do",
   "§else": "else do",
-  "§op": "{left} {op} {right}",
+  "§bin_op": "{left} {op} {right}",
+  "§un_op": "{op} {right}",
 
   "scripted.code.head.test": "Scripted",
   "scripted.code.expr.test0": "a test with expr {arg0}",

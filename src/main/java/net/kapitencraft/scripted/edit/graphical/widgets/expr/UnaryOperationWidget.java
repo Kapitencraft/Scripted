@@ -21,110 +21,97 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class BinaryOperationWidget implements ExprCodeWidget {
-    public static final MapCodec<BinaryOperationWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExprCodeWidget.CODEC.optionalFieldOf("left", ParamWidget.NUM).forGetter(w -> w.left),
-            Operation.CODEC.optionalFieldOf("operation", Operation.ADD).forGetter(w -> w.operatorWidget.getValue()),
+public class UnaryOperationWidget implements ExprCodeWidget {
+    public static final MapCodec<UnaryOperationWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+            Operation.CODEC.optionalFieldOf("operation", Operation.SQRT).forGetter(w -> w.operatorWidget.getValue()),
             ExprCodeWidget.CODEC.optionalFieldOf("right", ParamWidget.NUM).forGetter(w -> w.right)
-    ).apply(i, BinaryOperationWidget::new));
+    ).apply(i, UnaryOperationWidget::new));
 
-    private ExprCodeWidget left = ParamWidget.NUM;
     private final ListSelectionWidget<Operation> operatorWidget = new ListSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
     private ExprCodeWidget right = ParamWidget.NUM;
 
-    private BinaryOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
-        this.left = left;
+    private UnaryOperationWidget(Operation operation, ExprCodeWidget right) {
         this.operatorWidget.set(operation);
         this.right = right;
     }
 
-    public BinaryOperationWidget() {
+    public UnaryOperationWidget() {
     }
 
     @Override
     public @NotNull Type getType() {
-        return Type.BINARY;
+        return Type.UNARY;
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        return 6 + TextRenderHelper.getVisualTextWidth(font, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getHeight() {
-        return Math.max(18, ExprCodeWidget.getHeightFromEntries(List.of(left, right)) + 4);
+        return Math.max(18, right.getHeight() + 4);
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new BinaryOperationWidget(
-                this.left, this.operatorWidget.getValue(), this.right
+        return new UnaryOperationWidget(
+                this.operatorWidget.getValue(), this.right
         );
     }
 
     @Override
     public void update(@Nullable MethodContext context, Font font) {
-        this.left.update(context, font);
         this.right.update(context, font);
     }
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§bin_op", Map.of("left", left, "op", operatorWidget, "right", right));
+        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§un_op", Map.of("op", operatorWidget, "right", right));
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        this.left.registerInteractions(xOrigin, yOrigin, font, sink);
-        this.operatorWidget.registerInteractions(xOrigin + TextRenderHelper.getPartialWidth(font, "§bin_op", Map.of("left", left, "op", operatorWidget, "right", right), "op"), yOrigin, font, sink);
+        this.operatorWidget.registerInteractions(xOrigin + TextRenderHelper.getPartialWidth(font, "§un_op", Map.of("op", operatorWidget, "right", right), "op"), yOrigin, font, sink);
         this.right.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        Map<String, ExprCodeWidget> params = Map.of("left", left, "op", operatorWidget, "right", right);
-        int connectorOffset = aY + 6 + (getHeight() - 20) / 2;
-        TextRenderHelper.forPartialWidth(font, "§bin_op", params, (s, integer) -> {
-            if (!"op".equals(s)) {
-                int finalOffset = connectorOffset - (params.get(s).getHeight() - 8) / 2;
-                collector.accept(new ArgumentExprConnector(aX + 4 + integer, aY + finalOffset, this, s));
-                params.get(s).collectConnectors(aX + 4 + integer, aY, font, collector);
-            }
-        });
+        int width = TextRenderHelper.getPartialWidth(font, "§un_op", Map.of("op", operatorWidget, "right", right), "right");
+        int connectorOffset = aY + (getHeight() - 20) / 2;
+        collector.accept(new ArgumentExprConnector(aX + 4 + width, aY + connectorOffset, this, "right"));
+        this.right.collectConnectors(aX +  4 + width, aY, font, collector);
     }
 
     @Override
     public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        switch (arg) {
-            case "left" -> this.left = obj;
-            case "right" -> this.right = obj;
-            default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
+        if (arg.equals("right")) {
+            this.right = obj;
+        } else {
+            throw new IllegalArgumentException("unknown arg type for binary: " + arg);
         }
     }
 
     @Override
     public CodeWidget getByName(String arg) {
         return switch (arg) {
-            case "left" -> this.left;
             case "right" -> this.right;
-            default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
+            default -> throw new IllegalArgumentException("unknown arg type for unary: " + arg);
         };
     }
 
     private enum Operation implements StringRepresentable {
-        ADD("+"),
-        SUB("-"),
-        MUL("*"),
-        DIV("/"),
-        MOD("%"),
-        POW("**");
+        SQRT("sqrt"),
+        ABS("abs"),
+        NOT("not"),
+        NEGATIVE("-");
 
         public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
 

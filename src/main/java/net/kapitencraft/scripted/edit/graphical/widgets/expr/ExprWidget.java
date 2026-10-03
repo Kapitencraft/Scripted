@@ -82,7 +82,7 @@ public class ExprWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), height);
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (height - 20) / 2, this.translationKey, this.args);
     }
 
     @Override
