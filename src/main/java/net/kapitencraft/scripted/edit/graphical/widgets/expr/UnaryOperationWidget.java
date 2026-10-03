@@ -5,8 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -73,21 +73,39 @@ public class UnaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, "§un_op", Map.of("op", operatorWidget, "right", right));
+        int oX = x;
+        if (x < 4)
+            return ExprWidgetFetchResult.notRemoved(this, x, y);
+        x -= 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+        int rightWidth = this.right.getWidth(font);
+        if (x < rightWidth) {
+            WidgetFetchResult result = this.right.fetchAndRemoveHovered(x, y, font);
+            if (result == null)
+                return ExprWidgetFetchResult.notRemoved(this, oX, y);
+            if (!result.removed())
+                right = ParamWidget.NUM;
+            return result.setRemoved();
+        }
+        return ExprWidgetFetchResult.notRemoved(this, oX, y);
     }
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        this.operatorWidget.registerInteractions(xOrigin + TextRenderHelper.getPartialWidth(font, "§un_op", Map.of("op", operatorWidget, "right", right), "op"), yOrigin, font, sink);
+        this.operatorWidget.registerInteractions(xOrigin, yOrigin, font, sink);
+        xOrigin += this.operatorWidget.getWidth(font) + font.width(" ");
         this.right.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int width = TextRenderHelper.getPartialWidth(font, "§un_op", Map.of("op", operatorWidget, "right", right), "right");
-        int connectorOffset = aY + (getHeight() - 20) / 2;
-        collector.accept(new ArgumentExprConnector(aX + 4 + width, aY + connectorOffset, this, "right"));
-        this.right.collectConnectors(aX +  4 + width, aY, font, collector);
+        int connectorOffset = aY + 6 + (getHeight() - 20) / 2;
+        aX += 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+        collector.accept(new SingletonExprConnector(
+                aX,
+                connectorOffset - (right.getHeight() - 8) / 2,
+                w -> this.right = w,
+                () -> this.right
+        ));
     }
 
     @Override

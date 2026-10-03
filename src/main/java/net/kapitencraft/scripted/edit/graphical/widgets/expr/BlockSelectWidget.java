@@ -113,7 +113,6 @@ public class BlockSelectWidget implements ExprCodeWidget {
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData data) {
             data.openWidget(new SelectBlockWidget(50, 20, data.getWidth() - 100, data.getHeight() - 40, Component.literal("Select block"), data.getFont(), data.wrapCloseWidget(BlockSelectWidget.this::setBlock)));
-            //TODO select
         }
     }
 
