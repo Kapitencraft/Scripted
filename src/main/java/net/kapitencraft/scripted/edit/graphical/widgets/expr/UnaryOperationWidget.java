@@ -27,7 +27,7 @@ public class UnaryOperationWidget implements ExprCodeWidget {
             ExprCodeWidget.CODEC.optionalFieldOf("right", ParamWidget.NUM).forGetter(w -> w.right)
     ).apply(i, UnaryOperationWidget::new));
 
-    private final ListSelectionWidget<Operation> operatorWidget = new ListSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
+    private final EnumSelectionWidget<Operation> operatorWidget = new EnumSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
     private ExprCodeWidget right = ParamWidget.NUM;
 
     private UnaryOperationWidget(Operation operation, ExprCodeWidget right) {
@@ -106,6 +106,7 @@ public class UnaryOperationWidget implements ExprCodeWidget {
                 w -> this.right = w,
                 () -> this.right
         ));
+        this.right.collectConnectors(aX, aY, font, collector);
     }
 
     @Override

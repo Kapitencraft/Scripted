@@ -29,7 +29,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
     ).apply(i, BinaryOperationWidget::new));
 
     private ExprCodeWidget left = ParamWidget.NUM;
-    private final ListSelectionWidget<Operation> operatorWidget = new ListSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
+    private final EnumSelectionWidget<Operation> operatorWidget = new EnumSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
     private ExprCodeWidget right = ParamWidget.NUM;
 
     private BinaryOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
@@ -125,6 +125,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
                 w -> this.left = w,
                 () -> this.left
         ));
+        this.left.collectConnectors(aX, aY, font, collector);
         aX += this.left.getWidth(font) + 2 * spaceWidth + this.operatorWidget.getWidth(font);
         collector.accept(new SingletonExprConnector(
                 aX,
@@ -132,6 +133,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
                 w -> this.right = w,
                 () -> this.right
         ));
+        this.right.collectConnectors(aX, aY, font, collector);
     }
 
     @Override

@@ -1,13 +1,16 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import net.kapitencraft.kap_lib.core.client.widget.select.SelectEnumWidget;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,25 +21,25 @@ import java.util.function.Function;
 /**
  * these should never be serialized. store all other information on the overlying expr or statement
  */
-public class ListSelectionWidget<T> implements ExprCodeWidget {
+public class EnumSelectionWidget<T> implements ExprCodeWidget {
 
     private final List<T> entries;
     private final Function<T, String> textProvider;
     private int index;
 
-    public ListSelectionWidget(List<T> entries, Function<T, String> textProvider) {
+    public EnumSelectionWidget(List<T> entries, Function<T, String> textProvider) {
         this.entries = entries;
         this.textProvider = textProvider;
     }
 
-    private ListSelectionWidget(List<T> entries, Function<T, String> textProvider, int index) {
+    private EnumSelectionWidget(List<T> entries, Function<T, String> textProvider, int index) {
         this(entries, textProvider);
         this.index = index;
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new ListSelectionWidget<>(
+        return new EnumSelectionWidget<>(
                 this.entries, this.textProvider,
                 this.index);
     }
@@ -90,7 +93,28 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new Interaction(xOrigin, yOrigin, getWidth(font), getHeight()));
+    }
 
+    private class Interaction extends CodeInteraction {
+
+        protected Interaction(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void onClick(int mouseX, int mouseY, InteractionData data) {
+            data.openWidget(new SelectEnumWidget<>(
+                    50, 20,
+                    data.getWidth() - 100,
+                    data.getHeight() - 40,
+                    data.getFont(),
+                    entries,
+                    v -> Component.literal(textProvider.apply(v)),
+                    data.wrapCloseWidget(EnumSelectionWidget.this::set),
+                    Component.literal("Select block")
+            ));
+        }
     }
 
     public T getValue() {
