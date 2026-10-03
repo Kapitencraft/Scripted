@@ -7,7 +7,7 @@ public interface CodeWidgetSprites {
     ResourceLocation BOOL_EXPR = Scripted.res("code/bool_expr");
     ResourceLocation BRANCH_END = Scripted.res("code/branch_end");
     ResourceLocation SCOPE_BOTH_SIDE = Scripted.res("code/scope_both_side");
-    ResourceLocation SCOPE_BOTH_SIDE_NO_IN = Scripted.res("code/scope_both_side_no_in.png");
+    ResourceLocation SCOPE_BOTH_SIDE_NO_IN = Scripted.res("code/scope_both_side_no_in");
     ResourceLocation GENERIC_EXPR = Scripted.res("code/generic_expr");
     ResourceLocation SCOPE_HEAD = Scripted.res("code/loop_head");
     ResourceLocation METHOD_HEAD = Scripted.res("code/method_head");

@@ -28,6 +28,11 @@ public abstract class ScopeEndWidget extends StmtCodeWidget {
     }
 
     @Override
+    public boolean ends() {
+        return true;
+    }
+
+    @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font) || y > this.getHeight())
             return null;

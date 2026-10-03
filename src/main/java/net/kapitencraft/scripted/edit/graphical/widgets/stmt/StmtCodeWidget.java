@@ -61,6 +61,10 @@ public abstract class StmtCodeWidget implements CodeWidget {
         }
     }
 
+    public boolean ends() {
+        return this.child != null && this.child.ends();
+    }
+
     //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
     @Deprecated //convert to AST instead

@@ -371,38 +371,35 @@ public class GraphicalEditor extends AbstractWidget {
             int draggedUiX = (int) ((mouseX + draggedOffsetX) / scale - scrollX) - getX();
             int draggedUiY = (int) ((mouseY + draggedOffsetY) / scale - scrollY) - getY();
             for (CodeElement element : elements) {
-                if (element instanceof BlockCodeElement bCE) {
-                    //TODO
-                    for (Connector connector : bCE.connectors) {
-                        if (connector.canConnect(element.x, element.y, draggedUiX, draggedUiY)) {
-                            if (connector == this.connector) {
-                                return;
-                            }
-                            if (connector instanceof BlockConnector bc) {
-                                if (draggedWidget instanceof StmtCodeWidget) {
-                                    if (this.connector != null)
-                                        this.connector.insert(this.ghostBlockWidget.getChild());
-                                    this.ghostBlockWidget.setChild(bc.get());
-                                    bc.insert(this.ghostBlockWidget);
-                                } else
-                                    return; //return early before connector & element are put
-                            } else {
-                                if (draggedWidget instanceof ExprCodeWidget) { //TODO add conversion between
-                                    if (this.connector != null) {
-                                        this.connector.insert(this.ghostExprOriginal);
-                                    }
-                                    this.ghostExprOriginal = connector.get();
-                                    connector.insert(this.ghostExprWidget);
-                                } else
-                                    return; //return early before connector & element are put
-                            }
-                            this.connector = connector;
-                            if (this.ghostTargetElement != null)
-                                this.ghostTargetElement.update();
-                            this.ghostTargetElement = element;
-                            element.update();
+                for (Connector connector : element.connectors) {
+                    if (connector.canConnect(element.x, element.y, draggedUiX, draggedUiY)) {
+                        if (connector == this.connector) {
                             return;
                         }
+                        if (connector instanceof BlockConnector bc) {
+                            if (draggedWidget instanceof StmtCodeWidget) {
+                                if (this.connector != null)
+                                    this.connector.insert(this.ghostBlockWidget.getChild());
+                                this.ghostBlockWidget.setChild(bc.get());
+                                bc.insert(this.ghostBlockWidget);
+                            } else
+                                return; //return early before connector & element are put
+                        } else {
+                            if (draggedWidget instanceof ExprCodeWidget) { //TODO add conversion between
+                                if (this.connector != null) {
+                                    this.connector.insert(this.ghostExprOriginal);
+                                }
+                                this.ghostExprOriginal = connector.get();
+                                connector.insert(this.ghostExprWidget);
+                            } else
+                                return; //return early before connector & element are put
+                        }
+                        this.connector = connector;
+                        if (this.ghostTargetElement != null)
+                            this.ghostTargetElement.update();
+                        this.ghostTargetElement = element;
+                        element.update();
+                        return;
                     }
                 }
             }

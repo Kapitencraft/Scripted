@@ -95,6 +95,7 @@ public interface TextRenderHelper {
     }
 
     static void registerAllInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink, String translationKey, Map<String, ExprCodeWidget> args) {
+        xOrigin += 4;
         String inst = Language.getInstance().getOrDefault(translationKey);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);

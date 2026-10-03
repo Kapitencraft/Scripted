@@ -2,10 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.BlockSelectWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.GetVarWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.*;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.AssignVarWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.IfStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.SimpleScopeEndWidget;
@@ -63,6 +60,7 @@ public interface SelectionTabs {
                 .build()
         );
         context.register(OPERATORS, SelectionTab.builder()
+                        .withEntry(new BinaryOperationWidget())
                 .build()
         );
     }

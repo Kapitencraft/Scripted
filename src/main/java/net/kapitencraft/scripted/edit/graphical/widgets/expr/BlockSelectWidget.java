@@ -48,7 +48,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void setBlock(Block block) {
         if (this.value != block) {
             this.value = block;
-            this.stack = new ItemStack(block.asItem());
+            this.stack = new ItemStack(block);
         }
     }
 
@@ -56,6 +56,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
+        pose.translate(0, 1, 0);
         pose.translate(renderX, renderY, 0);
         pose.scale(.75f, .75f, 1);
         UsefulTextures.renderSlotBackground(graphics, 0, 0);
@@ -70,7 +71,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return 12;
+        return 14;
     }
 
     @Override
@@ -100,7 +101,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new Interaction(xOrigin, yOrigin, 12, 14));
+        sink.accept(new Interaction(xOrigin, yOrigin, 14, 14));
     }
 
     private class Interaction extends CodeInteraction {

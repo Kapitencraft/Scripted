@@ -1,1 +1,8 @@
-[]
+[
+  {
+    "type": "expr",
+    "entry": {
+      "type": "binary"
+    }
+  }
+]

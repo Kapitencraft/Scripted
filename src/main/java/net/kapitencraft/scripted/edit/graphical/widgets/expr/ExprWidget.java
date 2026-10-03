@@ -80,8 +80,8 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
         int height = getHeight();
+        graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), height);
         TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 5 + (height - 18) / 2, this.translationKey, this.args);
     }
 
@@ -107,7 +107,7 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        TextRenderHelper.registerAllInteractions(xOrigin, yOrigin, font, sink, translationKey, args);
+        TextRenderHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
     public void setChild(@Nullable ExprWidget codeWidget) {

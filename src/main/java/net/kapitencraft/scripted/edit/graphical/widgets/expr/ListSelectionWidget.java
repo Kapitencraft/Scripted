@@ -70,7 +70,7 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(ExprCategory.OTHER.getSpriteLocation(), renderX, renderY, getWidth(font), 10);
-        graphics.drawString(font, textProvider.apply(entries.get(index)), renderX + 2, renderY + 1, -1);
+        graphics.drawString(font, textProvider.apply(entries.get(index)), renderX + 2, renderY + 1, 0, false);
     }
 
     @Override
@@ -95,5 +95,13 @@ public class ListSelectionWidget<T> implements ExprCodeWidget {
 
     public T getValue() {
         return this.entries.isEmpty() ? null : this.entries.get(index);
+    }
+
+    public void set(T value) {
+        int i = this.entries.indexOf(value);
+        if (i != -1) {
+            this.index = i;
+        } else
+            throw new IndexOutOfBoundsException("unknown value: " + value);
     }
 }

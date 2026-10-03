@@ -243,19 +243,24 @@ public class IfStmtWidget extends StmtCodeWidget {
 
         //body
         int bodyHeight = getBodyHeight();
-        if (this.conditionBody != null)
+        boolean ended = false;
+        if (this.conditionBody != null) {
             this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
+            ended = this.conditionBody.ends();
+        }
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
 
         int endY = renderY + headHeight + bodyHeight;
         for (ElseIfEntry elseIf : this.elseIfs) {
             int elseIfHeadHeight = getElseIfHeadHeight(elseIf);
-            graphics.blitSprite(CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseIfHeadHeight + 3);
+            graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_BOTH_SIDE_NO_IN : CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseIfHeadHeight + 3);
             int elseIfBodyHeight = getElseifBodyHeight(elseIf);
             TextRenderHelper.renderVisualText(graphics, font, renderX, endY + 7, "§else_if", Map.of("condition", elseIf.condition));
             if (elseIf.body != null) {
                 elseIf.body.render(graphics, font, renderX + 6, endY + elseIfHeadHeight);
-            }
+                ended = elseIf.body.ends();
+            } else
+                ended = false;
             graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseIfHeadHeight + 3, 6, elseIfBodyHeight - 3);
             endY += elseIfHeadHeight + elseIfBodyHeight;
         }
@@ -263,22 +268,24 @@ public class IfStmtWidget extends StmtCodeWidget {
         if (elseVisible) {
             //else
             int elseHeadHeight = getElseHeadHeight();
-            graphics.blitSprite(CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
+            graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_BOTH_SIDE_NO_IN : CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
             int elseBodyHeight = getElseBodyHeight();
             TextRenderHelper.renderVisualText(graphics, font, renderX, endY + 7, "§else", Map.of());
             if (this.elseBody != null) {
                 this.elseBody.render(graphics, font, renderX + 6, endY + elseHeadHeight);
-            }
+                ended = this.elseBody.ends();
+            } else
+                ended = false;
             graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, endY + elseHeadHeight + 3, 6, elseBodyHeight - 3);
             endY += elseHeadHeight + elseBodyHeight;
         }
         //end
-        renderScopeEnd(graphics, renderX, endY, globalHeadWidth);
+        renderScopeEnd(graphics, ended, renderX, endY, globalHeadWidth);
         super.render(graphics, font, renderX, renderY);
     }
 
-    private void renderScopeEnd(GuiGraphics graphics, int renderX, int renderY, int width) {
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_END, renderX, renderY, width, 16);
+    private void renderScopeEnd(GuiGraphics graphics, boolean ended, int renderX, int renderY, int width) {
+        graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_END_NO_IN : CodeWidgetSprites.SCOPE_END, renderX, renderY, width, 16);
         graphics.blitSprite(CodeWidgetSprites.MODIFY_IF, renderX + width - 9, renderY + 4, 7, 7);
     }
 
@@ -335,6 +342,13 @@ public class IfStmtWidget extends StmtCodeWidget {
             ));
         }
         super.collectConnectors(aX, aY, font, collector);
+    }
+
+    @Override
+    public boolean ends() {
+        return this.elseBody != null && elseBody.ends() &&
+                this.conditionBody != null && conditionBody.ends() &&
+                this.elseIfs.stream().allMatch(e -> e.ended) || super.ends();
     }
 
     @Override

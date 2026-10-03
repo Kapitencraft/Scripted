@@ -59,7 +59,7 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE,
                 renderX, renderY + headHeight + 3, 6, bodyHeight - 3
         );
-        graphics.blitSprite(CodeWidgetSprites.SCOPE_END,
+        graphics.blitSprite(this.body != null && this.body.ends() ? CodeWidgetSprites.SCOPE_END_NO_IN : CodeWidgetSprites.SCOPE_END,
                 renderX, renderY + headHeight + bodyHeight, loopWidth, 16
         );
         super.render(graphics, font, renderX, renderY);

@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -33,6 +34,7 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     private BinaryOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
         this.left = left;
+        this.operatorWidget.set(operation);
         this.right = right;
     }
 
@@ -46,12 +48,13 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-
+        graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§op", Map.of("left", left, "right", right));
+        return 6 + TextRenderHelper.getVisualTextWidth(font, "§op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
@@ -61,7 +64,9 @@ public class BinaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public ExprCodeWidget copy() {
-        return null;
+        return new BinaryOperationWidget(
+                this.left, this.operatorWidget.getValue(), this.right
+        );
     }
 
     @Override
@@ -87,8 +92,8 @@ public class BinaryOperationWidget implements ExprCodeWidget {
         Map<String, ExprCodeWidget> params = Map.of("left", left, "op", operatorWidget, "right", right);
         TextRenderHelper.forPartialWidth(font, "§op", params, (s, integer) -> {
             if (!"op".equals(s)) {
-                collector.accept(new ArgumentExprConnector(aX + integer, aY, this, s));
-                params.get(s).collectConnectors(aX + integer, aY, font, collector);
+                collector.accept(new ArgumentExprConnector(aX + 4 + integer, aY, this, s));
+                params.get(s).collectConnectors(aX + 4 + integer, aY, font, collector);
             }
         });
     }
