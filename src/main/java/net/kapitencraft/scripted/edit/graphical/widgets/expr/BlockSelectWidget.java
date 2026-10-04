@@ -117,6 +117,6 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font) {
+    public void update(@Nullable MethodContext context, Font font, int x, int y) {
     }
 }

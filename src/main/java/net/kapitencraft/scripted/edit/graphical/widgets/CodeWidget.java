@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 public interface CodeWidget {
 
-    void render(GuiGraphics graphics, Font font, int renderX, int renderY);
+    void render(GuiGraphics graphics, Font font);
 
     int getHeight();
 
@@ -29,10 +29,15 @@ public interface CodeWidget {
 
     @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font);
 
-    void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector);
+    void collectConnectors(Font font, Consumer<Connector> collector);
     //endregion IO
 
-    void update(@Nullable MethodContext context, Font font);
+    void update(@Nullable MethodContext context, Font font, int x, int y);
 
-    void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink);
+    void registerInteractions(Font font, Consumer<CodeInteraction> sink);
+
+    int getX();
+    int getY();
+    void setX(int x);
+    void setY(int y);
 }

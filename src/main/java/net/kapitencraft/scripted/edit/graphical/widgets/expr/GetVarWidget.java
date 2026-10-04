@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -45,7 +45,7 @@ public class GetVarWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 5, "§get", Map.of("var", this.nameSelector));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, "§get", Map.of("var", this.nameSelector));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
     }
 
     @Override
@@ -89,8 +89,8 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font) {
-        this.nameSelector.update(context, font);
+    public void update(@Nullable MethodContext context, Font font, int x, int y) {
+        this.nameSelector.update(context, font, , );
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 }

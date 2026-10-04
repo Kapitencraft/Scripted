@@ -5,43 +5,36 @@ import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
-public class ComparisonWidget extends AbstractBinaryOperationWidget<ComparisonWidget.Operation> {
-    public static final MapCodec<ComparisonWidget> CODEC = codec(
+public class BoolAlgebraOperationWidget extends AbstractBinaryOperationWidget<BoolAlgebraOperationWidget.Operation> {
+    public static final MapCodec<BoolAlgebraOperationWidget> CODEC = codec(
             Operation.CODEC,
-            ParamWidget.NUM,
-            Operation.EQUAL,
-            ComparisonWidget::new
+            ParamWidget.CONDITION,
+            Operation.AND,
+            BoolAlgebraOperationWidget::new
     );
 
-    private ComparisonWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
+    private BoolAlgebraOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
         super(left, Operation.values(), operation, right, CodeWidgetSprites.BOOL_EXPR);
     }
 
-    public ComparisonWidget() {
-        this(ParamWidget.NUM, Operation.EQUAL, ParamWidget.NUM);
+    public BoolAlgebraOperationWidget() {
+        this(ParamWidget.CONDITION, Operation.AND, ParamWidget.CONDITION);
     }
 
     @Override
     public @NotNull Type getType() {
-        return Type.COMPARISON;
+        return Type.BOOL_ALGEBRA;
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new ComparisonWidget(
-                this.left,
-                this.operatorWidget.getValue(),
-                this.right
-        );
+        return new  BoolAlgebraOperationWidget();
     }
 
     enum Operation implements StringRepresentable {
-        LESS("<"),
-        LESS_OR_EQUAL("<="),
-        EQUAL("=="),
-        GREATER(">"),
-        GREATER_OR_EQUAL(">="),
-        UNEQUAL("!=");
+        AND("&&"),
+        OR("||"),
+        XOR("^");
 
         public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
 

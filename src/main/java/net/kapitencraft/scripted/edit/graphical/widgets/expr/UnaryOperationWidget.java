@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -46,12 +46,12 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§un_op", Map.of("op", this.operatorWidget, "right", right));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§un_op", Map.of("op", this.operatorWidget, "right", right));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
@@ -67,8 +67,8 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font) {
-        this.right.update(context, font);
+    public void update(@Nullable MethodContext context, Font font, int x, int y) {
+        this.right.update(context, font, , );
     }
 
     @Override

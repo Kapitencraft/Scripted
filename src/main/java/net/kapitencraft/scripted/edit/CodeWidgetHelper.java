@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit;
 
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
@@ -13,7 +14,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public interface TextRenderHelper {
+public interface CodeWidgetHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("\\{([a-zA-Z0-9_]+)}"); //oooh pattern :pog:
 
@@ -31,11 +32,29 @@ public interface TextRenderHelper {
             String name = matcher.group(1);
             ExprCodeWidget widget = entries.get(name);
 
-            widget.render(graphics, font, x, y - (widget.getHeight() - 8) / 2);
+            widget.render(graphics, font);
             x += widget.getWidth(font);
         }
         String subElement = inst.substring(j);
         graphics.drawString(font, subElement, x, y, 0, false);
+    }
+
+    static void updateVisualText(MethodContext context, Font font, int x, int y, String key, Map<String, ExprCodeWidget> entries) {
+        x += 4;
+        String inst = Language.getInstance().getOrDefault(key);
+        Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
+        int j, l;
+        for (j = 0; matcher.find(j); j = l) {
+            int k = matcher.start();
+            l = matcher.end();
+            String subElement = inst.substring(j, k);
+            x += font.width(subElement);
+            String name = matcher.group(1);
+            ExprCodeWidget widget = entries.get(name);
+
+            widget.update(context, font, x, y - (widget.getHeight() - 8) / 2);
+            x += widget.getWidth(font);
+        }
     }
 
     static int getVisualTextWidth(Font font, String key, Map<String, ExprCodeWidget> map) {
@@ -97,18 +116,17 @@ public interface TextRenderHelper {
     static void registerAllInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink, String translationKey, Map<String, ExprCodeWidget> args) {
         xOrigin += 4;
         String inst = Language.getInstance().getOrDefault(translationKey);
-        int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
         int j, l;
         for (j = 0; matcher.find(j); j = l) {
             int k = matcher.start();
             l = matcher.end();
             String subElement = inst.substring(j, k);
-            width += font.width(subElement);
+            xOrigin += font.width(subElement);
             String name = matcher.group(1);
             ExprCodeWidget widget = args.get(name);
-            widget.registerInteractions(xOrigin + width, yOrigin - (widget.getHeight() - 8) / 2, font, sink);
-            width += widget.getWidth(font);
+            widget.registerInteractions(xOrigin, yOrigin - (widget.getHeight() - 8) / 2, font, sink);
+            xOrigin += widget.getWidth(font);
         }
     }
 }

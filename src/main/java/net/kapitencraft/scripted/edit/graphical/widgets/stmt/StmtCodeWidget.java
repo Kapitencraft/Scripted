@@ -33,7 +33,28 @@ public abstract class StmtCodeWidget implements CodeWidget {
                         .forGetter(w -> Optional.ofNullable(w.getChild())));
     }
 
+    protected int x, y;
     private StmtCodeWidget child;
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
 
     public void setChild(StmtCodeWidget child) {
         this.child = child;
@@ -47,17 +68,17 @@ public abstract class StmtCodeWidget implements CodeWidget {
         parent.setChild(ghostTarget);
     }
 
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void render(GuiGraphics graphics, Font font) {
         if (this.child != null)
-            this.child.render(graphics, font, renderX, renderY + getHeight());
+            this.child.render(graphics, font);
     }
 
     protected abstract @NotNull Type getType();
 
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        collector.accept(new ChildBlockConnector(aX, aY, this));
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
+        collector.accept(new ChildBlockConnector(x, y, this));
         if (this.child != null) {
-            this.child.collectConnectors(aX, aY + this.getHeight(), font, collector);
+            this.child.collectConnectors(font, collector);
         }
     }
 
@@ -144,15 +165,17 @@ public abstract class StmtCodeWidget implements CodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font) {
+    public void update(@Nullable MethodContext context, Font font, int x, int y) {
+        this.x = x;
+        this.y = y;
         if (this.child != null)
-            this.child.update(context, font);
+            this.child.update(context, font, x , y + getHeight());
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
         if (this.child != null) {
-            this.child.registerInteractions(xOrigin, yOrigin + this.getHeight(), font, sink);
+            this.child.registerInteractions(font, sink);
         }
     }
 
