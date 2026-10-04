@@ -1,7 +1,9 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.kap_lib.core.stream.Functions;
 import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
@@ -21,29 +23,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class BinaryOperationWidget implements ExprCodeWidget {
-    public static final MapCodec<BinaryOperationWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExprCodeWidget.CODEC.optionalFieldOf("left", ParamWidget.NUM).forGetter(w -> w.left),
-            Operation.CODEC.optionalFieldOf("operation", Operation.ADD).forGetter(w -> w.operatorWidget.getValue()),
-            ExprCodeWidget.CODEC.optionalFieldOf("right", ParamWidget.NUM).forGetter(w -> w.right)
-    ).apply(i, BinaryOperationWidget::new));
+public abstract class AbstractBinaryOperationWidget<O extends StringRepresentable> implements ExprCodeWidget {
+    public static <T extends AbstractBinaryOperationWidget<O>, O extends StringRepresentable> MapCodec<T> codec(Codec<O> operationCodec, ExprCodeWidget fallback, O operationFallback, Functions.F3<ExprCodeWidget, O, ExprCodeWidget, T> constructor) {
+        return RecordCodecBuilder.mapCodec(i -> i.group(
+                ExprCodeWidget.CODEC.optionalFieldOf("left", fallback).forGetter(w -> w.left),
+                operationCodec.optionalFieldOf("operation", operationFallback).forGetter(w -> w.operatorWidget.getValue()),
+                ExprCodeWidget.CODEC.optionalFieldOf("right", fallback).forGetter(w -> w.right)
+        ).apply(i, constructor::apply));
+    }
 
-    private ExprCodeWidget left = ParamWidget.NUM;
-    private final EnumSelectionWidget<Operation> operatorWidget = new EnumSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
-    private ExprCodeWidget right = ParamWidget.NUM;
+    protected ExprCodeWidget left;
+    protected final EnumSelectionWidget<O> operatorWidget;
+    protected ExprCodeWidget right;
 
-    private BinaryOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
+    protected AbstractBinaryOperationWidget(ExprCodeWidget left, O[] values, O operation, ExprCodeWidget right) {
         this.left = left;
+        this.operatorWidget = new EnumSelectionWidget<>(List.of(values), StringRepresentable::getSerializedName);
         this.operatorWidget.set(operation);
         this.right = right;
-    }
-
-    public BinaryOperationWidget() {
-    }
-
-    @Override
-    public @NotNull Type getType() {
-        return Type.BINARY;
     }
 
     @Override
@@ -62,12 +59,6 @@ public class BinaryOperationWidget implements ExprCodeWidget {
         return Math.max(18, ExprCodeWidget.getHeightFromEntries(List.of(left, right)) + 4);
     }
 
-    @Override
-    public ExprCodeWidget copy() {
-        return new BinaryOperationWidget(
-                this.left, this.operatorWidget.getValue(), this.right
-        );
-    }
 
     @Override
     public void update(@Nullable MethodContext context, Font font) {
@@ -152,27 +143,5 @@ public class BinaryOperationWidget implements ExprCodeWidget {
             case "right" -> this.right;
             default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
         };
-    }
-
-    private enum Operation implements StringRepresentable {
-        ADD("+"),
-        SUB("-"),
-        MUL("*"),
-        DIV("/"),
-        MOD("%"),
-        POW("**");
-
-        public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
-
-        private final String literal;
-
-        Operation(String literal) {
-            this.literal = literal;
-        }
-
-        @Override
-        public @NotNull String getSerializedName() {
-            return literal;
-        }
     }
 }

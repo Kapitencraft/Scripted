@@ -60,8 +60,9 @@ public interface SelectionTabs {
                 .build()
         );
         context.register(OPERATORS, SelectionTab.builder()
-                        .withEntry(new UnaryOperationWidget())
-                        .withEntry(new BinaryOperationWidget())
+                .withEntry(new UnaryOperationWidget())
+                .withEntry(new BinaryNumOperationWidget())
+                .withEntry(new ComparisonWidget())
                 .build()
         );
     }

@@ -4,8 +4,8 @@ import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.TextRenderHelper;
-import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
@@ -90,7 +90,12 @@ public class ForEachStmtWidget extends LoopStmtWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_each", this.args, this, collector);
+        int valuesOffset = TextRenderHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
+        collector.accept(new SingletonExprConnector(
+                aX + 4, aY + valuesOffset,
+                w -> this.values = w,
+                () -> this.values
+        ));
         super.collectConnectors(aX, aY, font, collector);
     }
 
