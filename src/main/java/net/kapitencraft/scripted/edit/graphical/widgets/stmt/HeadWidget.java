@@ -69,7 +69,7 @@ public class HeadWidget extends StmtCodeWidget {
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
         MethodContext nC = new MethodContext();
-        CodeWidgetHelper.updateVisualText(context, font, x, y, this.translationKey, this.args);
+        this.args.values().forEach(w -> w.update(nC, font, , ));
         super.update(nC, font, x, y);
     }
 
@@ -79,12 +79,10 @@ public class HeadWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        int renderX = this.x;
-        int renderY = this.y;
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, renderX, renderY, getWidth(font), 3 + getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY, this.translationKey, this.args);
-        super.render(graphics, font);
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, this.translationKey, this.args);
+        super.render(graphics, font, renderX, renderY);
     }
 
     @Override

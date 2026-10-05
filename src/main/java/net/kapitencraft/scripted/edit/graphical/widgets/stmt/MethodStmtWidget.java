@@ -78,12 +78,11 @@ public class MethodStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        int renderX = this.x;
-        int renderY = this.y;
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY, signature, args);
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, signature, args);
     }
 
     @Override
@@ -103,7 +102,7 @@ public class MethodStmtWidget extends StmtCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        CodeWidgetHelper.updateVisualText(context, font, x, y,  signature, args);
+        this.args.values().forEach(c -> c.update(context, font, , ));
         super.update(context, font, x, y);
     }
 

@@ -18,12 +18,12 @@ public abstract class ScopeEndWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        graphics.blitSprite(CodeWidgetSprites.BRANCH_END, x, y, getWidth(font), getHeight());
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        graphics.blitSprite(CodeWidgetSprites.BRANCH_END, renderX, renderY, getWidth(font), getHeight());
     }
 
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         //do not call super, as that would add the child connector, which doesn't exist for scope ending widgets
     }
 

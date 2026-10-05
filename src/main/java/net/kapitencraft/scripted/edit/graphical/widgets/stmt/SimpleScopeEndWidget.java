@@ -52,9 +52,9 @@ public class SimpleScopeEndWidget extends ScopeEndWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        super.render(graphics, font);
-        graphics.drawString(font, Component.translatable("§" + this.endType.getSerializedName()), x + 4, y + 7, 0, false);
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        super.render(graphics, font, renderX, renderY);
+        graphics.drawString(font, Component.translatable("§" + this.endType.getSerializedName()), renderX + 4, renderY + 7, 0, false);
     }
 
     @Override

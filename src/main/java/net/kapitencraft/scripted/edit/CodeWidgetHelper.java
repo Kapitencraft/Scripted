@@ -113,7 +113,20 @@ public interface CodeWidgetHelper {
         throw new IllegalArgumentException("could not find argument " + paramToFind + " in key " + key + ": " + inst);
     }
 
-    static void registerAllInteractions(Font font, Consumer<CodeInteraction> sink, Map<String, ExprCodeWidget> args) {
-        args.values().forEach(codeInteraction -> codeInteraction.registerInteractions(font, sink));
+    static void registerAllInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink, String translationKey, Map<String, ExprCodeWidget> args) {
+        xOrigin += 4;
+        String inst = Language.getInstance().getOrDefault(translationKey);
+        Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
+        int j, l;
+        for (j = 0; matcher.find(j); j = l) {
+            int k = matcher.start();
+            l = matcher.end();
+            String subElement = inst.substring(j, k);
+            xOrigin += font.width(subElement);
+            String name = matcher.group(1);
+            ExprCodeWidget widget = args.get(name);
+            widget.registerInteractions(xOrigin, yOrigin - (widget.getHeight() - 8) / 2, font, sink);
+            xOrigin += widget.getWidth(font);
+        }
     }
 }
