@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.stream.Functions;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -49,19 +49,18 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getHeight() {
         return Math.max(18, ExprCodeWidget.getHeightFromEntries(List.of(left, right)) + 4);
     }
-
 
     @Override
     public void update(@Nullable MethodContext context, Font font) {
@@ -100,6 +99,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        xOrigin += 4;
         this.left.registerInteractions(xOrigin, yOrigin, font, sink);
         int spaceWidth = font.width(" ");
         xOrigin += this.left.getWidth(font) + spaceWidth;

@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.collection.MapStream;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
@@ -81,12 +81,12 @@ public class ExprWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), height);
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (height - 20) / 2, this.translationKey, this.args);
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (height - 20) / 2, this.translationKey, this.args);
     }
 
     @Override
     public int getWidth(Font font) {
-        return TextRenderHelper.getVisualTextWidth(font, this.translationKey, this.args) + 12;
+        return CodeWidgetHelper.getVisualTextWidth(font, this.translationKey, this.args) + 12;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        TextRenderHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
+        CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
     public void setChild(@Nullable ExprWidget codeWidget) {

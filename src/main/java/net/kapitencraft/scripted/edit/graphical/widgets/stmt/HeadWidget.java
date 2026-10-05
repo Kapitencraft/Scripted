@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
@@ -81,13 +81,13 @@ public class HeadWidget extends StmtCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, renderX, renderY, getWidth(font), 3 + getHeight());
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 15, this.translationKey, this.args);
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 15, this.translationKey, this.args);
         super.render(graphics, font, renderX, renderY);
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, this.translationKey, this.args);
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, this.translationKey, this.args);
     }
 
     @Override

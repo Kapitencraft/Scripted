@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
@@ -88,7 +88,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         collector.accept(new SingletonExprConnector(
-                aX + 6 + TextRenderHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                aX + 6 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
                 aY,
                 this::setCondition,
                 () -> this.condition
@@ -99,7 +99,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     @Override
     void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headHeight = getHeadHeight();
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
     }
 
     protected int getHeadHeight() {
@@ -107,7 +107,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     protected int getHeadWidth(Font font) {
-        return 4 + TextRenderHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
+        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
     }
 
     public void setBody(@Nullable StmtCodeWidget target) {

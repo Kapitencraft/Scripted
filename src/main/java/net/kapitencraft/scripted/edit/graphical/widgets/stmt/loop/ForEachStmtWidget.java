@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
@@ -58,7 +58,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     }
 
     protected int getHeadWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, "§for_each", this.args);
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§for_each", this.args);
     }
 
     @Override
@@ -90,7 +90,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int valuesOffset = TextRenderHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
+        int valuesOffset = CodeWidgetHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
         collector.accept(new SingletonExprConnector(
                 aX + 4, aY + valuesOffset,
                 w -> this.values = w,
@@ -125,7 +125,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        TextRenderHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_each", args);
+        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_each", args);
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
@@ -133,7 +133,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     public void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headHeight = getHeadHeight();
 
-        TextRenderHelper.renderVisualText(graphics, font,
+        CodeWidgetHelper.renderVisualText(graphics, font,
                 renderX,
                 renderY + 7 + (headHeight - 20) / 2,
                 "§for_each", args

@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
@@ -86,13 +86,13 @@ public class AssignVarWidget extends StmtCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, getWidth(font), 3 + height);
-        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (getHeight() - 20) / 2, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (getHeight() - 20) / 2, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
         super.render(graphics, font, renderX, renderY);
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + TextRenderHelper.getVisualTextWidth(font, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
     }
 
     @Override
@@ -129,7 +129,7 @@ public class AssignVarWidget extends StmtCodeWidget {
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         this.expr.registerInteractions(xOrigin, yOrigin, font, sink);
         this.varNameSelectorWidget.registerInteractions(
-                xOrigin + 4 + TextRenderHelper.getPartialWidth(font, getTranslationKey(), Map.of(), "var"),
+                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, getTranslationKey(), Map.of(), "var"),
                 yOrigin + 4 + (getHeight() - 20) / 2,
                 font,
                 sink
