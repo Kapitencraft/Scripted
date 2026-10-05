@@ -28,11 +28,11 @@ public interface SelectionTabs {
     static void bootstrap(BootstrapContext<SelectionTab> context) {
         context.register(WORLD, SelectionTab.builder()
                 .withEntry(new ExprWidget(ExprCategory.OTHER, "Lnet/minecraft/core/BlockPos;<init>(III)V", Map.of(
-                        "x", ParamWidget.NUM.get(),
-                        "y", ParamWidget.NUM.get(),
-                        "z", ParamWidget.NUM.get()
+                        "x", ParamWidget.NUM,
+                        "y", ParamWidget.NUM,
+                        "z", ParamWidget.NUM
                 )))
-                .withEntry(new ExprWidget(ExprCategory.OTHER, "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", Map.of("pos", ParamWidget.OBJ.get())))
+                .withEntry(new ExprWidget(ExprCategory.OTHER, "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", Map.of("pos", ParamWidget.OBJ)))
                 .withEntry(new ExprWidget(ExprCategory.BOOLEAN, "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", Map.of("block", new BlockSelectWidget())))
 
                 .withEntry(new ExprWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;x", Map.of()))
@@ -55,7 +55,7 @@ public interface SelectionTabs {
         );
         context.register(VARIABLES, SelectionTab.builder()
                 .withEntry(AssignVarWidget.builder().doesCreateVar())
-                .withEntry(AssignVarWidget.builder().setExpr(ParamWidget.OBJ.get()))
+                .withEntry(AssignVarWidget.builder().setExpr(ParamWidget.OBJ))
                 .withEntry(new GetVarWidget(null))
                 .build()
         );

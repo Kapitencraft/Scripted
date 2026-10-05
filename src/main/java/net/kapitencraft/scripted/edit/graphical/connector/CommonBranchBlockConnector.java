@@ -16,7 +16,7 @@ public class CommonBranchBlockConnector extends BlockConnector {
         super(x, y);
         StmtCodeWidget v;
         if ((v = getter.get()) != null) {
-            v.collectConnectors(font, collector);
+            v.collectConnectors(x, y, font, collector);
         }
         this.inserter = inserter;
         this.getter = getter;

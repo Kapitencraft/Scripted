@@ -39,7 +39,7 @@ public record ExprWidgetFetchResult(boolean removed, int x, int y, ExprCodeWidge
                 if (result == null)
                     return ExprWidgetFetchResult.notRemoved(self, oX, y);
                 if (!result.removed())
-                    expr.put(name, ParamWidget.OBJ.get());
+                    expr.put(name, ParamWidget.OBJ);
                 return result.setRemoved();
             }
             x -= widget.getWidth(font);

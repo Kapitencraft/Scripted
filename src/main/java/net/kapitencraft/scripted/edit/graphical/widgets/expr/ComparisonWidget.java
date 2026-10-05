@@ -18,7 +18,7 @@ public class ComparisonWidget extends AbstractBinaryOperationWidget<ComparisonWi
     }
 
     public ComparisonWidget() {
-        this(ParamWidget.NUM.get(), Operation.EQUAL, ParamWidget.NUM.get());
+        this(ParamWidget.NUM, Operation.EQUAL, ParamWidget.NUM);
     }
 
     @Override

@@ -70,16 +70,16 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
     abstract void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY);
 
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         collector.accept(new CommonBranchBlockConnector(
-                this.x + 6,
-                this.y + this.getHeadHeight(),
+                aX + 6,
+                aY + this.getHeadHeight(),
                 this::setBody,
                 () -> this.body,
                 font,
                 collector
         ));
-        super.collectConnectors(font, collector);
+        super.collectConnectors(aX, aY, font, collector);
     }
 
     public void setBody(@Nullable StmtCodeWidget body) {

@@ -23,7 +23,6 @@ import java.util.function.Function;
  */
 public class EnumSelectionWidget<T> implements ExprCodeWidget {
 
-    private int x, y;
     private final List<T> entries;
     private final Function<T, String> textProvider;
     private int index;
@@ -36,25 +35,6 @@ public class EnumSelectionWidget<T> implements ExprCodeWidget {
     private EnumSelectionWidget(List<T> entries, Function<T, String> textProvider, int index) {
         this(entries, textProvider);
         this.index = index;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-    @Override
-    public int getY() {
-        return y;
     }
 
     @Override
@@ -75,14 +55,13 @@ public class EnumSelectionWidget<T> implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
 
     }
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.x = x;
-        this.y = y;
+
     }
 
     @SuppressWarnings("DataFlowIssue")
@@ -92,9 +71,9 @@ public class EnumSelectionWidget<T> implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        graphics.blitSprite(ExprCategory.OTHER.getSpriteLocation(), x, y, getWidth(font), 10);
-        graphics.drawString(font, textProvider.apply(entries.get(index)), x + 2, y + 1, 0, false);
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        graphics.blitSprite(ExprCategory.OTHER.getSpriteLocation(), renderX, renderY, getWidth(font), 10);
+        graphics.drawString(font, textProvider.apply(entries.get(index)), renderX + 2, renderY + 1, 0, false);
     }
 
     @Override
@@ -113,8 +92,8 @@ public class EnumSelectionWidget<T> implements ExprCodeWidget {
     }
 
     @Override
-    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new Interaction(x, y, getWidth(font), getHeight()));
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new Interaction(xOrigin, yOrigin, getWidth(font), getHeight()));
     }
 
     private class Interaction extends CodeInteraction {

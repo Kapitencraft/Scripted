@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.client.UsefulTextures;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
@@ -28,7 +29,6 @@ public class BlockSelectWidget implements ExprCodeWidget {
             BuiltInRegistries.BLOCK.byNameCodec().optionalFieldOf("block", Blocks.AIR).forGetter(w -> w.value)
     ).apply(i, BlockSelectWidget::new));
 
-    private int x, y;
     private Block value = Blocks.AIR;
     private ItemStack stack = ItemStack.EMPTY;
 
@@ -38,26 +38,6 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     public BlockSelectWidget() {
         this.setBlock(Blocks.STONE);
-    }
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
     }
 
     @Override
@@ -73,11 +53,11 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
         pose.translate(0, 1, 0);
-        pose.translate(x, y, 0);
+        pose.translate(renderX, renderY, 0);
         pose.scale(.75f, .75f, 1);
         UsefulTextures.renderSlotBackground(graphics, 0, 0);
         graphics.renderItem(this.stack, 0, 0);
@@ -110,18 +90,18 @@ public class BlockSelectWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
 
     }
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return null; //can not be removed
+        return ExprWidgetFetchResult.notRemoved(this, x, y);
     }
 
     @Override
-    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new Interaction(x, y, 14, 14));
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new Interaction(xOrigin, yOrigin, 14, 14));
     }
 
     private class Interaction extends CodeInteraction {
@@ -138,7 +118,5 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.x = x;
-        this.y = y;
     }
 }

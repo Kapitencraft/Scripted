@@ -18,7 +18,7 @@ public class BinaryNumOperationWidget extends AbstractBinaryOperationWidget<Bina
     }
 
     public BinaryNumOperationWidget() {
-        this(ParamWidget.NUM.get(), Operation.ADD, ParamWidget.NUM.get());
+        this(ParamWidget.NUM, Operation.ADD, ParamWidget.NUM);
     }
 
     @Override

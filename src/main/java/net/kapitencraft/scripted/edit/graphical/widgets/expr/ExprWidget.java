@@ -172,6 +172,6 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        CodeWidgetHelper.updateVisualText(context, font, x, y, this.translationKey, this.args);
+        this.args.values().forEach(c -> c.update(context, font, , ));
     }
 }
