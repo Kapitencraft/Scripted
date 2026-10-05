@@ -24,11 +24,12 @@ import java.util.function.Consumer;
 public class UnaryOperationWidget implements ExprCodeWidget {
     public static final MapCodec<UnaryOperationWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Operation.CODEC.optionalFieldOf("operation", Operation.SQRT).forGetter(w -> w.operatorWidget.getValue()),
-            ExprCodeWidget.CODEC.optionalFieldOf("right", ParamWidget.NUM).forGetter(w -> w.right)
+            ExprCodeWidget.CODEC.fieldOf("right").orElseGet(ParamWidget.NUM).forGetter(w -> w.right)
     ).apply(i, UnaryOperationWidget::new));
 
+    private int x, y;
     private final EnumSelectionWidget<Operation> operatorWidget = new EnumSelectionWidget<>(List.of(Operation.values()), Operation::getSerializedName);
-    private ExprCodeWidget right = ParamWidget.NUM;
+    private ExprCodeWidget right = ParamWidget.NUM.get();
 
     private UnaryOperationWidget(Operation operation, ExprCodeWidget right) {
         this.operatorWidget.set(operation);
@@ -39,14 +40,34 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
     public @NotNull Type getType() {
         return Type.UNARY;
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, "§un_op", Map.of("op", this.operatorWidget, "right", right));
+    public void render(GuiGraphics graphics, Font font) {
+        graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, x, y, getWidth(font), getHeight());
+        CodeWidgetHelper.renderVisualText(graphics, font, x, y, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
@@ -68,7 +89,7 @@ public class UnaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.right.update(context, font, , );
+        CodeWidgetHelper.updateVisualText(context, font, x, y, "§un_op", Map.of("op", this.operatorWidget, "right", right));
     }
 
     @Override
@@ -83,30 +104,28 @@ public class UnaryOperationWidget implements ExprCodeWidget {
             if (result == null)
                 return ExprWidgetFetchResult.notRemoved(this, oX, y);
             if (!result.removed())
-                right = ParamWidget.NUM;
+                right = ParamWidget.NUM.get();
             return result.setRemoved();
         }
         return ExprWidgetFetchResult.notRemoved(this, oX, y);
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        this.operatorWidget.registerInteractions(xOrigin, yOrigin, font, sink);
-        xOrigin += this.operatorWidget.getWidth(font) + font.width(" ");
-        this.right.registerInteractions(xOrigin, yOrigin, font, sink);
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        this.operatorWidget.registerInteractions(font, sink);
+        this.right.registerInteractions(font, sink);
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int connectorOffset = aY + 6 + (getHeight() - 20) / 2;
-        aX += 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
+        int connectorOffset = y + 6 + (getHeight() - 20) / 2;
         collector.accept(new SingletonExprConnector(
-                aX,
+                x + 4 + this.operatorWidget.getWidth(font) + font.width(" "),
                 connectorOffset - (right.getHeight() - 8) / 2,
                 w -> this.right = w,
                 () -> this.right
         ));
-        this.right.collectConnectors(aX, aY, font, collector);
+        this.right.collectConnectors(font, collector);
     }
 
     @Override

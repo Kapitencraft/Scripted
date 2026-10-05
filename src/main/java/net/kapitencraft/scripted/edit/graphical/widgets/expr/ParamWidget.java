@@ -13,18 +13,40 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class ParamWidget implements ExprCodeWidget {
     public static final MapCodec<ParamWidget> CODEC = ExprCategory.CODEC.xmap(ParamWidget::new, w -> w.exprCategory).fieldOf("category");
 
-    public static final ParamWidget CONDITION = new ParamWidget(ExprCategory.BOOLEAN);
-    public static final ExprCodeWidget OBJ = new ParamWidget(ExprCategory.OTHER);
-    public static final ExprCodeWidget NUM = new ParamWidget(ExprCategory.NUMBER);
+    public static final Supplier<ExprCodeWidget> CONDITION = () -> new ParamWidget(ExprCategory.BOOLEAN);
+    public static final Supplier<ExprCodeWidget> OBJ = () -> new ParamWidget(ExprCategory.OTHER);
+    public static final Supplier<ExprCodeWidget> NUM = () -> new ParamWidget(ExprCategory.NUMBER);
 
     private final ExprCategory exprCategory;
+    private int x, y;
 
     public ParamWidget(ExprCategory exprCategory) {
         this.exprCategory = exprCategory;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
     }
 
     @Override
@@ -43,7 +65,7 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
 
     }
 
@@ -58,8 +80,8 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(exprCategory.getSpriteLocation(), renderX, renderY, 14, 12);
+    public void render(GuiGraphics graphics, Font font) {
+        graphics.blitSprite(exprCategory.getSpriteLocation(), x, y, 14, 12);
     }
 
     @Override
@@ -79,7 +101,5 @@ public class ParamWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-
-    }
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {}
 }

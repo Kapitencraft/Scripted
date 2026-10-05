@@ -25,14 +25,14 @@ public class ArgumentExprConnector extends ExprConnector {
         CodeWidgetHelper.forPartialWidth(font, key, args, (s, integer) -> {
             int finalOffset = connectorOffset - (args.get(s).getHeight() - 8) / 2;
             collector.accept(new ArgumentExprConnector(aX + integer, aY + finalOffset, owner, s));
-            args.get(s).collectConnectors(aX + integer, aY, font, collector);
+            args.get(s).collectConnectors(font, collector);
         });
     }
 
     @Override
     public void insert(@Nullable CodeWidget widget) {
         if (widget == null) {
-            widget = ParamWidget.OBJ;
+            widget = ParamWidget.OBJ.get();
         }
         owner.insertByName(argName, (ExprCodeWidget) widget);
     }

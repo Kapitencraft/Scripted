@@ -29,6 +29,7 @@ public class GetVarWidget implements ExprCodeWidget {
         return new GetVarWidget(s.orElse(null));
     }
 
+    private int x, y;
     private final @Nullable String name;
     private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget();
     private ExprCategory exprCategory = ExprCategory.OTHER;
@@ -38,14 +39,33 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
     public @NotNull Type getType() {
         return Type.GET_VAR;
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, "§get", Map.of("var", this.nameSelector));
+    public void render(GuiGraphics graphics, Font font) {
+        graphics.blitSprite(this.exprCategory.getSpriteLocation(), x, y, getWidth(font), getHeight());
+        CodeWidgetHelper.renderVisualText(graphics, font, x, y, "§get", Map.of("var", this.nameSelector));
     }
 
     @Override
@@ -64,7 +84,7 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
 
     }
 
@@ -84,13 +104,13 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
 
     }
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.nameSelector.update(context, font, , );
+        CodeWidgetHelper.updateVisualText(context, font, x, y, this.name, Map.of("var", this.nameSelector));
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 }

@@ -32,7 +32,7 @@ import java.util.function.Consumer;
 public class IfStmtWidget extends StmtCodeWidget {
     public static final MapCodec<IfStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             commonFields(i).and(
-                    ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
+                    ExprCodeWidget.CODEC.fieldOf("condition").orElseGet(ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
                     StmtCodeWidget.CODEC.optionalFieldOf("condition_body").forGetter(w -> Optional.ofNullable(w.conditionBody))
             ).and(
@@ -509,7 +509,7 @@ public class IfStmtWidget extends StmtCodeWidget {
     }
 
     public void setCondition(@Nullable ExprCodeWidget target) {
-        this.condition = target == null ? ParamWidget.CONDITION : target;
+        this.condition = target == null ? ParamWidget.CONDITION.get() : target;
     }
     //endregion
 
@@ -559,7 +559,7 @@ public class IfStmtWidget extends StmtCodeWidget {
 
     private static final class ElseIfEntry {
         private static final Codec<ElseIfEntry> CODEC = RecordCodecBuilder.create(i -> i.group(
-                ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(ElseIfEntry::condition),
+                ExprCodeWidget.CODEC.fieldOf("condition").orElseGet(ParamWidget.CONDITION).forGetter(ElseIfEntry::condition),
                 StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(e -> Optional.ofNullable(e.body))
         ).apply(i, ElseIfEntry::fromCodec));
 
@@ -583,7 +583,7 @@ public class IfStmtWidget extends StmtCodeWidget {
 
         public void setCondition(ExprCodeWidget condition) {
             if (condition == null) {
-                condition = ParamWidget.CONDITION;
+                condition = ParamWidget.CONDITION.get();
             }
             this.condition = condition;
         }
@@ -606,7 +606,7 @@ public class IfStmtWidget extends StmtCodeWidget {
     }
 
     public static class Builder implements StmtCodeWidget.Builder<IfStmtWidget> {
-        private ExprCodeWidget condition = ParamWidget.CONDITION;
+        private ExprCodeWidget condition = ParamWidget.CONDITION.get();
         private final List<ElseIfEntry> elifs = new ArrayList<>();
         private boolean showElse = true;
         private StmtCodeWidget child, branch, elseBranch;
@@ -631,7 +631,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         }
 
         public Builder withElseIfNoCondition() {
-            this.elifs.add(new ElseIfEntry(ParamWidget.CONDITION, null));
+            this.elifs.add(new ElseIfEntry(ParamWidget.CONDITION.get(), null));
             return this;
         }
 

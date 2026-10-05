@@ -27,9 +27,9 @@ import java.util.function.Consumer;
 
 public class ForRangeStmtWidget extends LoopStmtWidget {
     public static final MapCodec<ForRangeStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i -> commonFields(i)
-            .and(ExprCodeWidget.CODEC.optionalFieldOf("min", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getMin))
-            .and(ExprCodeWidget.CODEC.optionalFieldOf("max", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getMax))
-            .and(ExprCodeWidget.CODEC.optionalFieldOf("step", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getStep))
+            .and(ExprCodeWidget.CODEC.fieldOf("min").forGetter(ForRangeStmtWidget::getMin))
+            .and(ExprCodeWidget.CODEC.fieldOf("max").orElseGet(ParamWidget.NUM).forGetter(ForRangeStmtWidget::getMax))
+            .and(ExprCodeWidget.CODEC.fieldOf("step").orElseGet(ParamWidget.NUM).forGetter(ForRangeStmtWidget::getStep))
             .and(StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body)))
             .apply(i, ForRangeStmtWidget::new)
     );
@@ -103,9 +103,9 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this.getHeadHeight(), this, collector);
-        super.collectConnectors(aX, aY, font, collector);
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
+        ArgumentExprConnector.parse(font, x + 4, y, "§for_range", this.args, this.getHeadHeight(), this, collector);
+        super.collectConnectors(font, collector);
     }
 
     @Override
@@ -134,10 +134,10 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int headHeight = getHeadHeight();
 
         CodeWidgetHelper.renderVisualText(graphics, font,
                 renderX,
+                renderY,
                 "§for_range", args
         );
     }
@@ -147,22 +147,22 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_range", args);
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        CodeWidgetHelper.registerAllInteractions(font, sink, args);
 
-        super.registerInteractions(xOrigin, yOrigin, font, sink);
+        super.registerInteractions(font, sink);
     }
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.args.values().forEach(w -> w.update(context, font, , ));
+        CodeWidgetHelper.updateVisualText(context, font, x, y, "§for_range", this.args);
         super.update(context, font, x, y);
     }
 
     public static class Builder implements StmtCodeWidget.Builder<ForRangeStmtWidget> {
-        private ExprCodeWidget min = ParamWidget.NUM;
-        private ExprCodeWidget max = ParamWidget.NUM;
-        private ExprCodeWidget step = ParamWidget.NUM;
+        private ExprCodeWidget min = ParamWidget.NUM.get();
+        private ExprCodeWidget max = ParamWidget.NUM.get();
+        private ExprCodeWidget step = ParamWidget.NUM.get();
         private StmtCodeWidget body;
 
         public Builder setMin(ExprCodeWidget widget) {

@@ -18,7 +18,7 @@ public class BoolAlgebraOperationWidget extends AbstractBinaryOperationWidget<Bo
     }
 
     public BoolAlgebraOperationWidget() {
-        this(ParamWidget.CONDITION, Operation.AND, ParamWidget.CONDITION);
+        this(ParamWidget.CONDITION.get(), Operation.AND, ParamWidget.CONDITION.get());
     }
 
     @Override

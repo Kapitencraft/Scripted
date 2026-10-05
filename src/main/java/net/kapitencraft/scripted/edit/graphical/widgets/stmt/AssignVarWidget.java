@@ -131,17 +131,15 @@ public class AssignVarWidget extends StmtCodeWidget {
     public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
         this.expr.registerInteractions(font, sink);
         this.varNameSelectorWidget.registerInteractions(
-                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, getTranslationKey(), Map.of(), "var"),
-                yOrigin + 4 + (getHeight() - 20) / 2,
                 font,
                 sink
         );
         //sink.accept();
-        super.registerInteractions(xOrigin, yOrigin, font, sink);
+        super.registerInteractions(font, sink);
     }
 
     public void setExpr(ExprCodeWidget widget) {
-        if (widget == null) widget = ParamWidget.OBJ; //TODO add dynamic type support
+        if (widget == null) widget = ParamWidget.OBJ.get(); //TODO add dynamic type support
         this.expr = widget;
     }
 
@@ -160,7 +158,7 @@ public class AssignVarWidget extends StmtCodeWidget {
     public static class Builder implements StmtCodeWidget.Builder<AssignVarWidget> {
         private StmtCodeWidget child;
         private String varName;
-        private ExprCodeWidget expr = ParamWidget.NUM;
+        private ExprCodeWidget expr = ParamWidget.NUM.get();
         private boolean createVar = false;
 
         @Override

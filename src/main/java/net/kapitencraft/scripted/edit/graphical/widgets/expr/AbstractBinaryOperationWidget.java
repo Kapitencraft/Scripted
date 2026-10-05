@@ -22,13 +22,14 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public abstract class AbstractBinaryOperationWidget<O extends StringRepresentable> implements ExprCodeWidget {
-    public static <T extends AbstractBinaryOperationWidget<O>, O extends StringRepresentable> MapCodec<T> codec(Codec<O> operationCodec, ExprCodeWidget fallback, O operationFallback, Functions.F3<ExprCodeWidget, O, ExprCodeWidget, T> constructor) {
+    public static <T extends AbstractBinaryOperationWidget<O>, O extends StringRepresentable> MapCodec<T> codec(Codec<O> operationCodec, Supplier<ExprCodeWidget> fallback, O operationFallback, Functions.F3<ExprCodeWidget, O, ExprCodeWidget, T> constructor) {
         return RecordCodecBuilder.mapCodec(i -> i.group(
-                ExprCodeWidget.CODEC.optionalFieldOf("left", fallback).forGetter(w -> w.left),
+                ExprCodeWidget.CODEC.fieldOf("left").orElseGet(fallback).forGetter(w -> w.left),
                 operationCodec.optionalFieldOf("operation", operationFallback).forGetter(w -> w.operatorWidget.getValue()),
-                ExprCodeWidget.CODEC.optionalFieldOf("right", fallback).forGetter(w -> w.right)
+                ExprCodeWidget.CODEC.fieldOf("right").orElseGet(fallback).forGetter(w -> w.right)
         ).apply(i, constructor::apply));
     }
 
@@ -110,7 +111,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
             if (result == null)
                 return ExprWidgetFetchResult.notRemoved(this, oX, y);
             if (!result.removed())
-                left = ParamWidget.NUM;
+                left = ParamWidget.NUM.get();
             return result.setRemoved();
         }
         x -= leftWidth + spaceWidth + this.operatorWidget.getWidth(font);
@@ -120,7 +121,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
             if (result == null)
                 return ExprWidgetFetchResult.notRemoved(this, oX, y);
             if (!result.removed())
-                right = ParamWidget.NUM;
+                right = ParamWidget.NUM.get();
             return result.setRemoved();
         }
         return ExprWidgetFetchResult.notRemoved(this, oX, y);

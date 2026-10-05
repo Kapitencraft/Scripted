@@ -27,7 +27,7 @@ import java.util.function.Consumer;
 public class WhileStmtWidget extends LoopStmtWidget {
     public static final MapCodec<WhileStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i ->
             StmtCodeWidget.commonFields(i).and(
-                    ExprCodeWidget.CODEC.optionalFieldOf("condition", ParamWidget.CONDITION).forGetter(w -> w.condition)
+                    ExprCodeWidget.CODEC.fieldOf("condition").orElseGet(ParamWidget.CONDITION).forGetter(w -> w.condition)
             ).and(
                     StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(w -> Optional.ofNullable(w.body))
             ).apply(i, WhileStmtWidget::new)
@@ -86,20 +86,19 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
         collector.accept(new SingletonExprConnector(
-                aX + 6 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
-                aY,
+                x + 6 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                y,
                 this::setCondition,
                 () -> this.condition
         ));
-        super.collectConnectors(aX, aY, font, collector);
+        super.collectConnectors(font, collector);
     }
 
     @Override
     void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        int headHeight = getHeadHeight();
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, "§while", Map.of("condition", this.condition));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY, "§while", Map.of("condition", this.condition));
     }
 
     protected int getHeadHeight() {
@@ -134,11 +133,11 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
         if (this.body != null) {
-            this.body.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
+            this.body.registerInteractions(font, sink);
         }
-        super.registerInteractions(xOrigin, yOrigin, font, sink);
+        super.registerInteractions(font, sink);
     }
 
     public static Builder builder() {
@@ -146,12 +145,12 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     public void setCondition(@Nullable ExprCodeWidget target) {
-        this.condition = target == null ? ParamWidget.CONDITION : target;
+        this.condition = target == null ? ParamWidget.CONDITION.get() : target;
     }
 
     public static class Builder implements StmtCodeWidget.Builder<WhileStmtWidget> {
         private StmtCodeWidget child;
-        private ExprCodeWidget condition = ParamWidget.CONDITION;
+        private ExprCodeWidget condition = ParamWidget.CONDITION.get();
         private StmtCodeWidget body;
 
         public Builder setBody(StmtCodeWidget.Builder<?> widget) {
@@ -182,7 +181,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.condition.update(context, font, , );
+        CodeWidgetHelper.updateVisualText(context, font, x, y, "§while", Map.of("condition", this.condition));
         super.update(context, font, x, y);
     }
 }

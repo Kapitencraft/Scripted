@@ -21,10 +21,31 @@ import java.util.function.Consumer;
 public class VarNameSelectorWidget implements ExprCodeWidget {
     private static final ResourceLocation ARROW = ResourceLocation.withDefaultNamespace("transferable_list/move_down");
 
+    private int x, y;
     private @NotNull Status status = Status.UNKNOWN;
     private ExprCategory category = ExprCategory.OTHER;
     private @Nullable String selected = "something";
     private boolean createVar;
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
+    }
 
     @Override
     public @NotNull Type getType() {
@@ -32,14 +53,16 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.blitSprite(CodeWidgetSprites.GENERIC_EXPR, renderX, renderY, getWidth(font), getHeight());
+    public void render(GuiGraphics graphics, Font font) {
+        int x = this.x;
+        int y = this.y;
+        graphics.blitSprite(CodeWidgetSprites.GENERIC_EXPR, x, y, getWidth(font), getHeight());
         graphics.pose().pushPose();
-        graphics.pose().translate(renderX + font.width(getVisualSelected()) - 6, renderY - 8, 0);
+        graphics.pose().translate(x + font.width(getVisualSelected()) - 6, y - 8, 0);
         graphics.pose().scale(2, 2, 1);
         graphics.blitSprite(ARROW, 0, 0, 10, 10);
         graphics.pose().popPose();
-        graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), renderX + 2, renderY + 3, 0, false);
+        graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), x + 2, y + 3, 0, false);
     }
 
     @Override
@@ -68,7 +91,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
     }
 
     @Override
@@ -77,8 +100,8 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new SelectVarNameInteraction(xOrigin, yOrigin, this.getWidth(font), this.getHeight()));
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new SelectVarNameInteraction(x, y, this.getWidth(font), this.getHeight()));
     }
 
     public void setCreate(boolean createVar) {
@@ -108,6 +131,8 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font, int x, int y) {
+        this.x = x;
+        this.y = y;
         if (context == null) //no method
             status = Status.UNKNOWN;
         else if (createVar) {

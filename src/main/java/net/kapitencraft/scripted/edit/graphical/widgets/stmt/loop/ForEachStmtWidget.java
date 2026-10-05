@@ -26,11 +26,11 @@ import java.util.function.Consumer;
 
 public class ForEachStmtWidget extends LoopStmtWidget {
     public static final MapCodec<ForEachStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i -> loopCommonFields(i)
-            .and(ExprCodeWidget.CODEC.optionalFieldOf("expr", ParamWidget.OBJ).forGetter(w -> w.values))
+            .and(ExprCodeWidget.CODEC.fieldOf("expr").orElseGet(ParamWidget.OBJ).forGetter(w -> w.values))
             .apply(i, ForEachStmtWidget::new)
     );
 
-    private ExprCodeWidget values = ParamWidget.OBJ;
+    private ExprCodeWidget values;
     private final Map<String, ExprCodeWidget> args;
     private final VarNameSelectorWidget varName = new VarNameSelectorWidget();
 
@@ -87,16 +87,15 @@ public class ForEachStmtWidget extends LoopStmtWidget {
         throw new IllegalStateException("unknown argument \"" + arg + "\" on ForEach widget");
     }
 
-
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
         int valuesOffset = CodeWidgetHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
         collector.accept(new SingletonExprConnector(
-                aX + 4 + valuesOffset, aY,
+                this.x + 4 + valuesOffset, this.y,
                 w -> this.values = w,
                 () -> this.values
         ));
-        super.collectConnectors(aX, aY, font, collector);
+        super.collectConnectors(font, collector);
     }
 
     @Override
@@ -144,7 +143,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     }
 
     public static class Builder implements StmtCodeWidget.Builder<ForEachStmtWidget> {
-        private ExprCodeWidget values = ParamWidget.OBJ;
+        private ExprCodeWidget values = ParamWidget.OBJ.get();
         private StmtCodeWidget body;
 
         public Builder setValues(ExprCodeWidget widget) {
