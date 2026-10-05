@@ -1,33 +1,35 @@
-package net.kapitencraft.scripted.edit.graphical.widgets.expr;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr.binary;
 
 import com.mojang.serialization.MapCodec;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
-public class BinaryNumOperationWidget extends AbstractBinaryOperationWidget<BinaryNumOperationWidget.Operation> {
-    public static final MapCodec<BinaryNumOperationWidget> CODEC = codec(
+public class ComparisonWidget extends AbstractBinaryOperationWidget<ComparisonWidget.Operation> {
+    public static final MapCodec<ComparisonWidget> CODEC = codec(
             Operation.CODEC,
             ParamWidget.NUM,
-            Operation.ADD,
-            BinaryNumOperationWidget::new
+            Operation.EQUAL,
+            ComparisonWidget::new
     );
 
-    private BinaryNumOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
+    private ComparisonWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
         super(left, Operation.values(), operation, right);
     }
 
-    public BinaryNumOperationWidget() {
-        this(ParamWidget.NUM, Operation.ADD, ParamWidget.NUM);
+    public ComparisonWidget() {
+        this(ParamWidget.NUM, Operation.EQUAL, ParamWidget.NUM);
     }
 
     @Override
     public @NotNull Type getType() {
-        return Type.ALGEBRA;
+        return Type.COMPARISON;
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new BinaryNumOperationWidget(
+        return new ComparisonWidget(
                 this.left,
                 this.operatorWidget.getValue(),
                 this.right
@@ -35,12 +37,12 @@ public class BinaryNumOperationWidget extends AbstractBinaryOperationWidget<Bina
     }
 
     enum Operation implements StringRepresentable {
-        ADD("+"),
-        SUB("-"),
-        MUL("*"),
-        DIV("/"),
-        MOD("%"),
-        POW("**");
+        LESS("<"),
+        LESS_OR_EQUAL("<="),
+        EQUAL("=="),
+        GREATER(">"),
+        GREATER_OR_EQUAL(">="),
+        UNEQUAL("!=");
 
         public static final EnumCodec<Operation> CODEC = StringRepresentable.fromEnum(Operation::values);
 

@@ -3,6 +3,8 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.*;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BinaryNumOperationWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.ComparisonWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.AssignVarWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.IfStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.SimpleScopeEndWidget;

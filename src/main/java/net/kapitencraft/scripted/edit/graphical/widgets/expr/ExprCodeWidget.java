@@ -3,6 +3,9 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BinaryNumOperationWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BoolAlgebraOperationWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.ComparisonWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -34,8 +37,8 @@ public interface ExprCodeWidget extends CodeWidget {
         GET_VAR(() -> GetVarWidget.CODEC),
         UNARY(() -> UnaryOperationWidget.CODEC),
         ALGEBRA(() -> BinaryNumOperationWidget.CODEC),
+        BOOL_ALGEBRA(() -> BoolAlgebraOperationWidget.CODEC),
         COMPARISON(() -> ComparisonWidget.CODEC),
-
         SELECT_BLOCK(() -> BlockSelectWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);

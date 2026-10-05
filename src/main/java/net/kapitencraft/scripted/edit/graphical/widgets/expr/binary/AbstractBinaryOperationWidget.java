@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.graphical.widgets.expr;
+package net.kapitencraft.scripted.edit.graphical.widgets.expr.binary;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -12,6 +12,9 @@ import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector
 import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.EnumSelectionWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
