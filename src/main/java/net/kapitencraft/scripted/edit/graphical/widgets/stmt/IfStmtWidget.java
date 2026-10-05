@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
@@ -184,15 +184,15 @@ public class IfStmtWidget extends StmtCodeWidget {
     }
 
     private int getHeadWidth(Font font) {
-        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
+        return 4 + TextRenderHelper.getVisualTextWidth(font, "§if", Map.of("condition", condition));
     }
 
     private int getElseHeadWidth(Font font) {
-        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§else", Map.of());
+        return 4 + TextRenderHelper.getVisualTextWidth(font, "§else", Map.of());
     }
 
     private int getElseIfHeadWidth(Font font, ElseIfEntry entry) {
-        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§else_if", Map.of("condition", entry.condition));
+        return 4 + TextRenderHelper.getVisualTextWidth(font, "§else_if", Map.of("condition", entry.condition));
     }
 
     @Override
@@ -234,20 +234,18 @@ public class IfStmtWidget extends StmtCodeWidget {
     //endregion
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int globalHeadWidth = this.globalHeadWidth;
-        int headHeight = this.headHeight;
-        int renderX = this.x;
-        int renderY = this.y;
+        int headHeight = getHeadHeight();
         //head
         graphics.blitSprite(CodeWidgetSprites.SCOPE_HEAD, renderX, renderY, globalHeadWidth, headHeight + 3);
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 20) / 2, "§if", Map.of("condition", condition));
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 20) / 2, "§if", Map.of("condition", condition));
 
         //body
         int bodyHeight = getBodyHeight();
         boolean ended = false;
         if (this.conditionBody != null) {
-            this.conditionBody.render(graphics, font);
+            this.conditionBody.render(graphics, font, renderX + 6, renderY + headHeight);
             ended = this.conditionBody.ends();
         }
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE, renderX, renderY + headHeight + 3, 6, bodyHeight - 3);
@@ -257,8 +255,9 @@ public class IfStmtWidget extends StmtCodeWidget {
             int elseIfHeadHeight = getElseIfHeadHeight(elseIf);
             graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_BOTH_SIDE_NO_IN : CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseIfHeadHeight + 3);
             int elseIfBodyHeight = getElseifBodyHeight(elseIf);
+            TextRenderHelper.renderVisualText(graphics, font, renderX, endY + 7, "§else_if", Map.of("condition", elseIf.condition));
             if (elseIf.body != null) {
-                elseIf.body.render(graphics, font);
+                elseIf.body.render(graphics, font, renderX + 6, endY + elseIfHeadHeight);
                 ended = elseIf.body.ends();
             } else
                 ended = false;
@@ -271,9 +270,9 @@ public class IfStmtWidget extends StmtCodeWidget {
             int elseHeadHeight = getElseHeadHeight();
             graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_BOTH_SIDE_NO_IN : CodeWidgetSprites.SCOPE_BOTH_SIDE, renderX, endY, globalHeadWidth, elseHeadHeight + 3);
             int elseBodyHeight = getElseBodyHeight();
-            CodeWidgetHelper.renderVisualText(graphics, font, renderX, endY + 7, "§else", Map.of());
+            TextRenderHelper.renderVisualText(graphics, font, renderX, endY + 7, "§else", Map.of());
             if (this.elseBody != null) {
-                this.elseBody.render(graphics, font);
+                this.elseBody.render(graphics, font, renderX + 6, endY + elseHeadHeight);
                 ended = this.elseBody.ends();
             } else
                 ended = false;
@@ -282,7 +281,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         }
         //end
         renderScopeEnd(graphics, ended, renderX, endY, globalHeadWidth);
-        super.render(graphics, font);
+        super.render(graphics, font, renderX, renderY);
     }
 
     private void renderScopeEnd(GuiGraphics graphics, boolean ended, int renderX, int renderY, int width) {
@@ -292,17 +291,15 @@ public class IfStmtWidget extends StmtCodeWidget {
 
     //region interaction
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
-        int aX = this.x;
-        int aY = this.y;
-        int conditionOffset = aX + 4 + CodeWidgetHelper.getPartialWidth(font, "§if", Map.of(), "condition");
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
+        int conditionOffset = aX + 4 + TextRenderHelper.getPartialWidth(font, "§if", Map.of(), "condition");
         collector.accept(new SingletonExprConnector(
                 conditionOffset,
                 aY,
                 this::setCondition,
                 () -> this.condition
         ));
-        this.condition.collectConnectors(font, collector);
+        this.condition.collectConnectors(conditionOffset, aY, font, collector);
 
         int headHeight = this.getHeadHeight();
         collector.accept(new CommonBranchBlockConnector(
@@ -314,7 +311,7 @@ public class IfStmtWidget extends StmtCodeWidget {
                 collector
         ));
         int yOffset = headHeight + this.getBodyHeight();
-        int cOffset = CodeWidgetHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
+        int cOffset = TextRenderHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
         for (ElseIfEntry elseIf : this.elseIfs) {
             collector.accept(new SingletonExprConnector(
                     aX + 4 + cOffset,
@@ -322,7 +319,7 @@ public class IfStmtWidget extends StmtCodeWidget {
                     elseIf::setCondition,
                     elseIf::condition
             ));
-            elseIf.condition.collectConnectors(font, collector);
+            elseIf.condition.collectConnectors(aX + 4, aY + yOffset, font, collector);
             yOffset += getElseIfHeadHeight(elseIf);
             collector.accept(new CommonBranchBlockConnector(
                     aX + 6,
@@ -344,7 +341,7 @@ public class IfStmtWidget extends StmtCodeWidget {
                     collector
             ));
         }
-        super.collectConnectors(font, collector);
+        super.collectConnectors(aX, aY, font, collector);
     }
 
     @Override
@@ -386,7 +383,7 @@ public class IfStmtWidget extends StmtCodeWidget {
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 if (elseIf.body != null) {
                     WidgetFetchResult result = elseIf.body.fetchAndRemoveHovered(x - 6,
-                            y - yOffset - this.getElseIfHeadHeight(elseIf), font);
+                            y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight(), font);
                     if (result == null) return null;
                     if (!result.removed())
                         elseIf.body = null;
@@ -394,22 +391,20 @@ public class IfStmtWidget extends StmtCodeWidget {
                 }
                 return null;
             }
-            yOffset += elseIf.getBodyHeight() + getElseIfHeadHeight(elseIf);
         }
 
         if (elseVisible) {
-            if (y - yOffset < this.getElseHeadHeight()) {
+            if (y - this.getHeadHeight() - this.getBodyHeight() < this.getElseHeadHeight()) {
                 if (x < this.getElseHeadWidth(font))
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 return null;
             }
-            yOffset += this.getElseHeadHeight();
-            if (y - yOffset < this.getElseBodyHeight()) {
+            if (y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight() < this.getElseBodyHeight()) {
                 if (x < 6)
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 if (elseBody != null) {
                     WidgetFetchResult result = this.elseBody.fetchAndRemoveHovered(x - 6,
-                            y - yOffset, font);
+                            y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight(), font);
                     if (result == null) return null;
                     if (!result.removed())
                         this.elseBody = null;
@@ -425,34 +420,32 @@ public class IfStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
-        int xOrigin = this.x;
-        int yOrigin = this.y;
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         //TODO
-        int width = CodeWidgetHelper.getPartialWidth(font, "§if", Map.of(), "condition");
-        this.condition.registerInteractions(font, sink);
+        this.condition.registerInteractions(xOrigin, yOrigin, font, sink);
         if (this.conditionBody != null) {
-            this.conditionBody.registerInteractions(font, sink);
+            this.conditionBody.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
         }
         int h = getHeadHeight() + getBodyHeight();
+        int xOffsetElseIfCondition = TextRenderHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
         for (ElseIfEntry elseIf : this.elseIfs) {
-            elseIf.condition.registerInteractions(font, sink);
+            elseIf.condition.registerInteractions(xOrigin + xOffsetElseIfCondition, yOrigin + h, font, sink);
 
             h += getElseIfHeadHeight(elseIf);
             if (elseIf.body != null) {
-                elseIf.body.registerInteractions(font, sink);
+                elseIf.body.registerInteractions(xOrigin + 6, yOrigin + h, font, sink);
             }
             h += elseIf.getBodyHeight();
         }
 
         if (elseVisible) {
             if (this.elseBody != null) {
-                this.elseBody.registerInteractions(font, sink);
+                this.elseBody.registerInteractions(xOrigin + 6, yOrigin + h + getElseHeadHeight(), font, sink);
             }
             h += getElseHeadHeight() + getElseBodyHeight();
         }
         sink.accept(new ModifyWidgetBranchesInteraction(xOrigin + getGlobalHeadWidth() - 9, yOrigin + h + 4, 7, 7));
-        super.registerInteractions(font, sink);
+        super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     private class ModifyBranchesWidget extends PositionedWidget {
@@ -514,39 +507,35 @@ public class IfStmtWidget extends StmtCodeWidget {
     //endregion
 
     @Override
-    public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        CodeWidgetHelper.updateVisualText(context, font, x, y + 7 + (headHeight - 20) / 2, "§if", Map.of("condition", condition));
+    public void update(@Nullable MethodContext context, Font font) {
+        this.condition.update(context, font);
         if (this.conditionBody != null) {
             if (context != null)
                 context.lvt.push();
-            this.conditionBody.update(context, font, x + 6, y + headHeight);
+            this.conditionBody.update(context, font);
             if (context != null) {
                 context.lvt.pop();
             }
-        }
-        int bodyHeight = getBodyHeight();
-        int endY = y + headHeight + bodyHeight;
-        for (ElseIfEntry elseIf : this.elseIfs) {
-            int elseIfHeadHeight = getElseIfHeadHeight(elseIf);
-            elseIf.headWidth = getElseIfHeadWidth(font, elseIf);
-            CodeWidgetHelper.updateVisualText(context, font, x, endY + 7, "§else_if", Map.of("condition", elseIf.condition));
-            if (context != null)
-                context.lvt.push();
-            if (elseIf.body != null)
-                elseIf.body.update(context, font, x + 6, endY + elseIfHeadHeight);
-            if (context != null) {
-                context.lvt.pop();
-            }
-            endY += elseIfHeadHeight + getElseifBodyHeight(elseIf);
         }
         if (this.elseVisible) {
             if (this.elseBody != null) {
                 if (context != null)
                     context.lvt.push();
-                this.elseBody.update(context, font, x + 6, endY + getElseHeadHeight());
+                this.elseBody.update(context, font);
                 if (context != null) {
                     context.lvt.pop();
                 }
+            }
+        }
+        for (ElseIfEntry elseIf : this.elseIfs) {
+            elseIf.headWidth = getElseIfHeadWidth(font, elseIf);
+            elseIf.condition.update(context, font);
+            if (context != null)
+                context.lvt.push();
+            if (elseIf.body != null)
+                elseIf.body.update(context, font);
+            if (context != null) {
+                context.lvt.pop();
             }
         }
         this.globalWidth = this.calculateWidth(font);
@@ -554,7 +543,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         this.elseHeadWidth = this.getElseHeadWidth(font);
         this.globalHeadWidth = this.getGlobalHeadWidth();
         this.headHeight = Math.max(18, this.condition.getHeight() + 4) + 2;
-        super.update(context, font, x, y);
+        super.update(context, font);
     }
 
     private static final class ElseIfEntry {

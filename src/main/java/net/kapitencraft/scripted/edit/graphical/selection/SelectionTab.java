@@ -52,9 +52,9 @@ public record SelectionTab(List<Entry> widgets) {
         }
     }
 
-    public void update(Font font, int x, int y) {
+    public void update(Font font) {
         for (Entry widget : this.widgets) {
-            widget.value().update(null, font, x, y);
+            widget.value().update(null, font);
         }
     }
 

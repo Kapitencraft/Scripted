@@ -1,7 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +13,7 @@ public class BinaryNumOperationWidget extends AbstractBinaryOperationWidget<Bina
     );
 
     private BinaryNumOperationWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
-        super(left, Operation.values(), operation, right, CodeWidgetSprites.NUMBER_EXPR);
+        super(left, Operation.values(), operation, right);
     }
 
     public BinaryNumOperationWidget() {

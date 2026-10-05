@@ -1,7 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
 import com.mojang.serialization.MapCodec;
-import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +13,7 @@ public class ComparisonWidget extends AbstractBinaryOperationWidget<ComparisonWi
     );
 
     private ComparisonWidget(ExprCodeWidget left, Operation operation, ExprCodeWidget right) {
-        super(left, Operation.values(), operation, right, CodeWidgetSprites.BOOL_EXPR);
+        super(left, Operation.values(), operation, right);
     }
 
     public ComparisonWidget() {

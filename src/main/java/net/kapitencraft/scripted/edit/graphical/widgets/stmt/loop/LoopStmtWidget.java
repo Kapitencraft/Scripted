@@ -48,23 +48,21 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public final void render(GuiGraphics graphics, Font font) {
-        int renderX = this.x;
-        int renderY = this.y;
+    public final void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int loopWidth = getHeadWidth(font);
         int headHeight = getHeadHeight();
         graphics.blitSprite(CodeWidgetSprites.SCOPE_HEAD, renderX, renderY, loopWidth, headHeight + 3);
         this.renderHead(graphics, font, renderX, renderY);
         int bodyHeight = getBodyHeight();
         if (this.body != null)
-            this.body.render(graphics, font);
+            this.body.render(graphics, font, renderX + 6, renderY + headHeight);
         graphics.blitSprite(CodeWidgetSprites.SCOPE_ENCLOSURE,
                 renderX, renderY + headHeight + 3, 6, bodyHeight - 3
         );
         graphics.blitSprite(this.body != null && this.body.ends() ? CodeWidgetSprites.SCOPE_END_NO_IN : CodeWidgetSprites.SCOPE_END,
                 renderX, renderY + headHeight + bodyHeight, loopWidth, 16
         );
-        super.render(graphics, font);
+        super.render(graphics, font, renderX, renderY);
     }
 
     abstract void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY);
@@ -87,10 +85,10 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         if (this.body != null)
-            this.body.registerInteractions(font, sink);
-        super.registerInteractions(font, sink);
+            this.body.registerInteractions(xOrigin + 4, yOrigin + getHeadHeight(), font, sink);
+        super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     public void insertBodyMiddle(StmtCodeWidget widget) {
@@ -99,16 +97,16 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font, int x, int y) {
+    public void update(@Nullable MethodContext context, Font font) {
         if (this.body != null) {
             if (context != null) {
                 context.lvt.push();
             }
-            this.body.update(context, font, x + 6, y + getHeadHeight());
+            this.body.update(context, font);
             if (context != null) {
                 context.lvt.pop();
             }
         }
-        super.update(context, font, x, y);
+        super.update(context, font);
     }
 }

@@ -67,7 +67,7 @@ public class GraphicalEditor extends AbstractWidget {
         this.tabScrolls = new int[this.tabs.length];
         for (int i = 0; i < selectionTabs.length; i++) {
             SelectionTab tab = selectionTabs[i];
-            tab.update(font, 0, yO);
+            tab.update(font);
             this.tabScrolls[i] = yO;
             yO += 10;
             for (int i1 = 0; i1 < tab.size(); i1++) {
@@ -165,7 +165,7 @@ public class GraphicalEditor extends AbstractWidget {
         for (int i = this.elements.size() - 1; i >= 0; i--) { //render first elements last due to earlier elements being overwritten by later ones
             CodeElement element = this.elements.get(i);
             if (element.visible(minX, minY, maxX, maxY)) {
-                element.render(pGuiGraphics, font);
+                element.render(pGuiGraphics, font, element.x, element.y);
             }
         }
 
@@ -177,13 +177,7 @@ public class GraphicalEditor extends AbstractWidget {
         pose.scale(scale, scale, 1);
         pose.translate(0, 0, 100);
         if (this.draggedWidget != null) {
-            this.draggedWidget.update(
-                    null,
-                    font,
-                    (int) ((pMouseX + this.draggedOffsetX) / scale),
-                    (int) ((pMouseY + this.draggedOffsetY) / scale)
-            );
-            this.draggedWidget.render(pGuiGraphics, font);
+            this.draggedWidget.render(pGuiGraphics, font, (int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale));
         }
         pose.popPose();
         //endregion
@@ -219,7 +213,7 @@ public class GraphicalEditor extends AbstractWidget {
             yO += 10;
             for (int i1 = 0; i1 < tab.size(); i1++) {
                 CodeWidget widget = tab.get(i1);
-                widget.render(pGuiGraphics, font);
+                widget.render(pGuiGraphics, font, 0, yO);
                 yO += widget.getHeight();
                 yO += 10;
             }
@@ -519,8 +513,8 @@ public class GraphicalEditor extends AbstractWidget {
 
         public void update() {
             this.connectors.clear();
-            this.widget.update(null, font, this.x, this.y);
-            this.widget.collectConnectors(font, this.connectors::add);
+            this.widget().collectConnectors(0, 0, font, this.connectors::add);
+            this.widget.update(null, font);
             this.width = calculateWidgetWidth();
             this.height = calculateWidgetHeight();
             this.updateInteractions();
@@ -528,13 +522,13 @@ public class GraphicalEditor extends AbstractWidget {
 
         protected void updateInteractions() {
             this.interactions.clear();
-            this.widget.registerInteractions(font, this.interactions::add);
+            this.widget.registerInteractions(this.x, this.y, font, this.interactions::add);
         }
 
-        public void render(GuiGraphics pGuiGraphics, Font font) {
+        public void render(GuiGraphics pGuiGraphics, Font font, int x, int y) {
             if (renderDebug)
                 pGuiGraphics.fill(x, y, x + this.width, y + this.height, 0x8000FF00);
-            this.widget.render(pGuiGraphics, font);
+            this.widget.render(pGuiGraphics, font, x, y);
             if (renderDebug) {
                 PoseStack pose = pGuiGraphics.pose();
                 pose.pushPose();
@@ -648,17 +642,15 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void collectConnectors(Font font, Consumer<Connector> collector) {
+        public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         }
 
         @Override
-        public void render(GuiGraphics graphics, Font font) {
-            int renderX = this.x;
-            int renderY = this.y;
+        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
             int height = getHeight();
             graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
             graphics.drawString(font, "ghost", renderX + 6, renderY + 7, 0, false);
-            super.render(graphics, font);
+            super.render(graphics, font, renderX, renderY);
         }
 
         @Override
@@ -667,7 +659,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         }
 
         @Override
@@ -688,27 +680,6 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private class GhostExprWidget implements ExprCodeWidget {
-        private int x, y;
-
-        @Override
-        public int getX() {
-            return x;
-        }
-
-        @Override
-        public int getY() {
-            return y;
-        }
-
-        @Override
-        public void setX(int x) {
-            this.x = x;
-        }
-
-        @Override
-        public void setY(int y) {
-            this.y = y;
-        }
 
         @SuppressWarnings("DataFlowIssue")
         @Override
@@ -717,7 +688,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void render(GuiGraphics graphics, Font font) {
+        public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
 
         }
 
@@ -737,13 +708,12 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void collectConnectors(Font font, Consumer<Connector> collector) {
+        public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         }
 
         @Override
-        public void update(@Nullable MethodContext context, Font font, int x, int y) {
-            this.x = x;
-            this.y = y;
+        public void update(@Nullable MethodContext context, Font font) {
+
         }
 
         @Override
@@ -752,7 +722,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         @Override
-        public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
 
         }
 

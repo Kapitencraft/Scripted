@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.connector;
 
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
@@ -20,9 +20,9 @@ public class ArgumentExprConnector extends ExprConnector {
         this.argName = argName;
     }
 
-    public static void parse(Font font, int aX, int aY, String key, Map<String, ExprCodeWidget> args, int height, CodeWidget owner, Consumer<Connector> collector) {
-        int connectorOffset = aY + (height - 20) / 2 ;
-        CodeWidgetHelper.forPartialWidth(font, key, args, (s, integer) -> {
+    public static void parse(Font font, int aX, int aY, String key, Map<String, ExprCodeWidget> args, CodeWidget owner, Consumer<Connector> collector) {
+        int connectorOffset = aY + (owner.getHeight() - 20) / 2 ;
+        TextRenderHelper.forPartialWidth(font, key, args, (s, integer) -> {
             int finalOffset = connectorOffset - (args.get(s).getHeight() - 8) / 2;
             collector.accept(new ArgumentExprConnector(aX + integer, aY + finalOffset, owner, s));
             args.get(s).collectConnectors(aX + integer, aY, font, collector);

@@ -2,7 +2,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
@@ -63,7 +63,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     }
 
     protected int getHeadWidth(Font font) {
-        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§for_range", this.args);
+        return 6 + TextRenderHelper.getVisualTextWidth(font, "§for_range", this.args);
     }
 
     @Override
@@ -104,7 +104,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this.getHeadHeight(), this, collector);
+        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this, collector);
         super.collectConnectors(aX, aY, font, collector);
     }
 
@@ -136,8 +136,9 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     public void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headHeight = getHeadHeight();
 
-        CodeWidgetHelper.renderVisualText(graphics, font,
+        TextRenderHelper.renderVisualText(graphics, font,
                 renderX,
+                renderY + 7 + (headHeight - 20) / 2,
                 "§for_range", args
         );
     }
@@ -148,15 +149,15 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_range", args);
+        TextRenderHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_range", args);
 
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.args.values().forEach(w -> w.update(context, font, , ));
-        super.update(context, font, x, y);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.args.values().forEach(w -> w.update(context, font));
+        super.update(context, font);
     }
 
     public static class Builder implements StmtCodeWidget.Builder<ForRangeStmtWidget> {

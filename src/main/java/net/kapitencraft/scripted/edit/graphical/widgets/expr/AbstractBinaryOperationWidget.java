@@ -4,7 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.stream.Functions;
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.TextRenderHelper;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
@@ -14,7 +15,6 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,52 +32,26 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
         ).apply(i, constructor::apply));
     }
 
-    protected int x, y;
-
-    @Override
-    public int getX() {
-        return x;
-    }
-
-    @Override
-    public int getY() {
-        return y;
-    }
-
-    @Override
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    @Override
-    public void setY(int y) {
-        this.y = y;
-    }
-
     protected ExprCodeWidget left;
     protected final EnumSelectionWidget<O> operatorWidget;
     protected ExprCodeWidget right;
-    private final ResourceLocation sprite;
 
-    protected AbstractBinaryOperationWidget(ExprCodeWidget left, O[] values, O operation, ExprCodeWidget right, ResourceLocation sprite) {
+    protected AbstractBinaryOperationWidget(ExprCodeWidget left, O[] values, O operation, ExprCodeWidget right) {
         this.left = left;
         this.operatorWidget = new EnumSelectionWidget<>(List.of(values), StringRepresentable::getSerializedName);
-        this.sprite = sprite;
         this.operatorWidget.set(operation);
         this.right = right;
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font) {
-        graphics.blitSprite(sprite, this.x, this.y, getWidth(font), getHeight());
-        this.left.render(graphics, font);
-        this.right.render(graphics, font);
-        this.operatorWidget.render(graphics, font);
+    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        return 6 + TextRenderHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
     }
 
     @Override
@@ -85,16 +59,11 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
         return Math.max(18, ExprCodeWidget.getHeightFromEntries(List.of(left, right)) + 4);
     }
 
+
     @Override
-    public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.x = x;
-        this.y = y;
-        this.left.update(context, font, x, y);
-        int spaceWidth = font.width(" ");
-        x += this.left.getWidth(font) + spaceWidth;
-        this.operatorWidget.update(context, font, x, y);
-        x += this.operatorWidget.getWidth(font) + spaceWidth;
-        this.right.update(context, font, x, y);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.left.update(context, font);
+        this.right.update(context, font);
     }
 
     @Override
@@ -127,16 +96,17 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     }
 
     @Override
-    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
-        this.left.registerInteractions(font, sink);
-        this.operatorWidget.registerInteractions(font, sink);
-        this.right.registerInteractions(font, sink);
+    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        this.left.registerInteractions(xOrigin, yOrigin, font, sink);
+        int spaceWidth = font.width(" ");
+        xOrigin += this.left.getWidth(font) + spaceWidth;
+        this.operatorWidget.registerInteractions(xOrigin, yOrigin, font, sink);
+        xOrigin += this.operatorWidget.getWidth(font) + spaceWidth;
+        this.right.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
     @Override
-    public void collectConnectors(Font font, Consumer<Connector> collector) {
-        int aX = this.x;
-        int aY = this.y;
+    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         int spaceWidth = font.width(" ");
         int connectorOffset = aY + 6 + (getHeight() - 20) / 2;
         aX += 4;
@@ -146,7 +116,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
                 w -> this.left = w,
                 () -> this.left
         ));
-        this.left.collectConnectors(font, collector);
+        this.left.collectConnectors(aX, aY, font, collector);
         aX += this.left.getWidth(font) + 2 * spaceWidth + this.operatorWidget.getWidth(font);
         collector.accept(new SingletonExprConnector(
                 aX,
@@ -154,7 +124,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
                 w -> this.right = w,
                 () -> this.right
         ));
-        this.right.collectConnectors(font, collector);
+        this.right.collectConnectors(aX, aY, font, collector);
     }
 
     @Override

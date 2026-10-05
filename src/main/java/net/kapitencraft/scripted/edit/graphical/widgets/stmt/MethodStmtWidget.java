@@ -3,7 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.TextRenderHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
@@ -82,12 +82,12 @@ public class MethodStmtWidget extends StmtCodeWidget {
 
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, 6 + getWidth(font), 3 + height);
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, signature, args);
+        TextRenderHelper.renderVisualText(graphics, font, renderX, renderY + 7, signature, args);
     }
 
     @Override
     public int getWidth(Font font) {
-        return CodeWidgetHelper.getVisualTextWidth(font, this.signature, this.args) + 12;
+        return TextRenderHelper.getVisualTextWidth(font, this.signature, this.args) + 12;
     }
 
     @Override
@@ -101,9 +101,9 @@ public class MethodStmtWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context, Font font, int x, int y) {
-        this.args.values().forEach(c -> c.update(context, font, , ));
-        super.update(context, font, x, y);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.args.values().forEach(c -> c.update(context, font));
+        super.update(context, font);
     }
 
     public static class Builder implements StmtCodeWidget.Builder<MethodStmtWidget> {

@@ -18,7 +18,7 @@ public interface ExprCodeWidget extends CodeWidget {
 
     @NotNull Type getType();
 
-    void render(GuiGraphics graphics, Font font);
+    void render(GuiGraphics graphics, Font font, int renderX, int renderY);
 
     int getWidth(Font font);
 
@@ -35,7 +35,7 @@ public interface ExprCodeWidget extends CodeWidget {
         UNARY(() -> UnaryOperationWidget.CODEC),
         ALGEBRA(() -> BinaryNumOperationWidget.CODEC),
         COMPARISON(() -> ComparisonWidget.CODEC),
-        BOOL_ALGEBRA(() -> BoolAlgebraOperationWidget.CODEC),
+
         SELECT_BLOCK(() -> BlockSelectWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
