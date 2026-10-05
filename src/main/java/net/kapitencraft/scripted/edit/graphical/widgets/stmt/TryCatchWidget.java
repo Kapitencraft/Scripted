@@ -33,9 +33,9 @@ public class TryCatchWidget extends StmtCodeWidget {
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void render(GuiGraphics graphics, Font font) {
 
-        super.render(graphics, font, renderX, renderY);
+        super.render(graphics, font);
     }
 
     @Override

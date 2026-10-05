@@ -29,6 +29,7 @@ public class ExprWidget implements ExprCodeWidget {
             Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
     ).apply(i, ExprWidget::new));
 
+    private int x, y;
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
@@ -38,6 +39,26 @@ public class ExprWidget implements ExprCodeWidget {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
+    }
+
+    @Override
+    public int getX() {
+        return x;
+    }
+
+    @Override
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    @Override
+    public void setY(int y) {
+        this.y = y;
     }
 
     public static Builder builder() {
@@ -72,16 +93,18 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, this.translationKey, this.args, this.getHeight(), this, collector);
+    public void collectConnectors(Font font, Consumer<Connector> collector) {
+        ArgumentExprConnector.parse(font, x + 4, y, this.translationKey, this.args, this.getHeight(), this, collector);
         //collector.accept(new ExprChainConnector(aX + 4 + this.getWidth(font), aY, this));
     }
 
     @Override
-    public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+    public void render(GuiGraphics graphics, Font font) {
+        int renderX = this.x;
+        int renderY = this.y;
         int height = getHeight();
         graphics.blitSprite(type.getSpriteLocation(), renderX, renderY, getWidth(font), height);
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, this.translationKey, this.args);
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY, this.translationKey, this.args);
     }
 
     @Override
@@ -105,8 +128,8 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        CodeWidgetHelper.registerAllInteractions(font, sink, args);
     }
 
     public void setChild(@Nullable ExprWidget codeWidget) {

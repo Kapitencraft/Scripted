@@ -124,9 +124,9 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_each", args);
-        super.registerInteractions(xOrigin, yOrigin, font, sink);
+    public void registerInteractions(Font font, Consumer<CodeInteraction> sink) {
+        CodeWidgetHelper.registerAllInteractions(font, sink, args);
+        super.registerInteractions(font, sink);
     }
 
     @Override

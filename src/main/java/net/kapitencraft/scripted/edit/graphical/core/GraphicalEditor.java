@@ -19,6 +19,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionD
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.HeadWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.Util;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -173,19 +174,13 @@ public class GraphicalEditor extends AbstractWidget {
         pose.popPose();
         pose.popPose();
         //region dragged
-        pose.pushPose();
-        pose.scale(scale, scale, 1);
-        pose.translate(0, 0, 100);
         if (this.draggedWidget != null) {
-            this.draggedWidget.update(
-                    null,
-                    font,
-                    (int) ((pMouseX + this.draggedOffsetX) / scale),
-                    (int) ((pMouseY + this.draggedOffsetY) / scale)
-            );
+            pose.pushPose();
+            pose.scale(scale, scale, 1);
+            pose.translate((int) ((pMouseX + this.draggedOffsetX) / scale), (int) ((pMouseY + this.draggedOffsetY) / scale), 100);
             this.draggedWidget.render(pGuiGraphics, font);
+            pose.popPose();
         }
-        pose.popPose();
         //endregion
 
         pose.pushPose();
@@ -330,6 +325,7 @@ public class GraphicalEditor extends AbstractWidget {
                     element.update();
                 }
                 this.draggedWidget = result.widget();
+                this.draggedWidget.update(null, Minecraft.getInstance().font, 0, 0);
                 this.draggedOffsetX = -result.x();
                 this.draggedOffsetY = -result.y();
                 if (!result.removed())
@@ -352,6 +348,7 @@ public class GraphicalEditor extends AbstractWidget {
                 CodeWidget widget = tab.get(i1);
                 if (uY > 0 && uY < widget.getHeight()) {
                     this.draggedWidget = widget.copy();
+                    this.draggedWidget.update(null, Minecraft.getInstance().font, 0, 0);
                     this.draggedOffsetX = -uX;
                     this.draggedOffsetY = -uY;
                     return;
