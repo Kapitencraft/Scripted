@@ -33,7 +33,7 @@ public interface ExprCodeWidget extends CodeWidget {
     //lambda necessary to ensure load order doesn't create cycle
     enum Type implements StringRepresentable {
         PARAM(() -> ParamWidget.CODEC),
-        EXPR(() -> ExprWidget.CODEC),
+        EXPR(() -> MethodWidget.CODEC),
         GET_VAR(() -> GetVarWidget.CODEC),
         UNARY(() -> UnaryOperationWidget.CODEC),
         ALGEBRA(() -> BinaryNumOperationWidget.CODEC),

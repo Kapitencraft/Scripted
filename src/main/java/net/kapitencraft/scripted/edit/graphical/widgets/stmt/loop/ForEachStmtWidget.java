@@ -92,7 +92,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         int valuesOffset = CodeWidgetHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
         collector.accept(new SingletonExprConnector(
-                aX + 4, aY + valuesOffset,
+                aX + 4 + valuesOffset, aY + 7 + (getHeadHeight() - 20) / 2,
                 w -> this.values = w,
                 () -> this.values
         ));
@@ -125,7 +125,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_each", args);
+        CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_each", args);
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 

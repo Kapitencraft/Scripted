@@ -103,7 +103,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this, collector);
+        ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this.getHeadHeight(), this, collector);
         super.collectConnectors(aX, aY, font, collector);
     }
 
@@ -148,7 +148,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        CodeWidgetHelper.registerAllInteractions(xOrigin + 4, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_range", args);
+        CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 7 + (getHeadHeight() - 20) / 2, font, sink, "§for_range", args);
 
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }

@@ -22,19 +22,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class ExprWidget implements ExprCodeWidget {
-    public static final MapCodec<ExprWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+public class MethodWidget implements ExprCodeWidget {
+    public static final MapCodec<MethodWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
             Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
-    ).apply(i, ExprWidget::new));
+    ).apply(i, MethodWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
-    private ExprWidget child;
+    private MethodWidget child;
 
-    public ExprWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
+    public MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
@@ -50,11 +50,11 @@ public class ExprWidget implements ExprCodeWidget {
     }
 
     @Override
-    public ExprWidget copy() {
-        ExprWidget exprWidget = new ExprWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+    public MethodWidget copy() {
+        MethodWidget methodWidget = new MethodWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
         if (this.child != null)
-            exprWidget.setChild(this.child.copy());
-        return exprWidget;
+            methodWidget.setChild(this.child.copy());
+        return methodWidget;
     }
 
     @Override
@@ -73,7 +73,7 @@ public class ExprWidget implements ExprCodeWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        ArgumentExprConnector.parse(font, aX + 4, aY, this.translationKey, this.args, this, collector);
+        ArgumentExprConnector.parse(font, aX + 4, aY, this.translationKey, this.args, this.getHeight(), this, collector);
         //collector.accept(new ExprChainConnector(aX + 4 + this.getWidth(font), aY, this));
     }
 
@@ -109,15 +109,15 @@ public class ExprWidget implements ExprCodeWidget {
         CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
-    public void setChild(@Nullable ExprWidget codeWidget) {
+    public void setChild(@Nullable MethodWidget codeWidget) {
         this.child = codeWidget;
     }
 
-    public @Nullable ExprWidget getChild() {
+    public @Nullable MethodWidget getChild() {
         return this.child;
     }
 
-    public static class Builder implements ExprCodeWidget.Builder<ExprWidget> {
+    public static class Builder implements ExprCodeWidget.Builder<MethodWidget> {
         private ExprCategory type;
         private String translationKey;
         private final Map<String, ExprCodeWidget> args = new HashMap<>();
@@ -142,8 +142,8 @@ public class ExprWidget implements ExprCodeWidget {
         }
 
         @Override
-        public ExprWidget build() {
-            return new ExprWidget(type, translationKey, args);
+        public MethodWidget build() {
+            return new MethodWidget(type, translationKey, args);
         }
     }
 

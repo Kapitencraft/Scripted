@@ -72,9 +72,10 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         int spaceWidth = font.width(" ");
         int oX = x;
-        if (x < 4)
+        int widgetWidth = 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+        if (x < widgetWidth)
             return ExprWidgetFetchResult.notRemoved(this, x, y);
-        x -= 4;
+        x -= widgetWidth;
         int leftWidth = this.left.getWidth(font);
         if (x < leftWidth) {
             WidgetFetchResult result = this.left.fetchAndRemoveHovered(x, y, font);
@@ -100,12 +101,13 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         xOrigin += 4;
+        yOrigin += 6 + (getHeight() - 20) / 2;
         this.left.registerInteractions(xOrigin, yOrigin, font, sink);
         int spaceWidth = font.width(" ");
         xOrigin += this.left.getWidth(font) + spaceWidth;
         this.operatorWidget.registerInteractions(xOrigin, yOrigin, font, sink);
         xOrigin += this.operatorWidget.getWidth(font) + spaceWidth;
-        this.right.registerInteractions(xOrigin, yOrigin, font, sink);
+        this.right.registerInteractions(xOrigin, yOrigin - (this.right.getHeight() - 8) / 2, font, sink);
     }
 
     @Override
@@ -116,7 +118,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
         collector.accept(new SingletonExprConnector(
                 aX,
                 connectorOffset - (left.getHeight() - 8) / 2,
-                w -> this.left = w,
+                w -> this.left = w == null ? ParamWidget.NUM : w,
                 () -> this.left
         ));
         this.left.collectConnectors(aX, aY, font, collector);
@@ -124,7 +126,7 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
         collector.accept(new SingletonExprConnector(
                 aX,
                 connectorOffset - (right.getHeight() - 8) / 2,
-                w -> this.right = w,
+                w -> this.right = w == null ? ParamWidget.NUM : w,
                 () -> this.right
         ));
         this.right.collectConnectors(aX, aY, font, collector);

@@ -70,6 +70,7 @@ public abstract class StmtCodeWidget implements CodeWidget {
     @Deprecated //convert to AST instead
     protected enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
+        TRY_CATCH_STMT(() -> TryCatchWidget.CODEC),
         WHILE_STMT(() -> WhileStmtWidget.CODEC),
         FOR_RANGE_STMT(() -> ForRangeStmtWidget.CODEC),
         FOR_EACH_STMT(() -> ForEachStmtWidget.CODEC),

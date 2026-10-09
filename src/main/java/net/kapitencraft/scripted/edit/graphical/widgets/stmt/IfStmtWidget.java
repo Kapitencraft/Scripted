@@ -376,14 +376,15 @@ public class IfStmtWidget extends StmtCodeWidget {
         for (ElseIfEntry elseIf : this.elseIfs) {
             if (y - yOffset < this.getElseIfHeadHeight(elseIf)) {
                 if (x < elseIf.headWidth)
-                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", ArgumentStorage.createSingle("condition", this::setCondition, () -> elseIf.condition));
+                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", ArgumentStorage.createSingle("condition", w -> elseIf.condition = w == null ? ParamWidget.CONDITION : w, () -> elseIf.condition));
             }
-            if (y - yOffset - this.getElseIfHeadHeight(elseIf) < elseIf.getBodyHeight()) {
+            yOffset += getElseIfHeadHeight(elseIf);
+            if (y - yOffset < elseIf.getBodyHeight()) {
                 if (x < 6)
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 if (elseIf.body != null) {
                     WidgetFetchResult result = elseIf.body.fetchAndRemoveHovered(x - 6,
-                            y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight(), font);
+                            y - yOffset, font);
                     if (result == null) return null;
                     if (!result.removed())
                         elseIf.body = null;
@@ -391,20 +392,22 @@ public class IfStmtWidget extends StmtCodeWidget {
                 }
                 return null;
             }
+            yOffset += elseIf.getBodyHeight();
         }
 
         if (elseVisible) {
-            if (y - this.getHeadHeight() - this.getBodyHeight() < this.getElseHeadHeight()) {
+            if (y - yOffset < this.getElseHeadHeight()) {
                 if (x < this.getElseHeadWidth(font))
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 return null;
             }
-            if (y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight() < this.getElseBodyHeight()) {
+            yOffset += getElseHeadHeight();
+            if (y - yOffset < this.getElseBodyHeight()) {
                 if (x < 6)
                     return BlockWidgetFetchResult.notRemoved(this, x, y);
                 if (elseBody != null) {
                     WidgetFetchResult result = this.elseBody.fetchAndRemoveHovered(x - 6,
-                            y - this.getHeadHeight() - this.getBodyHeight() - this.getElseHeadHeight(), font);
+                            y - yOffset, font);
                     if (result == null) return null;
                     if (!result.removed())
                         this.elseBody = null;
@@ -422,7 +425,7 @@ public class IfStmtWidget extends StmtCodeWidget {
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         //TODO
-        this.condition.registerInteractions(xOrigin, yOrigin, font, sink);
+        this.condition.registerInteractions(xOrigin, yOrigin + 7 + (headHeight - 20) / 2, font, sink);
         if (this.conditionBody != null) {
             this.conditionBody.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
         }

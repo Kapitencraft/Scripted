@@ -74,9 +74,10 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         int oX = x;
-        if (x < 4)
+        int widgetWidth = 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+        if (x < widgetWidth)
             return ExprWidgetFetchResult.notRemoved(this, x, y);
-        x -= 4 + this.operatorWidget.getWidth(font) + font.width(" ");
+        x -= widgetWidth;
         int rightWidth = this.right.getWidth(font);
         if (x < rightWidth) {
             WidgetFetchResult result = this.right.fetchAndRemoveHovered(x, y, font);
@@ -91,9 +92,11 @@ public class UnaryOperationWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        this.operatorWidget.registerInteractions(xOrigin, yOrigin, font, sink);
+        xOrigin += 4;
+        yOrigin += 6 + (getHeight() - 20) / 2;
+        this.operatorWidget.registerInteractions(xOrigin, yOrigin - (this.operatorWidget.getHeight() - 8) / 2, font, sink);
         xOrigin += this.operatorWidget.getWidth(font) + font.width(" ");
-        this.right.registerInteractions(xOrigin, yOrigin, font, sink);
+        this.right.registerInteractions(xOrigin, yOrigin - (this.right.getHeight() - 8) / 2, font, sink);
     }
 
     @Override
@@ -106,7 +109,7 @@ public class UnaryOperationWidget implements ExprCodeWidget {
                 w -> this.right = w,
                 () -> this.right
         ));
-        this.right.collectConnectors(aX, aY, font, collector);
+        this.right.collectConnectors(aX, aY - (this.right.getHeight() - 8) / 2, font, collector);
     }
 
     @Override
