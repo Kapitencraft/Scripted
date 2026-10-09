@@ -35,17 +35,15 @@ public class WhileStmtWidget extends LoopStmtWidget {
 
     @NotNull
     private ExprCodeWidget condition;
-    private @Nullable StmtCodeWidget body;
 
-    public WhileStmtWidget(@NotNull ExprCodeWidget condition, @Nullable StmtCodeWidget body) {
+    public WhileStmtWidget(@NotNull ExprCodeWidget condition) {
         this.condition = condition;
-        this.body = body;
     }
 
     private WhileStmtWidget(StmtCodeWidget child, @NotNull ExprCodeWidget condition, @Nullable StmtCodeWidget body) {
         Preconditions.checkNotNull(condition);
         this.condition = condition;
-        this.body = body;
+        this.setBody(body);
         this.setChild(child);
     }
 
@@ -110,10 +108,6 @@ public class WhileStmtWidget extends LoopStmtWidget {
         return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
     }
 
-    public void setBody(@Nullable StmtCodeWidget target) {
-        this.body = target;
-    }
-
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
@@ -135,9 +129,12 @@ public class WhileStmtWidget extends LoopStmtWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        if (this.body != null) {
-            this.body.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
-        }
+        this.condition.registerInteractions(
+                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                yOrigin + 7 + (getHeadHeight() - 18) / 2 - (this.condition.getHeight() - 8) / 2,
+                font,
+                sink
+        );
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 

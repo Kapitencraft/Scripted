@@ -87,7 +87,7 @@ public abstract class LoopStmtWidget extends StmtCodeWidget {
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         if (this.body != null)
-            this.body.registerInteractions(xOrigin + 4, yOrigin + getHeadHeight(), font, sink);
+            this.body.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 
