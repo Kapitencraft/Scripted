@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.graphical.fetch;
+package net.kapitencraft.scripted.edit.graphical.widgets.fetch;
 
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;

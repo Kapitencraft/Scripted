@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.graphical.connector;
+package net.kapitencraft.scripted.edit.graphical.widgets.connector;
 
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;

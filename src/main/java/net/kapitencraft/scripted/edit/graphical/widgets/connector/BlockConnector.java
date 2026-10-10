@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.graphical.connector;
+package net.kapitencraft.scripted.edit.graphical.widgets.connector;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.client.gui.GuiGraphics;

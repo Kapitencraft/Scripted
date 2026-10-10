@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -7,11 +8,11 @@ import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.CommonBranchBlockConnector;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.connector.SingletonExprConnector;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.CommonBranchBlockConnector;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.SingletonExprConnector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
@@ -459,15 +460,18 @@ public class IfStmtWidget extends StmtCodeWidget {
 
         @Override
         public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            guiGraphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, x + 2, y + 2, 10, 10);
-            int yOffset = 12;
-            for (ElseIfEntry elseIf : IfStmtWidget.this.elseIfs) {
-                guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
-                yOffset += 10;
+            PoseStack pose = guiGraphics.pose();
+            pose.translate(x, y, 0);
+            pose.scale(0.5f, 0.5f, 1);
+            guiGraphics.blitSprite(CodeWidgetSprites.METHOD_HEAD, 2, 2, 48, 22);
+            int yOffset = 21;
+            for (int i = 0; i < IfStmtWidget.this.elseIfs.size(); i++) {
+                guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, 2, yOffset, 48, 22);
+                yOffset += 19;
             }
             //TODO
             if (IfStmtWidget.this.elseVisible) {
-                guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, x + 2, y + yOffset, 10, 10);
+                guiGraphics.blitSprite(CodeWidgetSprites.BRANCH_END, 2, yOffset, 48, 19);
             }
         }
     }

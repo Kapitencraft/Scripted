@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;

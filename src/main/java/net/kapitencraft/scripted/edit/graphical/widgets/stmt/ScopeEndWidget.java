@@ -1,9 +1,9 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 

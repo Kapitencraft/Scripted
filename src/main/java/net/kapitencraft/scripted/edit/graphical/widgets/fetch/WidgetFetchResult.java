@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.edit.graphical.fetch;
+package net.kapitencraft.scripted.edit.graphical.widgets.fetch;
 
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import org.jetbrains.annotations.NotNull;
