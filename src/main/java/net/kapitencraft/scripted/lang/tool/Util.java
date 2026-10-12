@@ -4,10 +4,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
+import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -68,14 +70,14 @@ public class Util {
         List<File> queue = new ArrayList<>();
         queue.add(file);
         while (!queue.isEmpty()) {
-            File el = queue.get(0);
+            File el = queue.getFirst();
             if (el.isDirectory()) {
                 File[] files = el.listFiles();
                 if (files != null) queue.addAll(List.of(files));
             } else {
                 if (fileSuffix == null || el.getPath().endsWith(fileSuffix)) finals.add(el);
             }
-            queue.remove(0);
+            queue.removeFirst();
         }
         return finals;
     }
@@ -133,13 +135,13 @@ public class Util {
         return false;
     }
 
-    public static Pair<ScriptedCallable, ScriptedClass> getVirtualMethod(ScriptedClass targetClass, String method, ClassReference[] args) {
+    public static Pair<ScriptedClass, ScriptedCallable> getVirtualMethod(ScriptedClass targetClass, String method, ClassReference[] args) {
         DataMethodContainer container = targetClass.getMethods().get(method);
         ScriptedCallable m;
         if (container == null || (m = container.getMethod(args)) == null) {
             return getVirtualMethod(targetClass.superclass().get(), method, args);
         }
-        return Pair.of(m, targetClass);
+        return Pair.of(targetClass, m);
     }
 
     public static ScriptedCallable getStaticMethod(ScriptedClass targetClass, String name, ClassReference[] args) {
@@ -167,7 +169,7 @@ public class Util {
 
     public static int getLargets(List<String> entries) {
         if (entries.isEmpty()) return 0;
-        int width = entries.get(0).length();
+        int width = entries.getFirst().length();
         for (int i = 1; i < entries.size(); i++) {
             if (width < entries.get(i).length()) {
                 width = entries.get(i).length();
@@ -201,5 +203,15 @@ public class Util {
             }
         }
         return o.toString();
+    }
+
+    public static List<ClassReference> getAsClassReferenceList(JsonObject data, String paramName) {
+        JsonArray paramData = GsonHelper.getAsJsonArray(data, paramName);
+
+        return paramData.asList().stream()
+                .map(JsonElement::getAsString)
+                .map(StringReader::new)
+                .map(VarTypeManager::parseType)
+                .toList();
     }
 }

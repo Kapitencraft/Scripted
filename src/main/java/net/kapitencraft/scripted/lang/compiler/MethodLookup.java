@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.lang.compiler;
 
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -15,23 +16,17 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class MethodLookup {
-    //time to sacrifice even more runtime speed due to load issues :hypers:
-    //let's make that shit lazy-loaded
-    private final ScriptedClass clazz;
-    private final ClassReference[] interfaces;
+    private final List<Pair<ScriptedClass, AbstractMethodMap>> lookup;
+    private final Map<String, ScriptedCallable> exposed;
 
-    private List<Pair<ScriptedClass, AbstractMethodMap>> lookup;
-    private Map<String, ScriptedCallable> exposed;
-
-    public MethodLookup(ScriptedClass clazz, ClassReference... interfaces) {
-        this.clazz = clazz;
-        this.interfaces = interfaces;
+    public MethodLookup(List<Pair<ScriptedClass, AbstractMethodMap>> lookup) {
+        this.lookup = lookup;
+        exposed = this.createExposed();
     }
 
     //region compile
 
-    //TODO
-    public void checkFinal(Compiler.ErrorStorage logger, Pair<Token, CompileCallable>[] map) {
+    public void checkFinalMethods(ErrorStorage logger, Pair<Token, CompileCallable>[] map) {
         for (Pair<Token, CompileCallable> pair : map) {
             for (Pair<ScriptedClass, AbstractMethodMap> lookupElement : lookup) {
                 Map<String, DataMethodContainer> methodMap = lookupElement.getSecond().asMap();
@@ -46,7 +41,7 @@ public class MethodLookup {
         }
     }
 
-    public void checkAbstract(Compiler.ErrorStorage logger, Token className, Pair<Token, CompileCallable>[] map) {
+    public void checkAbstract(ErrorStorage logger, Token className, Pair<Token, CompileCallable>[] map) {
         Map<String, List<Pair<ScriptedClass, ScriptedCallable>>> abstracts = new HashMap<>();
         for (Pair<ScriptedClass, AbstractMethodMap> methods : lookup) {
             methods.getSecond().asMap().forEach((s, dataMethodContainer) -> {
@@ -86,7 +81,7 @@ public class MethodLookup {
 
     //endregion
 
-    private void createFromClass(ScriptedClass scriptedClass, ClassReference... interfaces) {
+    public static MethodLookup createFromClass(ScriptedClass scriptedClass, ClassReference... interfaces) {
         List<ScriptedClass> parentMap = createParentMap(scriptedClass);
         List<ScriptedClass> allParents = new ArrayList<>();
         for (ClassReference i : interfaces) {
@@ -97,8 +92,8 @@ public class MethodLookup {
             addInterfaces(parent, allParents::add);
             allParents.add(parent);
         }
-        this.lookup = allParents.stream().collect(Util.toPairList(Function.identity(), ScriptedClass::getMethods));
-        this.exposed = this.createExposed();
+        List<Pair<ScriptedClass, AbstractMethodMap>> lookup = allParents.stream().collect(Util.toPairList(Function.identity(), ScriptedClass::getMethods));
+        return new MethodLookup(lookup);
     }
 
     private static void addInterfaces(ScriptedClass target, Consumer<ScriptedClass> sink) {
@@ -116,8 +111,7 @@ public class MethodLookup {
                 parents.add(scriptedClass);
                 scriptedClass = scriptedClass.superclass().get();
             } while (scriptedClass != null && scriptedClass.superclass() != null);
-        } else
-            parents.add(scriptedClass);
+        }
         return Util.invert(parents);
     }
 
@@ -130,8 +124,6 @@ public class MethodLookup {
     }
 
     public ScriptedCallable get(String signature) {
-        if (exposed == null)
-            createFromClass(this.clazz, this.interfaces);
         return exposed.get(signature);
     }
 }

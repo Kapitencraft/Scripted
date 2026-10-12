@@ -9,6 +9,10 @@ import java.util.*;
 public class LocalVariableTable {
     private final List<Map<String, ExprCategory>> stack = new ArrayList<>();
 
+    public LocalVariableTable() {
+        this.stack.add(new HashMap<>());
+    }
+
     public void push() {
         this.stack.addLast(new HashMap<>(this.stack.getLast()));
     }

@@ -17,10 +17,12 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 import org.slf4j.Logger;
 
 import java.io.File;
+import java.util.regex.Pattern;
 
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(Scripted.MOD_ID)
 public class Scripted {
+    public static final Pattern NUMBER_PATTERN = Pattern.compile("-?[0-9]+\\.[0-9]+([Ee]-?[0-9]+)?");
     public static File SCRIPTED_DIRECTORY = new File("./scripted"); //bruh
 
     public static final String MOD_ID = "scripted";

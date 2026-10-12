@@ -2,13 +2,13 @@ package net.kapitencraft.scripted.lang.oop.clazz.skeleton;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
-import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.SkeletonField;
 import net.kapitencraft.scripted.lang.oop.method.SkeletonMethod;
@@ -28,11 +28,11 @@ public class SkeletonInterface implements ScriptedClass {
 
     private final Map<String, SkeletonField> staticFields;
 
-    private final Holder.Generics generics;
+    private final Generics generics;
 
     private final GeneratedMethodMap methods;
 
-    public SkeletonInterface(String name, String pck, String[] interfaces, Map<String, SkeletonField> staticFields, Holder.Generics generics, Map<String, DataMethodContainer> methods) {
+    public SkeletonInterface(String name, String pck, String[] interfaces, Map<String, SkeletonField> staticFields, Generics generics, Map<String, DataMethodContainer> methods) {
         this.name = name;
         this.pck = pck;
         this.interfaces = interfaces;
@@ -78,7 +78,7 @@ public class SkeletonInterface implements ScriptedClass {
     }
 
     @Override
-    public @Nullable Holder.Generics getGenerics() {
+    public @Nullable Generics getGenerics() {
         return generics;
     }
 

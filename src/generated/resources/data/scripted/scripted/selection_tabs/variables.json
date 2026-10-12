@@ -3,6 +3,17 @@
     "type": "stmt",
     "entry": {
       "type": "body",
+      "create": true,
+      "expr": {
+        "type": "param",
+        "category": "number"
+      }
+    }
+  },
+  {
+    "type": "stmt",
+    "entry": {
+      "type": "body",
       "expr": {
         "type": "param",
         "category": "other"

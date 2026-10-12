@@ -1,7 +1,7 @@
 package net.kapitencraft.scripted.lang.holder.class_ref;
 
-import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericStack;
+import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,6 +56,14 @@ public class ClassReference implements Supplier<ScriptedClass> {
         return Objects.equals(reference.pck, this.pck) && Objects.equals(reference.name, this.name);
     }
 
+    public boolean isParentOf(ClassReference other) {
+        return other.isChildOf(this);
+    }
+
+    public boolean isChildOf(ClassReference other) {
+        return get().isChildOf(other.get());
+    }
+
     public ClassReference array() {
         return new ClassWrapper(this.name + "[]", this.pck, ScriptedClass::array, this);
     }
@@ -69,7 +77,7 @@ public class ClassReference implements Supplier<ScriptedClass> {
         return target != null;
     }
 
-    public Holder.Generics getGenerics() {
+    public Generics getGenerics() {
         return get().getGenerics();
     }
 

@@ -3,12 +3,12 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.RenderHelper;
+import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
@@ -48,7 +48,7 @@ public class GetVarWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        RenderHelper.renderVisualText(graphics, font, renderX + 4, renderY + 5, "§get", List.of(this.nameSelector));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 5, "§get", List.of(this.nameSelector));
     }
 
     @Override
@@ -77,7 +77,7 @@ public class GetVarWidget implements ExprCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 + RenderHelper.getVisualTextWidth(font, "§get", List.of(this.nameSelector));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§get", List.of(this.nameSelector));
     }
 
     @Override
@@ -96,8 +96,8 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
-        this.nameSelector.update(context);
+    public void update(@Nullable MethodContext context, Font font) {
+        this.nameSelector.update(context, font);
         this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
     }
 

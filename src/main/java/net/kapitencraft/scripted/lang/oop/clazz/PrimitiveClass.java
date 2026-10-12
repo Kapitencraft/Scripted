@@ -1,12 +1,14 @@
 package net.kapitencraft.scripted.lang.oop.clazz;
 
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.PrimitiveClassReference;
 import net.kapitencraft.scripted.lang.oop.field.ScriptedField;
 import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -60,13 +62,13 @@ public abstract class PrimitiveClass implements ScriptedClass {
     }
 
     @Override
-    public ClassReference getFieldType(String name) {
-        return null;
+    public @NotNull ClassReference getFieldType(String name) {
+        return VarTypeManager.VOID.reference();
     }
 
     @Override
-    public boolean hasField(String name) {
-        return false;
+    public @Nullable ScriptedClass getFieldDeclaring(String name) {
+        return null;
     }
 
     @Override
@@ -110,6 +112,11 @@ public abstract class PrimitiveClass implements ScriptedClass {
 
     @Override
     public boolean isNative() {
+        return true;
+    }
+
+    @Override
+    public boolean isPrimitive() {
         return true;
     }
 

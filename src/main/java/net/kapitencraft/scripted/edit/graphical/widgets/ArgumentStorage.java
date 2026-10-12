@@ -18,6 +18,16 @@ public class ArgumentStorage {
         return new ArgumentStorage(new Entry[]{new Entry(setter, getter)});
     }
 
+    public static ArgumentStorage createDouble(String name1, Consumer<ExprCodeWidget> setter1, Supplier<ExprCodeWidget> getter1,
+                                               String name2, Consumer<ExprCodeWidget> setter2, Supplier<ExprCodeWidget> getter2
+                                               ) {
+        return new ArgumentStorage(
+                Map.of(name1, new Entry(setter1, getter1),
+                        name2, new Entry(setter2, getter2)
+                )
+        );
+    }
+
     public static ArgumentStorage create(List<ExprCodeWidget> args) {
         List<Entry> list = new ArrayList<>();
         for (int i = 0; i < args.size(); i++) {

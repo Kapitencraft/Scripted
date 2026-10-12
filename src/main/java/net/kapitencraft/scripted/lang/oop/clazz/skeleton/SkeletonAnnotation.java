@@ -2,17 +2,19 @@ package net.kapitencraft.scripted.lang.oop.clazz.skeleton;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.AbstractAnnotationClass;
+import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.method.annotation.AnnotationCallable;
 import net.kapitencraft.scripted.lang.oop.method.annotation.SkeletonAnnotationMethod;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import net.kapitencraft.scripted.lang.oop.method.map.AnnotationMethodMap;
 import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -64,12 +66,12 @@ public class SkeletonAnnotation implements AbstractAnnotationClass {
     }
 
     @Override
-    public boolean hasField(String name) {
-        return false;
+    public ScriptedClass getFieldDeclaring(String name) {
+        return null;
     }
 
     @Override
-    public ClassReference getFieldType(String name) {
+    public @NotNull ClassReference getFieldType(String name) {
         return VarTypeManager.VOID.reference();
     }
 

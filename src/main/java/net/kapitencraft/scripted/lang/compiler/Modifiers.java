@@ -34,6 +34,6 @@ public interface Modifiers {
      * @see java.lang.reflect.Modifier
      */
     static short fromJavaMods(int javaMods) {
-        return (short) ((javaMods >> 3 & 3) | (javaMods >> 7 & 12) | (javaMods >> 9 & 48));
+        return (short) ((javaMods >> 3 & 3) | (javaMods >> 7 & 12) | (javaMods >> 9 & 48) | (javaMods >> 8 & 64));
     }
 }

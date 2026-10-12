@@ -1,12 +1,14 @@
 package net.kapitencraft.scripted.lang.holder.baked;
 
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
-import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.compiler.analyser.SemanticAnalyser;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
@@ -17,7 +19,7 @@ import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-public record BakedInterface(Compiler.ErrorStorage logger, Holder.Generics generics, ClassReference target,
+public record BakedInterface(ErrorStorage logger, Generics generics, ClassReference target,
                              Pair<Token, CompileCallable>[] methods,
                              Map<String, CompileField> staticFields, ClassReference[] interfaces,
                              Token name, String pck,
@@ -49,5 +51,17 @@ public record BakedInterface(Compiler.ErrorStorage logger, Holder.Generics gener
     @Override
     public ClassReference superclass() {
         return null;
+    }
+
+    @Override
+    public void analyse() {
+        SemanticAnalyser analyser = new SemanticAnalyser(logger);
+
+        for (Pair<Token, CompileCallable> method : this.methods) {
+            method.getSecond().analyseSemantics(analyser, this.target);
+        }
+        for (CompileField value : staticFields.values()) {
+            value.analyseSemantics(analyser);
+        }
     }
 }

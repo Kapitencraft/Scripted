@@ -1,19 +1,18 @@
 package net.kapitencraft.scripted.lang.oop.clazz;
 
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
-import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
-import net.kapitencraft.scripted.lang.exe.Interpreter;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
-import net.kapitencraft.scripted.lang.exe.algebra.Operand;
 import net.kapitencraft.scripted.lang.exe.algebra.OperationType;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.holder.token.TokenType;
+import net.kapitencraft.scripted.lang.holder.oop.attribute.EnumConstantHolder;
+import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory;
 import net.kapitencraft.scripted.lang.oop.field.ScriptedField;
 import net.kapitencraft.scripted.lang.oop.method.map.AbstractMethodMap;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -37,42 +36,25 @@ public interface ScriptedClass {
 
     Object setStaticField(String name, Object val);
 
-    default Object staticSpecialAssign(String name, TokenType assignType) {
-        Object val = getStaticField(name);
-        if (val instanceof Integer) {
-            return this.setStaticField(name, (int)val + (assignType == TokenType.GROW ? 1 : -1));
-        } else if (val instanceof Float) {
-            return this.setStaticField(name, (float) val + (assignType == TokenType.GROW ? 1 : -1));
-        } else {
-            return this.setStaticField(name, (double)val + (assignType == TokenType.GROW ? 1 : -1));
-        }
-    }
-
     //TODO move to reference?
     default ScriptedClass getComponentType() {
         return null;
     }
 
     /**
-     * @param type the operation
+     * @param type  the operation
      * @param other the other type
      * @return the resulting type or {@link VarTypeManager#VOID}, if this operation is not possible (must return {@link VarTypeManager#BOOLEAN} or {@link VarTypeManager#VOID} for comparators)
      * <br><br>API note: it's recommended to call {@code super.checkOperation(...)} due to the given equality check
+     * @deprecated create an overload method for it instead
      */
     @Deprecated
-    default ScriptedClass checkOperation(OperationType type, Operand operand, ClassReference other) {
+    default ScriptedClass checkOperation(OperationType type, ClassReference other) {
         return type == OperationType.ADDITION && "scripted.lang.String".equals(this.absoluteName()) ?
                 VarTypeManager.STRING.get() :
                 type.is(TokenTypeCategory.EQUALITY) && other.is(this) ?
                         VarTypeManager.BOOLEAN :
                         VarTypeManager.VOID;
-    }
-
-    default Object doOperation(OperationType type, Operand operand, Object self, Object other) {
-        String selfS = Interpreter.stringify(self);
-        String otherS = Interpreter.stringify(other);
-        return type == OperationType.ADDITION && "scripted.lang.String".equals(this.absoluteName()) ?
-                operand == Operand.LEFT ? selfS + otherS  : otherS + selfS : null;
     }
 
     @Contract(pure = true)
@@ -86,7 +68,6 @@ public interface ScriptedClass {
         return pck() + "." + name();
     }
 
-    //TODO branch from runtime class implementations and compile class implementations
     @Contract(pure = true)
     @Nullable
     ClassReference superclass();
@@ -95,12 +76,19 @@ public interface ScriptedClass {
         return superclass() != null ? superclass().get().interfaces() : new ClassReference[0];
     }
 
+    @NotNull
     default ClassReference getFieldType(String name) {
-        return superclass() != null ? superclass().get().getFieldType(name) : null;
+        return superclass() != null ? superclass().get().getFieldType(name) : VarTypeManager.VOID.reference();
     }
 
-    default boolean hasField(String name) {
-        return superclass() != null && superclass().get().hasField(name);
+    /**
+     * gets the (nullable) (super)class that declares a field of this name in this inheritance tree.
+     */
+    default @Nullable ScriptedClass getFieldDeclaring(String name) {
+        if (superclass() != null) {
+            return superclass().get().getFieldDeclaring(name);
+        }
+        return null;
     }
 
     default Map<String, ? extends ScriptedField> getFields() {
@@ -112,7 +100,8 @@ public interface ScriptedClass {
     }
 
     default boolean isParentOf(ScriptedClass suspectedChild) {
-        if (suspectedChild.is(this) || (!suspectedChild.isInterface() && VarTypeManager.OBJECT.get().is(this))) return true;
+        if (suspectedChild.is(this) || (!suspectedChild.isInterface() && VarTypeManager.OBJECT.get().is(this)))
+            return true;
         while (suspectedChild != null && suspectedChild.superclass() != null && suspectedChild != VarTypeManager.OBJECT.get() && !suspectedChild.is(this)) {
             suspectedChild = suspectedChild.superclass().get();
         }
@@ -121,7 +110,8 @@ public interface ScriptedClass {
 
     default boolean isChildOf(ScriptedClass suspectedParent) {
         return suspectedParent.isInterface() ?
-                Arrays.stream(this.interfaces()).anyMatch(reference -> reference.get().isParentOf(suspectedParent)) || this.superclass().get().isChildOf(suspectedParent)  :
+                Arrays.stream(this.interfaces()).anyMatch(reference -> reference.get().isParentOf(suspectedParent))
+                        || (this.superclass() != null && this.superclass().get().isChildOf(suspectedParent)) :
                 suspectedParent.isParentOf(this);
     }
 
@@ -175,13 +165,17 @@ public interface ScriptedClass {
         return (getModifiers() & Modifiers.ANNOTATION) != 0;
     }
 
-    default @Nullable Holder.Generics getGenerics() {
+    default @Nullable Generics getGenerics() {
         return null;
     }
 
     boolean isNative();
 
-    default Holder.EnumConstant getEnumConstant(String lexeme) {
+    default boolean isPrimitive() {
+        return false;
+    }
+
+    default EnumConstantHolder getEnumConstant(String lexeme) {
         return null;
     }
 

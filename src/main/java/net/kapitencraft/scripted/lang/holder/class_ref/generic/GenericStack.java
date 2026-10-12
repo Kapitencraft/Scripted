@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public class GenericStack {
+    public static final GenericStack EMPTY = new GenericStack();
     private final List<Map<String, ClassReference>> stack = new ArrayList<>();
 
     public void push(Map<String, ClassReference> data) {

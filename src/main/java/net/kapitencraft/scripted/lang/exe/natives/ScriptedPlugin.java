@@ -9,6 +9,7 @@ import java.lang.annotation.Target;
  * indicates that the given class should work as a plugin for scripted.
  * <br> plugins can register different methods to interact with the registration.
  * <br> all these methods <i>must</i> be {@code public static}
+ * <br> these methods include:
  * <br>{@code void registerClasses(ClassRegistration)} used to register classes
  */
 @Target(ElementType.TYPE)

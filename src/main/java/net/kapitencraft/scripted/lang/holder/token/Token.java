@@ -1,7 +1,9 @@
 package net.kapitencraft.scripted.lang.holder.token;
 
+import com.google.gson.JsonObject;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
+import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,6 +15,19 @@ public record Token(TokenType type, String lexeme, LiteralHolder literal, int li
 
     public static Token createNativeWithStringLiteral(String lexeme) {
         return new Token(TokenType.STR, lexeme, new LiteralHolder(lexeme, VarTypeManager.STRING.get()), -1, -1);
+    }
+
+    public static Token readFromSubObject(JsonObject object, String name) {
+        return fromJson(GsonHelper.getAsJsonObject(object, name));
+    }
+
+    public static Token fromJson(JsonObject object) {
+        TokenType type = TokenType.valueOf(GsonHelper.getAsString(object, "type"));
+        String lexeme = GsonHelper.getAsString(object, "lexeme");
+        LiteralHolder literal = LiteralHolder.fromJson(GsonHelper.getAsJsonObject(object, "literal"));
+        int line = GsonHelper.getAsInt(object, "line");
+        int lineStartIndex = GsonHelper.getAsInt(object, "lineStartIndex");
+        return new Token(type, lexeme, literal, line, lineStartIndex);
     }
 
     public static Token createNative(String lexeme) {

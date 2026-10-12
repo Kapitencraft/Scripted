@@ -1,16 +1,16 @@
 package net.kapitencraft.scripted.lang.holder.class_ref.generic;
 
-import net.kapitencraft.scripted.lang.compiler.Compiler;
-import net.kapitencraft.scripted.lang.compiler.Holder;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.oop.generic.AppliedGenerics;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import org.jetbrains.annotations.Nullable;
 
 public class AppliedGenericsReference extends ClassReference {
-    private final Holder.AppliedGenerics generics;
+    private final AppliedGenerics generics;
     private final ClassReference reference;
 
-    public AppliedGenericsReference(ClassReference reference, Holder.AppliedGenerics generics) {
+    public AppliedGenericsReference(ClassReference reference, AppliedGenerics generics) {
         super(reference.name(), reference.pck());
         this.generics = generics;
         this.reference = reference;
@@ -20,7 +20,7 @@ public class AppliedGenericsReference extends ClassReference {
         return expected.generics.equals(gotten.generics);
     }
 
-    public void push(GenericStack genericStack, Compiler.ErrorStorage logger) {
+    public void push(GenericStack genericStack, ErrorStorage logger) {
         this.generics.applyToStack(genericStack, this.reference.getGenerics(), logger);
     }
 
@@ -39,7 +39,7 @@ public class AppliedGenericsReference extends ClassReference {
         return reference.get(generics);
     }
 
-    public Holder.AppliedGenerics getApplied() {
+    public AppliedGenerics getApplied() {
         return generics;
     }
 }

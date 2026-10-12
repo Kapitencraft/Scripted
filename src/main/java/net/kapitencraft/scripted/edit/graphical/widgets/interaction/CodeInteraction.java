@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.interaction;
 
+import net.minecraft.client.gui.GuiGraphics;
+
 public abstract class CodeInteraction {
     protected final int x, y;
     private final int width, height;
@@ -19,5 +21,9 @@ public abstract class CodeInteraction {
 
     public boolean hovered(int posX, int posY) {
         return x < posX && x + width > posX && y < posY && y + height > posY;
+    }
+
+    public void renderDebug(GuiGraphics pGuiGraphics) {
+        pGuiGraphics.fill(x, y, x + width, y + height, 0x8F0000FF);
     }
 }

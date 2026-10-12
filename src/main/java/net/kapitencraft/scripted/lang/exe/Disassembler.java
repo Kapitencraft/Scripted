@@ -1,8 +1,7 @@
 package net.kapitencraft.scripted.lang.exe;
 
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.holder.Chunk;
-import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.bytecode.Chunk;
 
 import java.util.Arrays;
 import java.util.function.BiFunction;
@@ -35,10 +34,11 @@ public class Disassembler {
                  D_NEGATION, D_ADD, D_SUB, D_MUL, D_DIV, D_POW, D_MOD,
                  F_NEGATION, F_ADD, F_SUB, F_MUL, F_DIV, F_POW, F_MOD,
                  ASSIGN_0, ASSIGN_1, ASSIGN_2,
-                 NULL, TRUE, FALSE, AND, XOR, OR, NOT, CONCENTRATION,
+                 NULL, TRUE, FALSE, NOT, CONCENTRATION,
                  I_M1, I_0, I_1, I_2, I_3, I_4, I_5,
                  D_M1, D_1,
                  F_M1, F_1,
+                 I_SH_L, I_SH_R,
                  D2F, ARRAY_LENGTH,
                  EQUAL, NEQUAL,
                  I_LESSER, D_LESSER, F_LESSER,
@@ -62,16 +62,23 @@ public class Disassembler {
             case SWITCH -> switchInstruction(opcode, chunk, offset);
             case GET_FIELD, PUT_FIELD -> fieldOp(opcode, chunk, offset);
             case GET_STATIC, PUT_STATIC -> staticFieldOp(opcode, chunk, offset);
-            case REGISTRY -> registry(opcode, chunk, offset);
+            case IIRC -> intIncrement(opcode, chunk, offset);
+            case INSTANCEOF -> instanceOf(opcode, chunk, offset);
             //case RA_NEW -> newArray(opcode, chunk, offset);
         };
     }
 
-    private static int registry(Opcode opcode, Chunk chunk, int offset) {
-        int regKey = read2b(chunk.code(), offset + 1);
-        int valKey = read2b(chunk.code(), offset + 3);
-        System.out.printf("%-16s registry=%4d entry=%4d\n", opcode, regKey, valKey);
-        return offset + 5;
+    private static int intIncrement(Opcode opcode, Chunk chunk, int offset) {
+        int ordinal = chunk.code()[offset + 1];
+        int val = chunk.code()[offset + 2];
+        System.out.printf("%-16s idx=%3d, val=%3d\n", opcode, ordinal, val);
+        return offset + 3;
+    }
+
+    private static int instanceOf(Opcode opcode, Chunk chunk, int offset) {
+        String value = VirtualMachine.constString(chunk.constants(), offset + 1);
+        System.out.printf("%-16s value = %s\n", opcode, value);
+        return offset + 3;
     }
 
     private static int switchInstruction(Opcode opcode, Chunk chunk, int offset) {
@@ -94,14 +101,14 @@ public class Disassembler {
             ordinalIds[i] = chunk.constants()[pos + i + 1];
         }
         String log = Arrays.stream(ordinalIds).mapToObj(i -> {
-            Pair<String, ClassReference> local = local(chunk, offset, i);
-            return local.getFirst() + ": " + VarTypeManager.getClassName(local.getSecond().get());
+            Pair<String, String> local = local(chunk, offset, i);
+            return local.getFirst() + ": " + local.getSecond();
         }).collect(Collectors.joining(", ", "[", "]"));
         System.out.printf("%-16s %s\n", "DEBUG_TRACE", log);
         return offset + 3;
     }
 
-    private static Pair<String, ClassReference> local(Chunk chunk, int pc, int i) {
+    private static Pair<String, String> local(Chunk chunk, int pc, int i) {
         return chunk.localVariableTable().get(pc, i);
     }
 
@@ -125,8 +132,8 @@ public class Disassembler {
     }
 
     private static int defVar(Opcode opcode, Chunk chunk, int offset, int ordinal) {
-        Pair<String, ClassReference> pair = chunk.localVariableTable().get(offset, ordinal);
-        System.out.printf("%-16s %4d: \"%s\" -> %s\n", opcode, ordinal, pair.getFirst(), VarTypeManager.getClassName(pair.getSecond()));
+        Pair<String, String> pair = chunk.localVariableTable().get(offset, ordinal);
+        System.out.printf("%-16s %4d: \"%s\" -> %s\n", opcode, ordinal, pair.getFirst(), pair.getSecond());
         return offset + 1;
     }
 

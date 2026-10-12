@@ -1,15 +1,14 @@
 package net.kapitencraft.scripted.lang.oop.method;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.holder.Chunk;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.Chunk;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.tool.StringReader;
+import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.util.GsonHelper;
 
 import java.util.List;
@@ -17,23 +16,26 @@ import java.util.List;
 public class RuntimeCallable implements ScriptedCallable {
     private final ClassReference retType;
     private final ClassReference[] params;
+    private final ClassReference[] thrown;
     private final Chunk body;
     private final short modifiers;
     private final Annotation[] annotations;
 
-    public RuntimeCallable(ClassReference retType, List<ClassReference> params, Chunk body, short modifiers, Annotation[] annotations) {
+    public RuntimeCallable(ClassReference retType, List<ClassReference> params, List<ClassReference> thrown, Chunk body, short modifiers, Annotation[] annotations) {
         this.retType = retType;
         this.params = params.toArray(ClassReference[]::new);
+        this.thrown = thrown.toArray(ClassReference[]::new);
         this.body = body;
         this.modifiers = modifiers;
         this.annotations = annotations;
     }
 
     public static RuntimeCallable load(JsonObject data) {
-        ClassReference retType = VarTypeManager.parseType(new StringReader(GsonHelper.getAsString(data, "retType")));
-        JsonArray paramData = GsonHelper.getAsJsonArray(data, "params");
+        ClassReference retType = VarTypeManager.parseType(new StringReader(GsonHelper.getAsString(data, "returnType")));
 
-        List<ClassReference> params = paramData.asList().stream().map(JsonElement::getAsString).map(StringReader::new).map(VarTypeManager::parseType).toList();
+        List<ClassReference> params = Util.getAsClassReferenceList(data, "params");
+
+        List<ClassReference> thrown = Util.getAsClassReferenceList(data, "thrown");
 
         short modifiers = data.has("modifiers") ? GsonHelper.getAsShort(data, "modifiers") : 0;
 
@@ -43,7 +45,7 @@ public class RuntimeCallable implements ScriptedCallable {
 
         Annotation[] annotations = Annotation.readAnnotations(data);
 
-        return new RuntimeCallable(retType, params, b, modifiers, annotations);
+        return new RuntimeCallable(retType, params, thrown, b, modifiers, annotations);
     }
 
     @Override
@@ -84,5 +86,10 @@ public class RuntimeCallable implements ScriptedCallable {
     @Override
     public ClassReference[] argTypes() {
         return params;
+    }
+
+    @Override
+    public ClassReference[] thrown() {
+        return thrown;
     }
 }

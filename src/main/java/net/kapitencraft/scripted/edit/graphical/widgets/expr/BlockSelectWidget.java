@@ -5,9 +5,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.kap_lib.core.client.UsefulTextures;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
@@ -52,7 +52,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void setBlock(Block block) {
         if (this.value != block) {
             this.value = block;
-            this.stack = new ItemStack(block.asItem());
+            this.stack = new ItemStack(block);
         }
     }
 
@@ -60,6 +60,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
+        pose.translate(0, 1, 0);
         pose.translate(renderX, renderY, 0);
         pose.scale(.75f, .75f, 1);
         UsefulTextures.renderSlotBackground(graphics, 0, 0);
@@ -74,7 +75,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public int getHeight() {
-        return 12;
+        return 14;
     }
 
     @Override
@@ -133,7 +134,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        sink.accept(new Interaction(xOrigin, yOrigin, 12, 14));
+        sink.accept(new Interaction(xOrigin, yOrigin, 14, 14));
     }
 
     private class Interaction extends CodeInteraction {
@@ -145,11 +146,10 @@ public class BlockSelectWidget implements ExprCodeWidget {
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData data) {
             data.openWidget(new SelectBlockWidget(50, 20, data.getWidth() - 100, data.getHeight() - 40, Component.literal("Select block"), data.getFont(), data.wrapCloseWidget(BlockSelectWidget.this::setBlock)));
-            //TODO select
         }
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
     }
 }

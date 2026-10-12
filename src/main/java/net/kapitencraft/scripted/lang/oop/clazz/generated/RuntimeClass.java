@@ -2,12 +2,12 @@ package net.kapitencraft.scripted.lang.oop.clazz.generated;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.MethodLookup;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.RuntimeField;
@@ -16,6 +16,7 @@ import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
 import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.util.GsonHelper;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -52,7 +53,7 @@ public final class RuntimeClass implements ScriptedClass {
         this.packageRepresentation = packageRepresentation;
         this.implemented = implemented;
         this.modifiers = modifiers;
-        this.lookup = new MethodLookup(this);
+        this.lookup = MethodLookup.createFromClass(this);
         this.annotations = annotations;
     }
 
@@ -81,13 +82,13 @@ public final class RuntimeClass implements ScriptedClass {
     }
 
     @Override
-    public ClassReference getFieldType(String name) {
+    public @NotNull ClassReference getFieldType(String name) {
         return Optional.ofNullable(getFields().get(name)).map(ScriptedField::type).orElse(ScriptedClass.super.getFieldType(name));
     }
 
     @Override
-    public boolean hasField(String name) {
-        return allFields.containsKey(name) || ScriptedClass.super.hasField(name);
+    public ScriptedClass getFieldDeclaring(String name) {
+        return allFields.containsKey(name) ? this : ScriptedClass.super.getFieldDeclaring(name);
     }
 
     @Override

@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
@@ -32,7 +32,7 @@ public interface CodeWidget {
     void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector);
     //endregion IO
 
-    void update(@Nullable MethodContext context);
+    void update(@Nullable MethodContext context, Font font);
 
     void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink);
 }

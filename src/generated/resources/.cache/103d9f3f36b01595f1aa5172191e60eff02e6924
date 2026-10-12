@@ -1,4 +1,5 @@
-// 1.21.1	2026-05-01T11:35:46.6695994	Registries
-75f0996bbaa4fca10fb06a8f9a8e4a8b3d341da1 data/scripted/scripted/selection_tabs/control.json
-5f1f6899cf6e201f61e26fd3ba9c71975391a8b5 data/scripted/scripted/selection_tabs/variables.json
-c5412b254e5aac9e945a72d0cbb88bf4cc2454fe data/scripted/scripted/selection_tabs/world.json
+// 1.21.1	2026-10-04T16:43:15.6225131	Registries
+697cb64d581fd5de42cbe32350a093081d4c87c6 data/scripted/scripted/selection_tabs/control.json
+6de90121e2608e8b08969dda50eb8146718e6aae data/scripted/scripted/selection_tabs/operators.json
+113033c97f64ac075fc71b9101b4096c440c0967 data/scripted/scripted/selection_tabs/variables.json
+08ae1f1e210af3db50b2ced54aa115a1edc936d9 data/scripted/scripted/selection_tabs/world.json

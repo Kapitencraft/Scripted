@@ -1,18 +1,16 @@
 package net.kapitencraft.scripted.lang.exe;
 
-import net.kapitencraft.scripted.lang.holder.Chunk;
-import net.kapitencraft.scripted.lang.holder.LocalVariableTable;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassInstance;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.Chunk;
+import net.kapitencraft.scripted.lang.holder.bytecode.LocalVariableTable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.ClassInstance;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.DynamicClassInstance;
 import net.kapitencraft.scripted.lang.tool.StringReader;
 import net.kapitencraft.scripted.lang.tool.Util;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Contract;
 
 import java.util.*;
@@ -68,7 +66,7 @@ public class VirtualMachine {
 
     private static class TraceTable {
         private final byte[] localIndexes;
-        private final List<Object[]> entries = new ArrayList<>();
+        private final List<String[]> entries = new ArrayList<>();
         private final int pc;
         private final LocalVariableTable table;
 
@@ -84,15 +82,15 @@ public class VirtualMachine {
                 List<String> v = values[i] = new ArrayList<>();
                 v.add(table.get(pc, localIndexes[i]).getFirst());
             }
-            for (Object[] entry : entries) {
+            for (String[] entry : entries) {
                 for (int i = 0; i < localIndexes.length; i++) {
-                    values[i].add(Util.objToString(entry[i]));
+                    values[i].add(entry[i]);
                 }
             }
 
             record TableRow(int width, List<String> elements) {
                 private void appendHeader(StringBuilder builder) {
-                    builder.append(String.format("%-" + TableRow.this.width + "s", elements().get(0)));
+                    builder.append(String.format("%-" + TableRow.this.width + "s", elements().getFirst()));
                 }
 
                 void appendElement(StringBuilder sink, int index) {
@@ -126,9 +124,9 @@ public class VirtualMachine {
         }
 
         public void lookup(int localBottom) {
-            Object[] elements = new Object[localIndexes.length];
+            String[] elements = new String[localIndexes.length];
             for (int i = 0; i < localIndexes.length; i++) {
-                elements[i] = stack[localBottom + localIndexes[i]];
+                elements[i] = Util.objToString(stack[localBottom + localIndexes[i]]);
             }
             this.entries.add(elements);
         }
@@ -151,7 +149,7 @@ public class VirtualMachine {
     }
 
     private static int read2ByteWithOffset(int i) {
-        return ((((code[ip + i] & 255) << 8) | (code[ip + i + 1] & 255)) << 8);
+        return (((code[ip + i] & 255) << 8) | (code[ip + i + 1] & 255));
     }
 
     public static void runMainMethod(ScriptedClass target, String data, boolean profiling, boolean output) {
@@ -164,7 +162,6 @@ public class VirtualMachine {
                     }
                     init(new CallFrame(VarTypeManager.getClassName(target) + "main", method, 0));
                     try {
-                        tableData.clear();
                         Interpreter.start();
                         push(Arrays.stream(data.split(" ")).map(NativeClassLoader::wrapString).toArray());
                         run();
@@ -221,7 +218,7 @@ public class VirtualMachine {
             try {
                 Opcode o = Opcode.byId(readByte());
                 if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s Executing %s\n", visualStackSize(), o);
-                else if (DEBUG == DebugType.STACK) System.out.printf("[DEBUG]: %16s %s|\n", o, " ".repeat(stackIndex));
+                else if (DEBUG == DebugType.STACK) System.out.printf("[DEBUG]: %10s %s|\n", o, " ".repeat(stackIndex));
                 switch (o) {
                     //region control-flow
                     case POP -> stackIndex--; //pops the highest stack element
@@ -264,12 +261,6 @@ public class VirtualMachine {
                         stack[stackIndex++] = obj1;
                     }
                     //endregion
-                    case REGISTRY -> {
-                        String regKey = constString(constants, read2Byte());
-                        String valKey = constString(constants, read2Byte());
-
-                        push(BuiltInRegistries.REGISTRY.get(ResourceLocation.parse(regKey)).get(ResourceLocation.parse(valKey)));
-                    }
                     case TRACE -> {
                         TraceTable table;
                         if (tableData.containsKey(ip + 2)) {
@@ -309,12 +300,23 @@ public class VirtualMachine {
                         ScriptedClass type = VarTypeManager.flatParse(reader);
                         if (invokeStaticInitIfNecessary(type, 3)) continue;
 
-                        ScriptedCallable referenceCallable = type.getMethod(reader.getRemaining());
+                        String signature = reader.getRemaining();
+                        ScriptedCallable referenceCallable = type.getMethod(signature);
 
                         int length = referenceCallable.argTypes().length + 1; //reference object
                         int callableStackTop = stackIndex - length;
                         ClassInstance instance = (ClassInstance) stack[callableStackTop];
-                        ScriptedCallable callable = instance.getType().getMethod(reader.getRemaining()); //virtual invoke of the method
+                        ScriptedClass target = instance.getType();
+                        ScriptedCallable callable = target.getMethod(signature); //virtual invoke of the method
+                        s: while (callable == null) {
+                            for (ClassReference anInterface : target.interfaces()) {
+                                callable = anInterface.get().getMethod(signature);
+                                if (callable != null)
+                                    break s;
+                            }
+                            target = target.superclass().get();
+                            callable = target.getMethod(signature);
+                        }
 
                         if (callable.isNative()) {
                             if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]: calling native: %s\n", execute);
@@ -326,6 +328,11 @@ public class VirtualMachine {
                             push(object);
                         } else
                             pushCall(new CallFrame(execute, callable, callableStackTop));
+                    }
+                    case INSTANCEOF -> {
+                        ScriptedClass reference = VarTypeManager.directFlatParse(constString(constants, read2Byte()));
+                        ClassInstance value = (ClassInstance) pop();
+                        push(reference.isChildOf(value.getType()));
                     }
                     case THROW -> {
                         if (!handleException((ClassInstance) pop())) return;
@@ -366,6 +373,7 @@ public class VirtualMachine {
                     case ASSIGN_0 -> assign(0);
                     case ASSIGN_1 -> assign(1);
                     case ASSIGN_2 -> assign(2);
+                    //region const
                     case NULL -> push(null);
                     case TRUE -> push(true);
                     case FALSE -> push(false);
@@ -384,12 +392,30 @@ public class VirtualMachine {
                     case D_CONST -> push(constDouble(constants, read2Byte()));
                     case F_CONST -> push(constFloat(constants, read2Byte()));
                     case S_CONST -> push(NativeClassLoader.wrapString(constString(constants, read2Byte())));
+                    //endregion
                     case CONCENTRATION -> {
-                        String obj = (String) ((NativeClassInstance) pop()).getObject();
                         Object object = pop();
+                        String obj = (String) ((NativeClassInstance) pop()).getObject();
 
-                        push(NativeClassLoader.wrapString(object + obj));
-                    }                    case I_NEGATION -> push(-(int) pop());
+                        push(NativeClassLoader.wrapString(obj + object));
+                    }
+                    //region algebra
+                    case IIRC -> { //index, const
+                        int idx = readByte();
+                        int val = readByte();
+                        stack[stackBottom + idx] = ((int) stack[stackBottom + idx]) +  val;
+                    }
+                    case I_SH_L -> {
+                        int val2 = (int) pop();
+                        int val1 = (int) pop();
+                        push(val1 << val2);
+                    }
+                    case I_SH_R -> {
+                        int val2 = (int) pop();
+                        int val1 = (int) pop();
+                        push(val1 >> val2);
+                    }
+                    case I_NEGATION -> push(-(int) pop());
                     case D_NEGATION -> push(-(double) pop());
                     case F_NEGATION -> push(-(float) pop());
                     case I_POW -> {
@@ -482,6 +508,7 @@ public class VirtualMachine {
                         float value1 = (float) pop();
                         push(value1 - value2);
                     }
+                    //endregion
                     case IA_LOAD -> push(((int[]) pop())[(int) pop()]);
                     case DA_LOAD -> push(((double[]) pop())[(int) pop()]);
                     case CA_LOAD -> push(((char[]) pop())[(int) pop()]);
@@ -512,6 +539,7 @@ public class VirtualMachine {
                         int idx = (int) pop();
                         ((Object[]) pop())[idx] = val;
                     }
+                    //region compare
                     case EQUAL -> push(pop() == pop());
                     case NEQUAL -> push(pop() != pop());
                     case I_GEQUAL -> {
@@ -575,6 +603,7 @@ public class VirtualMachine {
                         push(value1 < value2);
                     }
                     case NOT -> push(!(boolean) pop());
+                    //endregion
                     case D2F -> push((float) (double) pop());
                     case SWITCH -> {
                         int entry = (int) pop();
@@ -588,16 +617,18 @@ public class VirtualMachine {
                             int obj = read4bWithOffset(idx * 6);
                             if (obj == entry) {
                                 ip = read2ByteWithOffset(idx * 6 + 4);
+                                if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s Switch Branch %s\n", visualStackSize(), obj);
                                 break;
                             }
                             if (obj < entry)
                                 lLoc = idx;
                             else
                                 uLoc = idx;
-                            idx = (uLoc - lLoc) / 2;
+                            idx = lLoc + (uLoc - lLoc) / 2;
                         }
                         if (lLoc >= uLoc) {
                             ip = defaultPos;
+                            if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s Default Switch Branch\n", visualStackSize());
                         }
                     }
                     case GET_FIELD -> {
@@ -648,12 +679,6 @@ public class VirtualMachine {
 
     private static final Set<ScriptedClass> initialized = new HashSet<>();
 
-    /**
-     * attempts to invoke the class initializer of the given class, a synthetic method named {@code <clinit>}
-     * @param scriptedClass the class to initialize
-     * @param opcodeOffset the current offset of the invoked opcode, necessary to revert to the given opcode in order to prevent IP corruption
-     * @return whether a static init was deemed necessary
-     */
     private static boolean invokeStaticInitIfNecessary(ScriptedClass scriptedClass, int opcodeOffset) {
         if (scriptedClass.isNative() || initialized.contains(scriptedClass)) return false;
         initialized.add(scriptedClass); //add it before so it doesn't create a recursion loop when a static call / get is executed from within the <clinit> method
@@ -668,7 +693,7 @@ public class VirtualMachine {
 
     public static ClassInstance createException(ClassReference type, String message) {
         DynamicClassInstance instance = new DynamicClassInstance(type.get());
-        instance.assignField("message", message);
+        instance.assignField("msg", message);
         return instance;
     }
 
@@ -690,8 +715,16 @@ public class VirtualMachine {
         for (int i = callStackTop - 1; i > -1; i--) {
             CallFrame callFrame = callStack[i];
             int lineAt = callFrame.callable.getChunk().lineNumberTable().getLineAt(callFrame.ip);
-            String readableSignature = callFrame.signature.substring(1, callFrame.signature.indexOf('(') == -1 ? callFrame.signature.length() : callFrame.signature.indexOf('(')).replaceAll("[;/]", ".");
-            stackTrace.add(String.format("\tat %s(%s.scr:%s)", readableSignature, VarTypeManager.flatParse(new StringReader(callFrame.signature)).name(), lineAt));
+            String readableSignature = callFrame.signature.substring(1, callFrame.signature.indexOf('(') == -1 ?
+                    callFrame.signature.length() :
+                    callFrame.signature.indexOf('(')).replaceAll("[;/]", ".");
+            stackTrace.add(
+                    String.format("\tat %s(%s.scr:%s)",
+                            readableSignature,
+                            VarTypeManager.flatParse(new StringReader(callFrame.signature)).name(),
+                            lineAt
+                    )
+            );
         }
 
         while (callStackTop > 0) {
@@ -710,7 +743,7 @@ public class VirtualMachine {
             popCall(); //pop call when no possible exception handler could be found
             callStackTop--;
         }
-        System.out.printf("Caused by: %s\n", exception.getField("message"));
+        System.out.printf("Caused by: %s\n", exception.getField("msg"));
         stackTrace.forEach(System.out::println);
         return false;
     }
@@ -753,7 +786,7 @@ public class VirtualMachine {
 
     private static void assign(int i) {
         stack[stackBottom + i] = pop();
-        if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s ASSIGN: %s\n", visualStackSize(), i);
+        if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s ASSIGN: %s (%s)\n", visualStackSize(), i, frame.callable.getChunk().localVariableTable().get(ip, i).getFirst());
     }
 
     //region flow-control
@@ -802,6 +835,7 @@ public class VirtualMachine {
         if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s PUSH (@%3d): %s\n", visualStackSize(), stackIndex - 1, Util.objToString(o));
     }
 
+    @Contract(pure = false)
     private static Object pop() {
         if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s POP  (@%3d): %s\n", visualStackSize(), stackIndex - 1, Util.objToString(stack[stackIndex - 1]));
         return stack[--stackIndex];

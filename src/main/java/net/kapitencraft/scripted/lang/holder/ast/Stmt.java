@@ -4,6 +4,8 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 
+import java.util.List;
+
 public interface Stmt {
 
     interface Visitor<R> {
@@ -24,10 +26,9 @@ public interface Stmt {
 
     <R> R accept(Visitor<R> visitor);
 
-    record Return(
-        Token keyword, 
-        Expr value
-    ) implements Stmt {
+    class Return implements Stmt {
+        public Token keyword;
+        public Expr value;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -35,14 +36,13 @@ public interface Stmt {
         }
     }
 
-    record For(
-        Stmt init, 
-        Expr condition, 
-        Expr increment, 
-        Stmt body, 
-        Token keyword,
-        int popVarCount
-    ) implements Stmt {
+    class For implements Stmt {
+        public Stmt init;
+        public Expr condition;
+        public Expr increment;
+        public Stmt body;
+        public Token keyword;
+        public int popVarCount;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -50,11 +50,10 @@ public interface Stmt {
         }
     }
 
-    record While(
-        Expr condition, 
-        Stmt body, 
-        Token keyword
-    ) implements Stmt {
+    class While implements Stmt {
+        public Expr condition;
+        public Stmt body;
+        public Token keyword;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -62,13 +61,12 @@ public interface Stmt {
         }
     }
 
-    record ForEach(
-        ClassReference type, 
-        Token name, 
-        Expr initializer, 
-        Stmt body, 
-        int baseVar
-    ) implements Stmt {
+    class ForEach implements Stmt {
+        public ClassReference type;
+        public Token name;
+        public Expr initializer;
+        public Stmt body;
+        public int baseVar;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -76,10 +74,10 @@ public interface Stmt {
         }
     }
 
-    record DebugTrace(
-        Token keyword, 
-        Pair<Byte, String>[] locals
-    ) implements Stmt {
+    class DebugTrace implements Stmt {
+        public Token keyword;
+        public Token[] localNames;
+        public byte[] localOrdinals;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -87,9 +85,8 @@ public interface Stmt {
         }
     }
 
-    record Expression(
-        Expr expression
-    ) implements Stmt {
+    class Expression implements Stmt {
+        public Expr expression;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -97,13 +94,12 @@ public interface Stmt {
         }
     }
 
-    record VarDecl(
-        Token name, 
-        ClassReference type, 
-        Expr initializer, 
-        boolean isFinal, 
-        int localId
-    ) implements Stmt {
+    class VarDecl implements Stmt {
+        public Token name;
+        public ClassReference type;
+        public Expr initializer;
+        public boolean isFinal;
+        public int localId;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -111,10 +107,9 @@ public interface Stmt {
         }
     }
 
-    record Throw(
-        Token keyword, 
-        Expr value
-    ) implements Stmt {
+    class Throw implements Stmt {
+        public Token keyword;
+        public Expr value;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -122,9 +117,8 @@ public interface Stmt {
         }
     }
 
-    record Block(
-        Stmt[] statements
-    ) implements Stmt {
+    class Block implements Stmt {
+        public List<Stmt> statements;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -132,11 +126,10 @@ public interface Stmt {
         }
     }
 
-    record Try(
-        Block body, 
-        Pair<Pair<ClassReference[],Token>,Block>[] catches, 
-        Block finale
-    ) implements Stmt {
+    class Try implements Stmt {
+        public Block body;
+        public Pair<Pair<ClassReference[],Token>,Block>[] catches;
+        public Block finale;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -144,9 +137,8 @@ public interface Stmt {
         }
     }
 
-    record ClearLocals(
-        int amount
-    ) implements Stmt {
+    class ClearLocals implements Stmt {
+        public int amount;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -154,13 +146,14 @@ public interface Stmt {
         }
     }
 
-    record If(
-        Expr condition, 
-        Stmt thenBranch, 
-        Stmt elseBranch, 
-        ElifBranch[] elifs, 
-        Token keyword
-    ) implements Stmt {
+    class If implements Stmt {
+        public Expr condition;
+        public Stmt thenBranch;
+        public boolean branchSeenReturn;
+        public Stmt elseBranch;
+        public boolean elseBranchSeenReturn;
+        public ElifBranch[] elifs;
+        public Token keyword;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {
@@ -168,9 +161,8 @@ public interface Stmt {
         }
     }
 
-    record LoopInterruption(
-        Token type
-    ) implements Stmt {
+    class LoopInterruption implements Stmt {
+        public Token type;
 
         @Override
         public <R> R accept(Visitor<R> visitor) {

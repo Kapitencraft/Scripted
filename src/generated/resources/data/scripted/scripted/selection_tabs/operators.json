@@ -1,0 +1,20 @@
+[
+  {
+    "type": "expr",
+    "entry": {
+      "type": "unary"
+    }
+  },
+  {
+    "type": "expr",
+    "entry": {
+      "type": "algebra"
+    }
+  },
+  {
+    "type": "expr",
+    "entry": {
+      "type": "comparison"
+    }
+  }
+]

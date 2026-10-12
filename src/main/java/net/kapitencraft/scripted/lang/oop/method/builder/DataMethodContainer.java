@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import net.kapitencraft.scripted.lang.compiler.CacheBuilder;
-import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.bytecode.CacheBuilder;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -80,7 +80,7 @@ public record DataMethodContainer(ScriptedCallable[] methods) implements MethodC
             this.className = className;
         }
 
-        public void addMethod(Compiler.ErrorStorage errorStorage, ScriptedCallable callable, Token methodName) {
+        public void addMethod(ErrorStorage errorStorage, ScriptedCallable callable, Token methodName) {
             List<? extends ClassReference[]> appliedTypes = methods.stream().map(ScriptedCallable::argTypes).toList();
             ClassReference[] argTypes = callable.argTypes();
             for (ClassReference[] appliedType : appliedTypes) {
@@ -94,6 +94,10 @@ public record DataMethodContainer(ScriptedCallable[] methods) implements MethodC
 
         public DataMethodContainer create() {
             return new DataMethodContainer(methods.toArray(new ScriptedCallable[0]));
+        }
+
+        public boolean isEmpty() {
+            return this.methods.isEmpty();
         }
     }
 

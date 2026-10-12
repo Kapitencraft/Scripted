@@ -1,23 +1,30 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
-import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
 public class VarNameSelectorWidget implements ExprCodeWidget {
+    private static final ResourceLocation ARROW = ResourceLocation.withDefaultNamespace("transferable_list/move_down");
+
     private @NotNull Status status = Status.UNKNOWN;
-    private @Nullable String selected;
+    private ExprCategory category = ExprCategory.OTHER;
+    private @Nullable String selected = "something";
+    private boolean createVar;
     private byte ordinal;
 
     @Override
@@ -27,17 +34,23 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
-        graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), renderX, renderY, 0);
+        graphics.blitSprite(CodeWidgetSprites.GENERIC_EXPR, renderX, renderY, getWidth(font), getHeight());
+        graphics.pose().pushPose();
+        graphics.pose().translate(renderX + font.width(getVisualSelected()) - 6, renderY - 8, 0);
+        graphics.pose().scale(2, 2, 1);
+        graphics.blitSprite(ARROW, 0, 0, 10, 10);
+        graphics.pose().popPose();
+        graphics.drawString(font, Component.literal(getVisualSelected()).withStyle(status.color), renderX + 2, renderY + 3, 0, false);
     }
 
     @Override
     public int getWidth(Font font) {
-        return status == Status.UNKNOWN ? font.width("???") : font.width(selected);
+        return font.width(getVisualSelected()) + 4 + 12;
     }
 
     @Override
     public int getHeight() {
-        return 10;
+        return 14;
     }
 
     @Override
@@ -71,15 +84,43 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
+        sink.accept(new SelectVarNameInteraction(xOrigin, yOrigin, this.getWidth(font), this.getHeight()));
+    }
 
+    public void setCreate(boolean createVar) {
+        this.createVar = createVar;
+    }
+
+    public boolean doesCreateVar() {
+        return createVar;
+    }
+
+    public ExprCategory getCategory() {
+        return this.category;
+    }
+
+    private static class SelectVarNameInteraction extends CodeInteraction {
+        //TODO
+
+        protected SelectVarNameInteraction(int x, int y, int width, int height) {
+            super(x, y, width, height);
+        }
+
+        @Override
+        public void onClick(int mouseX, int mouseY, InteractionData callbacks) {
+            //callbacks.openWidget();
+        }
     }
 
     @Override
-    public void update(@Nullable MethodContext context) {
+    public void update(@Nullable MethodContext context, Font font) {
         if (context == null) //no method
             status = Status.UNKNOWN;
-        else if (context.lvt.has(this.selected)) {
+        else if (createVar) {
+            status = context.lvt.add(this.selected, this.category) ? Status.PRESENT : Status.MISSING;
+        } else if (context.lvt.has(this.selected)) {
             status = Status.PRESENT;
+            this.category = context.lvt.getType(this.selected);
             ordinal = context.lvt.getOrdinal(this.selected);
         } else
             status = Status.MISSING;

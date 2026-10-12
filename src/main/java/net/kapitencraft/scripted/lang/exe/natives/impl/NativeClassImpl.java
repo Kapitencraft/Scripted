@@ -1,11 +1,11 @@
 package net.kapitencraft.scripted.lang.exe.natives.impl;
 
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.MethodLookup;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.holder.token.TokenType;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
 import net.kapitencraft.scripted.lang.oop.field.NativeField;
 import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
@@ -13,6 +13,7 @@ import net.kapitencraft.scripted.lang.oop.method.map.GeneratedMethodMap;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -20,7 +21,6 @@ import java.util.Map;
 @ApiStatus.Internal
 public class NativeClassImpl implements ScriptedClass {
     private final GeneratedMethodMap methods;
-    private final MethodLookup lookup;
     private final Map<String, NativeField> fields;
     private final ClassReference superclass;
     private final ClassReference[] interfaces;
@@ -40,12 +40,6 @@ public class NativeClassImpl implements ScriptedClass {
         this.interfaces = interfaces;
         this.owner = owner;
         this.modifiers = modifiers;
-        this.lookup = new MethodLookup(this);
-    }
-
-    @Nullable
-    public ResourceKey<? extends Registry<?>> getOwner() {
-        return owner;
     }
 
     @Override
@@ -64,18 +58,18 @@ public class NativeClassImpl implements ScriptedClass {
     }
 
     @Override
-    public ClassReference getFieldType(String name) {
-        return fields.containsKey(name) ? fields.get(name).type() : null;
+    public @NotNull ClassReference getFieldType(String name) {
+        return fields.containsKey(name) ? fields.get(name).type() : VarTypeManager.VOID.reference();
     }
 
     @Override
-    public boolean hasField(String name) {
-        return fields.containsKey(name);
+    public @Nullable ScriptedClass getFieldDeclaring(String name) {
+        return fields.containsKey(name) ? this : ScriptedClass.super.getFieldDeclaring(name);
     }
 
     @Override
     public ScriptedCallable getMethod(String signature) {
-        return lookup.get(signature);
+        return methods.getMethod(signature);
     }
 
     @Override
@@ -117,11 +111,6 @@ public class NativeClassImpl implements ScriptedClass {
     public Object setStaticField(String name, Object val) {
         fields.get(name).set(null, NativeClassLoader.extractNative(val));
         return val;
-    }
-
-    @Override
-    public Object staticSpecialAssign(String name, TokenType assignType) {
-        return ScriptedClass.super.staticSpecialAssign(name, assignType);
     }
 
     @Override

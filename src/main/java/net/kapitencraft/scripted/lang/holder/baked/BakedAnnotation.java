@@ -2,13 +2,13 @@ package net.kapitencraft.scripted.lang.holder.baked;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.holder.annotation.Annotation;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
-import net.kapitencraft.scripted.lang.compiler.Holder;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
+import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
+import net.kapitencraft.scripted.lang.holder.oop.clazz.AnnotationHolder;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.generated.CompileClass;
 import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
@@ -20,7 +20,7 @@ import java.util.Map;
 public record BakedAnnotation(
         ClassReference target,
         Token name, String pck,
-        Map<String, Holder.Class.MethodWrapper> methodWrappers,
+        Map<String, AnnotationHolder.MethodWrapper> methodWrappers,
         Annotation[] annotations
 ) implements Compiler.ClassBuilder {
 
@@ -49,5 +49,9 @@ public record BakedAnnotation(
     @Override
     public ClassReference[] interfaces() {
         return new ClassReference[0];
+    }
+
+    @Override
+    public void analyse() {
     }
 }
