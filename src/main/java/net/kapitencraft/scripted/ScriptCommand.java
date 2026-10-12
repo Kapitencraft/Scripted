@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted;
 
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -13,11 +14,14 @@ import net.kapitencraft.scripted.lang.exe.natives.impl.NativeClassImpl;
 import net.kapitencraft.scripted.lang.exe.natives.scripted.exe.CommandData;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.inst.DynamicClassInstance;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.storage.LevelResource;
+import org.checkerframework.framework.qual.CFComment;
 
+import javax.print.DocFlavor;
 import java.io.File;
 
 public class ScriptCommand {
@@ -42,8 +46,18 @@ public class ScriptCommand {
                         ).then(Commands.literal("stack")
                                 .executes(ScriptCommand::stackDebug)
                         )
+                ).then(Commands.literal("optimize")
+                        .then(Commands.argument("value", BoolArgumentType.bool())
+                                .executes(ScriptCommand::setOptimize)
+                        )
                 )
         );
+    }
+
+    private static int setOptimize(CommandContext<CommandSourceStack> commandSourceStackCommandContext) {
+        Compiler.optimize = BoolArgumentType.getBool(commandSourceStackCommandContext, "value");
+        commandSourceStackCommandContext.getSource().sendSystemMessage(Component.literal("set bytecode optimization option to " + Compiler.optimize).withStyle(ChatFormatting.GREEN));
+        return 1;
     }
 
     private static int stackDebug(CommandContext<CommandSourceStack> context) {
@@ -90,8 +104,7 @@ public class ScriptCommand {
                 context.getSource().getServer().getWorldPath(LevelResource.ROOT).toFile(),
                 "scripted"
         );
-        Compiler.compileAll(src, context.getSource());
-
+        Compiler.compile(true, true, src, context.getSource());
 
         return 1;
     }

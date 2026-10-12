@@ -1,19 +1,14 @@
 package net.kapitencraft.scripted.lang.exe.load;
 
 import java.io.File;
+import java.lang.ClassLoader;
 import java.util.Objects;
 
 public abstract class ClassLoaderHolder<T extends ClassLoaderHolder<T>> {
     public final File file;
-    private final String pck;
 
-    public ClassLoaderHolder(File file, String pck) {
+    public ClassLoaderHolder(File file) {
         this.file = file;
-        this.pck = pck;
-    }
-
-    protected String pck() {
-        return pck;
     }
 
     public abstract void applySkeleton();

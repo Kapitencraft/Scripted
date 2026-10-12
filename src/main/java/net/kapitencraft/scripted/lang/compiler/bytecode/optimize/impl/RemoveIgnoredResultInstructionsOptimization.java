@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.compiler.bytecode.optimize.impl;
 
 import net.kapitencraft.scripted.lang.compiler.bytecode.instruction.CodeInstruction;
-import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.AdvancedOptimization;
 import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.BytecodeOptimizer;
+import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.Optimization;
 import net.kapitencraft.scripted.lang.exe.Opcode;
 
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ import java.util.List;
  * removes pure (not modifying IO / calling other methods) instructions whose results will be removed from the stack due to {@code POP} or {@code POP_2} instructions
  * <br>does the same with instructions ending in a {@code RETURN} (not {@code RETURN_ARG}!)
  */
-public class RemoveIgnoredResultInstructionsOptimization implements AdvancedOptimization {
+public class RemoveIgnoredResultInstructionsOptimization implements Optimization {
 
     //1. remove non-pure Instructions before RETURN
     //2. remove non-pure Instructions before POP and POP_2 and remove these if finding a DUP instruction

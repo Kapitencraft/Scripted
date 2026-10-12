@@ -6,7 +6,6 @@ import net.kapitencraft.scripted.lang.holder.bytecode.Chunk;
 
 import java.util.List;
 
-
 public class SwitchInstruction extends CodeInstruction implements JumpableInstruction {
     private final int size;
     private int target;
@@ -67,5 +66,10 @@ public class SwitchInstruction extends CodeInstruction implements JumpableInstru
     @Override
     public int length() {
         return 5 + entries.size() * 6;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
     }
 }

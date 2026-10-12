@@ -116,6 +116,11 @@ public abstract class PrimitiveClass implements ScriptedClass {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
     public Annotation[] annotations() {
         return new Annotation[0];
     }

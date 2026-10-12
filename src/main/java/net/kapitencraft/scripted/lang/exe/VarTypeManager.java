@@ -54,6 +54,7 @@ public class VarTypeManager {
     public static final ClassReference COMMAND_SCRIPT = getOrCreateClass("CommandScript", "scripted.exe");
     public static final ClassReference COMMAND_DATA = getOrCreateClass("CommandData", "scripted.exe");
 
+    public static final ClassReference RUNTIME_EXCEPTION = getMainClass("RuntimeException");
     public static final ClassReference THROWABLE = getMainClass("Throwable");
     public static final ClassReference STACK_OVERFLOW_ERROR = getMainClass("StackOverflowError");
     public static final ClassReference UNKNOWN_ERROR = getMainClass("UnknownError");
@@ -115,6 +116,7 @@ public class VarTypeManager {
 
     /**
      * gets a package
+     *
      * @param s the package, use "." to split
      * @return the package, or null if it doesn't exist
      */
@@ -148,7 +150,7 @@ public class VarTypeManager {
             }
             pg = pg.getPackage(lexeme);
         }
-        Token token = s.get(s.size()-1);
+        Token token = s.getLast();
         String lexeme = token.lexeme();
         if (!pg.hasClass(lexeme)) {
             error.accept(token, "unknown class '" + lexeme + "'");
@@ -176,17 +178,10 @@ public class VarTypeManager {
     }
 
     public static ClassReference getOrCreateClass(String name, String pck) {
-        String[] packages = pck.split("[.$]");
+        String[] packages = pck.split("[.]");
         Package pg = rootPackage();
         for (String aPackage : packages) {
             pg = pg.getOrCreatePackage(aPackage);
-        }
-        if (name.contains("$")) {
-            packages = name.split("\\$");
-            for (int i = 0; i < packages.length - 1; i++) {
-                pg = pg.getOrCreatePackage(packages[i]);
-            }
-            return pg.getOrCreateClass(packages[packages.length - 1]);
         }
         return pg.getOrCreateClass(name);
     }
@@ -277,7 +272,7 @@ public class VarTypeManager {
                 if (name.startsWith("[")) {
                     yield directParseType(name.substring(1));
                 } else if (name.startsWith("L")) {
-                    yield getClassForName(name.substring(1, name.length() - 1).replaceAll("/", "."));
+                    yield getClassForName(name.substring(1, name.length() - 1).replace("/", "."));
                 }
                 throw new IllegalArgumentException("unknown type pattern: '" + name + "'");
             }
@@ -285,34 +280,7 @@ public class VarTypeManager {
     }
 
     private static String replaceSourceChars(String in) {
-        StringBuilder s = new StringBuilder();
-        for (char c : in.toCharArray()) {
-            if (c == '/' || c == '$')
-                s.append('.');
-            else
-                s.append(c);
-        }
-        return s.toString();
-    }
-
-    public static ClassReference directParseTypeCompiler(String name) {
-        return switch (name) {
-            case "N" -> VarTypeManager.NUMBER.reference();
-            case "I" -> VarTypeManager.INTEGER.reference();
-            case "F" -> VarTypeManager.FLOAT.reference();
-            case "D" -> VarTypeManager.DOUBLE.reference();
-            case "B" -> VarTypeManager.BOOLEAN.reference();
-            case "C" -> VarTypeManager.CHAR.reference();
-            case "V" -> VarTypeManager.VOID.reference();
-            default -> {
-                if (name.startsWith("[")) {
-                    yield directParseTypeCompiler(name.substring(1));
-                } else if (name.startsWith("L")) {
-                    yield getClassForName(replaceSourceChars(name.substring(1, name.length() - 1)));
-                }
-                throw new IllegalArgumentException("unknown type pattern: '" + name + "'");
-            }
-        };
+        return in.replace('/', '.');
     }
 
     public static ScriptedClass flatParse(StringReader reader) {

@@ -1,8 +1,8 @@
 package net.kapitencraft.scripted.lang.compiler.bytecode.optimize.impl;
 
 import net.kapitencraft.scripted.lang.compiler.bytecode.instruction.*;
-import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.AdvancedOptimization;
 import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.BytecodeOptimizer;
+import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.Optimization;
 import net.kapitencraft.scripted.lang.exe.Opcode;
 
 import java.util.ArrayDeque;
@@ -13,7 +13,7 @@ import java.util.List;
 /**
  * removes instructions that can never be reached in code
  */
-public class RemoveUnreachableOpcodesOptimization implements AdvancedOptimization {
+public class RemoveUnreachableOpcodesOptimization implements Optimization {
 
     @Override
     public void optimize(BytecodeOptimizer.OptimizationStorage instructions) {

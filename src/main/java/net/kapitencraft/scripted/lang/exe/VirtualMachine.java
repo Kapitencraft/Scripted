@@ -300,12 +300,23 @@ public class VirtualMachine {
                         ScriptedClass type = VarTypeManager.flatParse(reader);
                         if (invokeStaticInitIfNecessary(type, 3)) continue;
 
-                        ScriptedCallable referenceCallable = type.getMethod(reader.getRemaining());
+                        String signature = reader.getRemaining();
+                        ScriptedCallable referenceCallable = type.getMethod(signature);
 
                         int length = referenceCallable.argTypes().length + 1; //reference object
                         int callableStackTop = stackIndex - length;
                         ClassInstance instance = (ClassInstance) stack[callableStackTop];
-                        ScriptedCallable callable = instance.getType().getMethod(reader.getRemaining()); //virtual invoke of the method
+                        ScriptedClass target = instance.getType();
+                        ScriptedCallable callable = target.getMethod(signature); //virtual invoke of the method
+                        s: while (callable == null) {
+                            for (ClassReference anInterface : target.interfaces()) {
+                                callable = anInterface.get().getMethod(signature);
+                                if (callable != null)
+                                    break s;
+                            }
+                            target = target.superclass().get();
+                            callable = target.getMethod(signature);
+                        }
 
                         if (callable.isNative()) {
                             if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]: calling native: %s\n", execute);
@@ -682,7 +693,7 @@ public class VirtualMachine {
 
     public static ClassInstance createException(ClassReference type, String message) {
         DynamicClassInstance instance = new DynamicClassInstance(type.get());
-        instance.assignField("message", message);
+        instance.assignField("msg", message);
         return instance;
     }
 
@@ -704,8 +715,16 @@ public class VirtualMachine {
         for (int i = callStackTop - 1; i > -1; i--) {
             CallFrame callFrame = callStack[i];
             int lineAt = callFrame.callable.getChunk().lineNumberTable().getLineAt(callFrame.ip);
-            String readableSignature = callFrame.signature.substring(1, callFrame.signature.indexOf('(') == -1 ? callFrame.signature.length() : callFrame.signature.indexOf('(')).replaceAll("[;/]", ".");
-            stackTrace.add(String.format("\tat %s(%s.scr:%s)", readableSignature, VarTypeManager.flatParse(new StringReader(callFrame.signature)).name(), lineAt));
+            String readableSignature = callFrame.signature.substring(1, callFrame.signature.indexOf('(') == -1 ?
+                    callFrame.signature.length() :
+                    callFrame.signature.indexOf('(')).replaceAll("[;/]", ".");
+            stackTrace.add(
+                    String.format("\tat %s(%s.scr:%s)",
+                            readableSignature,
+                            VarTypeManager.flatParse(new StringReader(callFrame.signature)).name(),
+                            lineAt
+                    )
+            );
         }
 
         while (callStackTop > 0) {
@@ -724,7 +743,7 @@ public class VirtualMachine {
             popCall(); //pop call when no possible exception handler could be found
             callStackTop--;
         }
-        System.out.printf("Caused by: %s\n", exception.getField("message"));
+        System.out.printf("Caused by: %s\n", exception.getField("msg"));
         stackTrace.forEach(System.out::println);
         return false;
     }
@@ -816,6 +835,7 @@ public class VirtualMachine {
         if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s PUSH (@%3d): %s\n", visualStackSize(), stackIndex - 1, Util.objToString(o));
     }
 
+    @Contract(pure = false)
     private static Object pop() {
         if (DEBUG == DebugType.OPERATIONS) System.out.printf("[DEBUG]:%s POP  (@%3d): %s\n", visualStackSize(), stackIndex - 1, Util.objToString(stack[stackIndex - 1]));
         return stack[--stackIndex];

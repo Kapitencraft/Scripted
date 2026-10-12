@@ -17,7 +17,7 @@ public class JumpIfFalseAfterFalseOptimization implements SimpleOptimization {
         ) {
             JumpInstruction instruction = new JumpInstruction(Opcode.JUMP);
             instruction.setTarget(jI.getTarget());
-            optimizationStorage.replaceInstruction(index, jI);
+            optimizationStorage.replaceInstruction(index, instruction);
         }
     }
 }

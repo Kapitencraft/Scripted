@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.holder.oop.generic;
 
-import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericClassReference;
 import net.kapitencraft.scripted.lang.holder.oop.Validatable;
@@ -21,7 +21,7 @@ public record Generic(Token name, SourceReference lowerBound, SourceReference up
     }
 
     @Override
-    public void validate(Compiler.ErrorStorage logger) {
+    public void validate(ErrorStorage logger) {
         if (lowerBound != null) lowerBound.validate(logger);
         if (upperBound != null) upperBound.validate(logger);
     }

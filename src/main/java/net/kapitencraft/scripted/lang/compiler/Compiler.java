@@ -6,13 +6,14 @@ import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
 import net.kapitencraft.scripted.lang.compiler.bytecode.CacheBuilder;
-import net.kapitencraft.scripted.lang.compiler.parser.VarTypeContainer;
-import net.kapitencraft.scripted.lang.exe.load.ClassLoader;
-import net.kapitencraft.scripted.lang.exe.load.CompilerLoaderHolder;
-import net.kapitencraft.scripted.lang.holder.ast.Expr;
-import net.kapitencraft.scripted.lang.holder.ast.Stmt;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.CompilePipeline;
+import net.kapitencraft.scripted.lang.compiler.exe.CompileStage;
+import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;
+import net.kapitencraft.scripted.lang.compiler.exe.source.SourceTree;
+import net.kapitencraft.scripted.lang.compiler.java.JavaCompilePipeline;
+import net.kapitencraft.scripted.lang.compiler.python.PythonCompilePipeline;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
-import net.kapitencraft.scripted.lang.holder.oop.clazz.ClassConstructor;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.oop.clazz.CacheableClass;
 import net.kapitencraft.scripted.lang.oop.method.CompileCallable;
@@ -21,97 +22,101 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public class Compiler {
+    public static final File ROOT = new File("./run/src");
     private static final Logger LOGGER = LoggerFactory.getLogger("Compiler");
+
+    public static File src, cache;
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     public static final LocationAnalyser LOCATION_ANALYSER = new LocationAnalyser();
 
-    public static File src;
-    public static File cache;
+    public static final List<CompilePipeline<?>> PIPELINES = List.of(
+            JavaCompilePipeline.INSTANCE,
+            PythonCompilePipeline.INSTANCE
+    );
 
-    static int errorCount = 0;
-    private static ClassLoader.PackageHolder<CompilerLoaderHolder> compileData;
-    private static final List<ClassRegister> registers = new ArrayList<>();
-    private static Stage activeStage;
+    public static boolean optimize = true;
+    public static File source;
+    private static SourceTree compileData;
+    private static CompileStage activeStage;
 
-    public static void register(CompilerLoaderHolder holder, String pck, @Nullable String name) {
-        compileData.add(pck, name, holder);
-    }
-
-    public static void dispatch(CompilerLoaderHolder holder) {
-        for (int i = 1; i <= activeStage.ordinal(); i++) {
-            Stage.values()[i].action.accept(holder);
+    public static void dispatch(CompileSource holder) {
+        for (int i = CompileStage.CREATE_SKELETON.ordinal(); i <= activeStage.ordinal(); i++) {
+            holder.process(CompileStage.values()[i], compileData);
         }
     }
 
-    public static void queueRegister(ClassConstructor aClass, ErrorStorage errorStorage, VarTypeContainer parser, @Nullable String namePrefix) {
-        String name = aClass.name().lexeme();
-        ClassRegister e = ClassRegister.create(aClass, errorStorage, parser, name);
-        registers.add(e);
-        Compiler.dispatch(e.holder);
-    }
+    public static SourceTree compile(boolean logInfo, boolean failFast, File data, CommandSourceStack errorSink) {
+        src = new File(data, "src");
+        cache = new File(data, "cache");
 
-    private record ClassRegister(CompilerLoaderHolder holder, String pck, @Nullable String name) {
-        public static ClassRegister create(ClassConstructor entry, ErrorStorage logger, VarTypeContainer parser, @Nullable String name) {
-            return new ClassRegister(new CompilerLoaderHolder(entry, logger, parser), entry.pck(), name);
+        compileData = SourceTree.load(src);
+
+        if (compileData.isEmpty()) {
+            if (logInfo)
+                LOGGER.info("no source found. returning");
+            errorSink.sendSystemMessage(Component.literal("no source found!"));
+            return compileData;
         }
-
-        private void register() {
-            Compiler.register(holder, pck, name);
-        }
-    }
-
-    public static void compileAll(File src, CommandSourceStack errorSink) {
-        Compiler.src = new File(src, "src");
-        Compiler.cache = new File(src, "cache");
-        errorCount = 0;
-
-        LOGGER.info("Compiling...");
-
-        compileData = ClassLoader.load(Compiler.src, ".scr", CompilerLoaderHolder::new);
-
+        LOGGER.debug("launching compile executor...");
         ExecutorService executor = Executors.newFixedThreadPool(10, new CompilerThreadFactory());
-        for (Stage stage : Stage.values()) {
-            registers.forEach(ClassRegister::register);
-            registers.clear();
-            activeStage = stage;
-            LOGGER.debug("executing step {}", stage);
+        ErrorStorage.overallErrorCount = 0;
+        try {
+            for (CompileStage stage : CompileStage.values()) {
+                if (stage == CompileStage.CACHE && cache == null) {
+                    if (logInfo)
+                        LOGGER.info("Skipping step CACHING as there is no cache root provided");
+                    continue;
+                }
 
-            if (stage == Stage.CACHING && cache.exists())
-                Util.delete(cache);
+                activeStage = stage;
+                if (logInfo)
+                    LOGGER.info("executing step {}", stage);
 
-            ClassLoader.useHolders(compileData, stage.action, executor);
+                if (stage == CompileStage.CACHE && cache.exists())
+                    Util.delete(cache);
 
-            if (errorCount > 0) {
-                printErrors(compileData, errorSink);
+                compileData.execute(stage, executor, logInfo);
 
-                if (errorCount > 100) {
-                    System.err.println("only showing the first 100 errors out of " + errorCount + " total");
-                } else System.err.println(errorCount + " errors");
-                break; //exit if errors have been recorded
+                if (failFast) {
+                    if (ErrorStorage.overallErrorCount > 0) {
+                        compileData.forEach(CompileSource::printErrors);
+
+                        if (logInfo) {
+                            if (ErrorStorage.overallErrorCount > 100) {
+                                LOGGER.error("only showing the first 100 errors out of {} total", ErrorStorage.overallErrorCount);
+                            } else LOGGER.error("{} errors", ErrorStorage.overallErrorCount);
+                        }
+                    }
+                }
             }
+        } finally {
+            LOGGER.debug("stopping compile executor...");
+            executor.shutdownNow();
         }
-
-        executor.shutdownNow();
-        if (errorCount < 1)
+        if (ErrorStorage.overallErrorCount < 1)
             errorSink.sendSystemMessage(Component.literal("successfully compiled").withStyle(ChatFormatting.GREEN));
         else
-            errorSink.sendFailure(Component.literal("failed to compile with " + errorCount + " errors"));
+            errorSink.sendFailure(Component.literal("failed to compile with " + ErrorStorage.overallErrorCount + " errors"));
+        return compileData;
+    }
+
+    public static SourceTree getCompileData() {
+        return compileData;
     }
 
     /**
@@ -124,10 +129,6 @@ public class Compiler {
         public Thread newThread(@NotNull Runnable r) {
             return new Thread(r, "CompilerThread#" + poolNumber.getAndIncrement());
         }
-    }
-
-    private static void printErrors(ClassLoader.PackageHolder<CompilerLoaderHolder> compileData, CommandSourceStack errorSink) {
-        compileData.forEach(c -> c.printErrors(errorSink));
     }
 
     public interface ClassBuilder {
@@ -145,6 +146,7 @@ public class Compiler {
         void analyse();
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void cache(File cacheBase, CacheBuilder builder, String path, CacheableClass target, String name) throws IOException {
         JsonObject object = builder.cacheClass(target);
         File cacheTarget = new File(cacheBase, path + "/" + name + ".scrc");
@@ -157,124 +159,24 @@ public class Compiler {
         writer.close();
     }
 
-    public static class ErrorStorage {
-        private final String[] lines;
-        private final String fileLoc;
-        private final List<Message> messages = new ArrayList<>();
-
-        public ErrorStorage(String[] lines, String fileLoc) {
-            this.lines = lines;
-            this.fileLoc = fileLoc;
-        }
-
-        public void printAll(CommandSourceStack errorSink) {
-            for (Message msg : messages) {
-                msg.print(lines, fileLoc, errorSink);
-            }
-        }
-
-        //region message
-        private interface Message {
-
-            void print(String[] lines, String fileLoc, CommandSourceStack errorSink);
-        }
-
-        private record Error(int lineIndex, int lineStartIndex, String msg, String line) implements Message {
-
-            @Override
-            public void print(String[] lines, String fileLoc, CommandSourceStack errorSink) {
-                Compiler.error(lineIndex, lineStartIndex, msg, fileLoc, line, errorSink);
-            }
-        }
-
-        private record Warn(int lineIndex, int lineStartIndex, String msg) implements Message {
-
-            @Override
-            public void print(String[] lines, String fileLoc, CommandSourceStack errorSink) {
-                Compiler.warn(lineIndex, lineStartIndex, msg, fileLoc, lines[lineIndex], errorSink);
-            }
-        }
-
-        public void error(Token loc, String msg) {
-            error(loc.line(), loc.lineStartIndex(), msg);
-        }
-
-        public void errorF(Token loc, String format, Object... args) {
-            error(loc, String.format(format, args));
-        }
-
-        public void errorF(Expr loc, String format, Object... args) {
-            errorF(LOCATION_ANALYSER.find(loc), format, args);
-        }
-
-        public void error(int lineIndex, int lineStartIndex, String msg) {
-            if (errorCount++ < 100)
-                messages.add(new Error(lineIndex, lineStartIndex, msg, lines[lineIndex - 1]));
-        }
-
-        public void error(Stmt loc, String msg) {
-            error(LOCATION_ANALYSER.find(loc), msg);
-        }
-
-        public void error(Expr loc, String msg) {
-            error(LOCATION_ANALYSER.find(loc), msg);
-        }
-
-        public void logError(String s) {
-            System.err.println(s);
-        }
-
-        public void warn(int lineIndex, int lineStartIndex, String msg) {
-            this.messages.add(new Warn(lineIndex, lineStartIndex, msg));
-        }
-
-        public void warn(Token loc, String msg) {
-            warn(loc.line(), loc.lineStartIndex(), msg);
-        }
-
-        public void warn(Stmt loc, String msg) {
-            warn(LOCATION_ANALYSER.find(loc), msg);
-        }
-
-        @Override
-        public String toString() {
-            return "ErrorStorage for '" + fileLoc + "' (errorCount: " + messages.size() + ")";
-        }
-
-        public boolean hadError() {
-            return errorCount > 0;
-        }
+    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line) {
+        report(System.err, lineIndex, msg, fileId, lineStartIndex, line);
     }
 
-    public static void error(int lineIndex, int lineStartIndex, String msg, String fileId, String line, CommandSourceStack errorSink) {
-        report(errorSink, lineIndex, msg, fileId, lineStartIndex, line, ChatFormatting.RED);
+    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line) {
+        System.out.print("\u001B[33m"); //set output color to yellow
+        report(System.out, lineIndex, msg, filedId, lineStartIndex, line);
+        System.out.print("\u001B[0m"); //reset output color
     }
 
-    public static void warn(int lineIndex, int lineStartIndex, String msg, String filedId, String line, CommandSourceStack player) {
-        report(player, lineIndex, msg, filedId, lineStartIndex, line, ChatFormatting.YELLOW);
-    }
+    public static void report(PrintStream target, int lineIndex, String message, String fileId, int startIndex, String line) {
+        target.print(fileId);
+        target.print(":");
+        target.print(lineIndex);
+        target.print(": ");
+        target.println(message);
 
-    public static void report(CommandSourceStack target, int lineIndex, String message, String fileId, int startIndex, String line, ChatFormatting color) {
-        Component component = Component.literal(lineIndex + ": " + message).withStyle(color);
-        target.sendFailure(component);
-        target.sendFailure(Component.literal(line));
-        target.sendFailure(Component.literal(" ".repeat(startIndex) + "^"));
-    }
-
-    public enum Stage {
-        PARSE_SOURCE(CompilerLoaderHolder::parseSource),
-        CREATE_SKELETON(CompilerLoaderHolder::applySkeleton),
-        VALIDATE(CompilerLoaderHolder::validate),
-        SYNTAX_ANALYSIS(CompilerLoaderHolder::construct),
-        SEMANTIC_ANALYSIS(CompilerLoaderHolder::analyse),
-        FINALIZE_LOAD(CompilerLoaderHolder::finalizeLoad),
-        CACHING(CompilerLoaderHolder::cache),
-        PUBLISH(CompilerLoaderHolder::publish);
-
-        private final Consumer<CompilerLoaderHolder> action;
-
-        Stage(Consumer<CompilerLoaderHolder> action) {
-            this.action = action;
-        }
+        target.println(line);
+        target.println(" ".repeat(startIndex) + "^");
     }
 }

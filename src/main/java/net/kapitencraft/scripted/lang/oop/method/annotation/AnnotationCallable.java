@@ -49,6 +49,11 @@ public class AnnotationCallable implements ScriptedCallable {
 
     @Override
     public boolean isNative() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public ClassReference[] thrown() {
+        return new ClassReference[0];
     }
 }

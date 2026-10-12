@@ -10,14 +10,6 @@ import java.util.List;
 public class BytecodeOptimizer {
     public static final BytecodeOptimizer INSTANCE = new BytecodeOptimizer();
 
-    private final List<SimpleOptimization> simpleOptimizations = List.of(
-            //TODO add
-            new MergeLocalInvokeOptimization(),
-            new JumpMergeOptimization(), //merge jumps pointing to jumps
-            new JumpIfFalseAfterFalseOptimization(), //merge jump_if_false directly after false
-            new JumpReturnMergeOptimization() //replace jump with return if jump points at return
-    );
-
     //TODO check if vars are used and if they are used before an if, otherwise move it afterwards
 
     //a = 0; ------------
@@ -27,20 +19,20 @@ public class BytecodeOptimizer {
     //                  <
     //a ...
 
-    private final List<AdvancedOptimization> advancedOptimizations = List.of(
+    private final List<Optimization> optimizations = List.of(
             //backtrack unused pure instructions before POP or POP2
+            new MergeLocalInvokeOptimization(),
+            new JumpIfFalseAfterFalseOptimization(), //merge jump_if_false directly after false
+            new JumpReturnMergeOptimization(), //replace jump with return if jump points at return
+            new JumpMergeOptimization(),
             new RemoveUnreachableOpcodesOptimization(), //remove unreachable opcodes caused by other optimizations
-            new RemoveIgnoredResultInstructionsOptimization()
+            new RemoveIgnoredResultInstructionsOptimization(),
+            new MergeEqualInstructionOptimization()
     );
 
     public void optimize(List<Instruction> instructions) {
         OptimizationStorage optimizationStorage = new OptimizationStorage(instructions);
-        for (SimpleOptimization optimization : simpleOptimizations) {
-            for (int i = 0; i < instructions.size(); i++) {
-                optimization.tryExecute(optimizationStorage, i);
-            }
-        }
-        for (AdvancedOptimization optimization : advancedOptimizations) {
+        for (Optimization optimization : optimizations) {
             optimization.optimize(optimizationStorage);
         }
     }

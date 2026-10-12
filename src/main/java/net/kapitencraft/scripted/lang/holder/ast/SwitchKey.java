@@ -61,7 +61,7 @@ public abstract class SwitchKey {
 
         @Override
         public boolean canMatch(ClassReference type) {
-            return type.get().isChildOf(VarTypeManager.ENUM.get());
+            return type.isChildOf(VarTypeManager.ENUM);
         }
 
         @Override

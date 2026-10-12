@@ -23,4 +23,9 @@ public class RegisterLocalInstruction implements Instruction {
     public void save(Chunk.Builder builder, ByteCodeBuilder.IpContainer ips) {
         builder.addLocal(idx, type, name);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof RegisterLocalInstruction rli && rli.idx == this.idx && rli.name.equals(this.name) && rli.type.is(this.type);
+    }
 }

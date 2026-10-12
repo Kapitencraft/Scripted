@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.lang.compiler.bytecode;
 
+import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.bytecode.instruction.*;
 import net.kapitencraft.scripted.lang.compiler.bytecode.instruction.constant.IntegerConstantInstruction;
 import net.kapitencraft.scripted.lang.compiler.bytecode.optimize.BytecodeOptimizer;
@@ -109,11 +110,13 @@ public class ByteCodeBuilder {
     }
 
     public void build(Chunk.Builder builder) {
-        //int size = this.size();
-        //this.optimize();
-        //if (this.size() < size) {
-        //    System.out.println("Optimization removed " + (size - this.size()) + " (" + (size - this.size()) * 100 / size + "%) instructions");
-        //}
+        if (Compiler.optimize) {
+            //int size = this.size();
+            this.optimize();
+            //if (this.size() < size) {
+            //    System.out.println("Optimization removed " + (size - this.size()) + " (" + (size - this.size()) * 100 / size + "%) instructions");
+            //}
+        }
         IpContainer container = gatherStartIndexes();
         this.instructions.forEach(instruction -> instruction.save(builder, container));
     }

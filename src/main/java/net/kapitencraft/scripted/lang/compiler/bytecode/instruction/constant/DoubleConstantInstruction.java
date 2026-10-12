@@ -27,4 +27,9 @@ public class DoubleConstantInstruction extends CodeInstruction {
     public String toString() {
         return String.valueOf(this.value);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false; //make sure such objects are never popped
+    }
 }

@@ -37,4 +37,13 @@ public class ExceptionHandlerInstruction implements Instruction {
     public int getHandlerIP() {
         return handlerIP;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof ExceptionHandlerInstruction ehi &&
+                ehi.className.equals(this.className) &&
+                ehi.handlerStart == this.handlerStart &&
+                ehi.handlerEnd == this.handlerEnd &&
+                ehi.handlerIP == this.handlerIP;
+    }
 }

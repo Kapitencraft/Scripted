@@ -20,4 +20,6 @@ public interface CacheableClass {
     default String absoluteName() {
         return pck() + "." + name();
     }
+
+    void optimize();
 }

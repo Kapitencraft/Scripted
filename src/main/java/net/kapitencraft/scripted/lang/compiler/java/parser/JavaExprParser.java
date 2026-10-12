@@ -1,6 +1,10 @@
-package net.kapitencraft.scripted.lang.compiler.parser;
+package net.kapitencraft.scripted.lang.compiler.java.parser;
 
 import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.VarTypeContainer;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;
+import net.kapitencraft.scripted.lang.compiler.exe.source.SourceTree;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.LiteralHolder;
@@ -24,13 +28,13 @@ import java.util.stream.Collectors;
 import static net.kapitencraft.scripted.lang.holder.token.TokenType.*;
 import static net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory.*;
 
-public class ExprParser extends AbstractParser {
+public class JavaExprParser extends AbstractJavaParser {
     private final List<ClassReference> fallback;
     protected GenericStack generics = new GenericStack();
     private int anonymousCounter = 0; //counts how many anonymous classes have been created inside the class, to give each a unique name
 
-    public ExprParser(Compiler.ErrorStorage errorStorage) {
-        super(errorStorage);
+    public JavaExprParser(ErrorStorage errorStorage, SourceTree sourceSink, CompileSource source) {
+        super(errorStorage, sourceSink, source);
         this.fallback = new ArrayList<>();
     }
 
@@ -78,7 +82,7 @@ public class ExprParser extends AbstractParser {
             return expr;
         }
         ClassReference target = consumeVarType(generics).getReference();
-        consume(DOT, "'.' expected");
+        consumeDot();
         Token name = consumeIdentifier();
 
         Expr.StaticGet staticGet = new Expr.StaticGet();
@@ -197,13 +201,11 @@ public class ExprParser extends AbstractParser {
 
             if (expr instanceof Expr.SingleIdentifier varRef) {
                 Token name = varRef.name;
-                byte ordinal = varRef.ordinal;
 
                 Expr.IdentifierAssign assign = new Expr.IdentifierAssign();
                 assign.name = name;
                 assign.type = assignKeyword;
                 assign.value = value;
-                assign.ordinal = ordinal;
                 assign.fieldOwner = varRef.type;
                 return assign;
             } else if (expr instanceof Expr.Get get) {
@@ -580,7 +582,7 @@ public class ExprParser extends AbstractParser {
             consumeBracketClose("constructors");
 
             if (match(C_BRACKET_O)) {
-                HolderParser hParser = new HolderParser(this.errorStorage);
+                JavaHolderParser hParser = new JavaHolderParser(this.errorStorage, this.sourceSink, this.source);
                 if (type.get().isFinal()) {
                     error(previous(), "can not extend final class");
                 }
@@ -593,18 +595,16 @@ public class ExprParser extends AbstractParser {
                 SourceReference original = type;
                 type = SourceReference.from(name, typeTarget);
                 if (original.get().isInterface()) {
-                    Compiler.queueRegister(
+                    addInternal(
                             hParser.parseInterface(typeTarget, pck, name, null, null, null, List.of(original)),
                             this.errorStorage,
-                            this.parser,
-                            outName
+                            this.parser
                     );
                 } else {
-                    Compiler.queueRegister(
+                    addInternal(
                             hParser.parseClass(typeTarget, null, null, null, pck, name, original, List.of()),
                             this.errorStorage,
-                            this.parser,
-                            outName
+                            this.parser
                     );
                 }
 
@@ -698,7 +698,12 @@ public class ExprParser extends AbstractParser {
             Optional<SourceReference> reference = tryConsumeVarType(generics);
             if (reference.isPresent()) {
                 ClassReference target = reference.get().getReference();
-                consume(DOT, "'.' expected");
+                if (match(IDENTIFIER)) {
+                    error(previous, "Declaration not allowed here");
+                    panicMode = true;
+                    return varRef(previous, (byte) -1);
+                }
+                consumeDot();
                 return parseObjAttributes(target);
             }
             advance();
@@ -722,6 +727,10 @@ public class ExprParser extends AbstractParser {
         error(peek(), "Illegal start of expression");
         this.panicMode = true;
         return varRef(Token.createNative("<unidentified>"), (byte) -1);
+    }
+
+    private void consumeDot() {
+        consume(DOT, "'.' expected");
     }
 
     protected @NotNull Expr parseObjAttributes(ClassReference target) {

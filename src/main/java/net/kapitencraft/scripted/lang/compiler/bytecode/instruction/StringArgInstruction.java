@@ -27,4 +27,9 @@ public class StringArgInstruction extends CodeInstruction {
     public String toString() {
         return "StringArg{" + super.toString() + ", arg = " + value + "}";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 }

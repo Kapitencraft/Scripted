@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.compiler.bytecode.optimize;
 
-public interface AdvancedOptimization {
+public interface Optimization {
 
     void optimize(BytecodeOptimizer.OptimizationStorage instructions);
 }
