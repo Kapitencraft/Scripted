@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.edit.graphical.BlocklyCompilerPipeline;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
 import net.kapitencraft.scripted.lang.compiler.bytecode.CacheBuilder;
 import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
@@ -46,7 +47,8 @@ public class Compiler {
 
     public static final List<CompilePipeline<?>> PIPELINES = List.of(
             JavaCompilePipeline.INSTANCE,
-            PythonCompilePipeline.INSTANCE
+            PythonCompilePipeline.INSTANCE,
+            BlocklyCompilerPipeline.INSTANCE
     );
 
     public static boolean optimize = true;

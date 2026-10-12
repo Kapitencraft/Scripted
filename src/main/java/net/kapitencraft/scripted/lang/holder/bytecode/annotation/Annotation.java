@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/lang/holder/annotation/Annotation.java
-package net.kapitencraft.scripted.lang.holder.annotation;
-========
 package net.kapitencraft.scripted.lang.holder.bytecode.annotation;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/lang/holder/bytecode/annotation/Annotation.java
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

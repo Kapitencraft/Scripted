@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BinaryNumOperationWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BoolAlgebraOperationWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.ComparisonWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;

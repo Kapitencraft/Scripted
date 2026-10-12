@@ -29,17 +29,17 @@ public interface SelectionTabs {
 
     static void bootstrap(BootstrapContext<SelectionTab> context) {
         context.register(WORLD, SelectionTab.builder()
-                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/core/BlockPos;<init>(III)V", Map.of(
-                        "x", ParamWidget.NUM,
-                        "y", ParamWidget.NUM,
-                        "z", ParamWidget.NUM
+                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/core/BlockPos;<init>(III)V", List.of(
+                        ParamWidget.NUM,
+                        ParamWidget.NUM,
+                        ParamWidget.NUM
                 )))
-                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", Map.of("pos", ParamWidget.OBJ)))
-                .withEntry(new MethodWidget(ExprCategory.BOOLEAN, "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", Map.of("block", new BlockSelectWidget())))
+                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", List.of(ParamWidget.OBJ)))
+                .withEntry(new MethodWidget(ExprCategory.BOOLEAN, "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", List.of(new BlockSelectWidget())))
 
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;x", Map.of()))
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;y", Map.of()))
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;z", Map.of()))
+                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;x", List.of()))
+                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;y", List.of()))
+                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;z", List.of()))
                 .build()
         );
         context.register(CONTROL, SelectionTab.builder()

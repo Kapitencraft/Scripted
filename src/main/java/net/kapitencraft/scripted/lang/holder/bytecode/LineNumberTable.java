@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/lang/holder/LineNumberTable.java
-package net.kapitencraft.scripted.lang.holder;
-========
 package net.kapitencraft.scripted.lang.holder.bytecode;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/lang/holder/bytecode/LineNumberTable.java
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

@@ -1,20 +1,11 @@
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/lang/holder/Chunk.java
-package net.kapitencraft.scripted.lang.holder;
-========
 package net.kapitencraft.scripted.lang.holder.bytecode;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/lang/holder/bytecode/Chunk.java
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/lang/holder/Chunk.java
-import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.exe.Opcode;
-========
 import net.kapitencraft.scripted.lang.compiler.bytecode.CacheBuilder;
-import net.kapitencraft.scripted.lang.exe.Opcode;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/lang/holder/bytecode/Chunk.java
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.util.GsonHelper;

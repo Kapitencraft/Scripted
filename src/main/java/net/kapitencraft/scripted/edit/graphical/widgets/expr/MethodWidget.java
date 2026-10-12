@@ -3,25 +3,14 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
-import net.kapitencraft.scripted.edit.RenderHelper;
-import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.connector.ArgumentExprConnector;
-import net.kapitencraft.scripted.edit.graphical.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.fetch.ExprWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.fetch.WidgetFetchResult;
-========
-import net.kapitencraft.kap_lib.core.collection.MapStream;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.client.gui.Font;
@@ -33,36 +22,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
 //TODO removing expression crashes the game
-public class MethodInvokeWidget implements ExprCodeWidget {
-    public static final MapCodec<MethodInvokeWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
-            ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
-            Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            ExprCodeWidget.CODEC.listOf().fieldOf("args").forGetter(w -> w.args)
-    ).apply(i, MethodInvokeWidget::new));
-
-    private final ExprCategory type;
-    private final String translationKey;
-    private final List<ExprCodeWidget> args = new ArrayList<>();
-    private MethodInvokeWidget child;
-
-    public MethodInvokeWidget(ExprCategory type, String translationKey, List<ExprCodeWidget> args) {
-========
 public class MethodWidget implements ExprCodeWidget {
     public static final MapCodec<MethodWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
+            ExprCodeWidget.CODEC.listOf().fieldOf("args").forGetter(w -> w.args)
     ).apply(i, MethodWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
-    private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private final List<ExprCodeWidget> args = new ArrayList<>();
     private MethodWidget child;
 
-    public MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
+    public MethodWidget(ExprCategory type, String translationKey, List<ExprCodeWidget> args) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.addAll(args);
@@ -78,19 +51,16 @@ public class MethodWidget implements ExprCodeWidget {
     }
 
     @Override
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
-    public MethodInvokeWidget copy() {
-        MethodInvokeWidget methodInvokeWidget = new MethodInvokeWidget(this.type, this.translationKey, this.args.stream().map(ExprCodeWidget::copy).toList());
-        if (this.child != null)
-            methodInvokeWidget.setChild(this.child.copy());
-        return methodInvokeWidget;
-========
     public MethodWidget copy() {
-        MethodWidget methodWidget = new MethodWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
+        MethodWidget methodWidget = new MethodWidget(this.type, this.translationKey, this.args.stream().map(ExprCodeWidget::copy).toList());
         if (this.child != null)
             methodWidget.setChild(this.child.copy());
         return methodWidget;
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
+    }
+
+    @Override
+    public Expr parse() {
+        return null;
     }
 
     @Override
@@ -103,13 +73,8 @@ public class MethodWidget implements ExprCodeWidget {
     }
 
     @Override
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
     public CodeWidget getByIndex(int argName) {
         return args.get(argName);
-========
-    public CodeWidget getByName(String arg) {
-        return args.get(arg);
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
     }
 
     @Override
@@ -150,21 +115,6 @@ public class MethodWidget implements ExprCodeWidget {
         CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
-    public void setChild(@Nullable MethodInvokeWidget codeWidget) {
-        this.child = codeWidget;
-    }
-
-    public @Nullable MethodInvokeWidget getChild() {
-        return this.child;
-    }
-
-    public Expr parse() {
-        return null; //new Expr.StaticCall(this.); //TODO
-    }
-
-    public static class Builder implements ExprCodeWidget.Builder<MethodInvokeWidget> {
-========
     public void setChild(@Nullable MethodWidget codeWidget) {
         this.child = codeWidget;
     }
@@ -174,7 +124,6 @@ public class MethodWidget implements ExprCodeWidget {
     }
 
     public static class Builder implements ExprCodeWidget.Builder<MethodWidget> {
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
         private ExprCategory type;
         private String translationKey;
         private final List<ExprCodeWidget> args = new ArrayList<>();
@@ -199,23 +148,13 @@ public class MethodWidget implements ExprCodeWidget {
         }
 
         @Override
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
-        public MethodInvokeWidget build() {
-            return new MethodInvokeWidget(type, translationKey, args);
-========
         public MethodWidget build() {
             return new MethodWidget(type, translationKey, args);
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
         }
     }
 
     @Override
-<<<<<<<< HEAD:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodInvokeWidget.java
-    public void update(@Nullable MethodContext context) {
-        this.args.forEach(c -> c.update(context));
-========
     public void update(@Nullable MethodContext context, Font font) {
-        this.args.values().forEach(c -> c.update(context, font));
->>>>>>>> master:src/main/java/net/kapitencraft/scripted/edit/graphical/widgets/expr/MethodWidget.java
+        this.args.forEach(c -> c.update(context, font));
     }
 }
