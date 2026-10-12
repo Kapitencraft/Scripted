@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.lang.exe;
 
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.function.Consumer;
 
@@ -19,7 +20,16 @@ public class Interpreter {
     }
 
     public static String stringify(Object object) {
-        return object == null ? "null" : object.toString();
+        return switch (object) {
+            case null -> "null";
+            case int[] iA -> Arrays.toString(iA);
+            case double[] dA -> Arrays.toString(dA);
+            case float[] fA -> Arrays.toString(fA);
+            case boolean[] bA -> Arrays.toString(bA);
+            case char[] cA -> Arrays.toString(cA);
+            case Object[] oA -> Arrays.toString(oA);
+            default -> object.toString();
+        };
     }
 
     public static long elapsedMillis() {

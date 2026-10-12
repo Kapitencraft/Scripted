@@ -1,7 +1,11 @@
 package net.kapitencraft.scripted.lang.tool;
 
-import com.google.gson.*;
-import net.kapitencraft.kap_lib.core.helpers.GsonHelper;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import net.kapitencraft.kap_lib.core.io.JsonHelper;
+import net.minecraft.util.GsonHelper;
 
 import java.io.File;
 import java.io.FileReader;
@@ -13,13 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GenerateAst {
-    private static final Gson GSON = new GsonBuilder().create();
-
-    public static final String DIRECTORY = "src/main/java/net/kapitencraft/scripted/lang/holder/ast";
+    public static final String DIRECTORY = "src/main/java/net/kapitencraft/lang/holder/ast";
     private static final String SOURCE = "src/generate_ast.json";
 
     public static void main(String[] args) throws IOException {
-        JsonObject object = GSON.fromJson(new FileReader(SOURCE), JsonObject.class);
+        JsonObject object = JsonHelper.GSON.fromJson(new FileReader(SOURCE), JsonObject.class);
         Imports defaultImports = Imports.fromJsonElement(object.get("imports"));
 
         Map<String, Map<String, JsonElement>> obj = createObj(object.get("values"));
@@ -227,7 +229,7 @@ public class GenerateAst {
             JsonObject object = jsonElement.getAsJsonObject();
             JsonArray paramStorage = object.getAsJsonArray("params");
             String[] params = paramStorage.asList().stream().map(JsonElement::getAsString).toArray(String[]::new);
-            String retType = GsonHelper.getAsString(object, "retType");
+            String retType = GsonHelper.getAsString(object, "returnType");
             String[] body = object.getAsJsonArray("body").asList().stream().map(JsonElement::getAsString).toArray(String[]::new);
             return new MethodDef(name, retType, params, body);
         }

@@ -1,8 +1,13 @@
-package net.kapitencraft.scripted.lang.compiler.parser;
+package net.kapitencraft.scripted.lang.compiler.python.parser;
 
 import com.mojang.datafixers.util.Pair;
-import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;
+import net.kapitencraft.scripted.lang.compiler.exe.source.SourceTree;
+import net.kapitencraft.scripted.lang.compiler.exe.text.HolderParser;
+import net.kapitencraft.scripted.lang.compiler.python.PythonConstructorHolder;
+import net.kapitencraft.scripted.lang.compiler.python.PythonMethodHolder;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
@@ -10,16 +15,14 @@ import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsRe
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsSourceReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericStack;
 import net.kapitencraft.scripted.lang.holder.oop.AnnotationObj;
-import net.kapitencraft.scripted.lang.holder.oop.attribute.ConstructorHolder;
-import net.kapitencraft.scripted.lang.holder.oop.attribute.EnumConstantHolder;
-import net.kapitencraft.scripted.lang.holder.oop.attribute.FieldHolder;
-import net.kapitencraft.scripted.lang.holder.oop.attribute.MethodHolder;
+import net.kapitencraft.scripted.lang.holder.oop.attribute.*;
 import net.kapitencraft.scripted.lang.holder.oop.clazz.*;
 import net.kapitencraft.scripted.lang.holder.oop.generic.AppliedGenerics;
 import net.kapitencraft.scripted.lang.holder.oop.generic.Generic;
 import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.kapitencraft.scripted.lang.holder.token.TokenType;
+import net.kapitencraft.scripted.lang.holder.token.TokenTypeCategory;
 import net.kapitencraft.scripted.lang.oop.Package;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,23 +32,24 @@ import java.util.stream.Collectors;
 
 import static net.kapitencraft.scripted.lang.holder.token.TokenType.*;
 
-public class HolderParser extends AbstractParser {
+public class PythonHolderParser extends AbstractPythonParser implements HolderParser {
     private GenericStack activeGenerics = new GenericStack();
-    private final Deque<String> activePackages = new ArrayDeque<>();
+    private final String pck;
+    private final ArrayDeque<String> anonymousNames = new ArrayDeque<>();
 
-    public HolderParser(Compiler.ErrorStorage errorStorage) {
-        super(errorStorage);
+    public PythonHolderParser(ErrorStorage errorStorage, SourceTree sourceSink, CompileSource source) {
+        super(errorStorage, sourceSink, source);
+        this.pck = source.pck();
     }
 
     //region imports & package
     public void parseImports() {
-        while (check(IMPORT)) {
+        while (match(IMPORT)) {
             importStmt();
         }
     }
 
     private void importStmt() {
-        consume(IMPORT, "Expected import or class");
         List<Token> packages = readPackage();
         String nameOverride = null;
         if (match(AS)) nameOverride = consumeIdentifier().lexeme();
@@ -60,7 +64,7 @@ public class HolderParser extends AbstractParser {
     private List<Token> readPackage() {
         List<Token> packages = new ArrayList<>();
         packages.add(consumeIdentifier());
-        while (!check(EOA, AS)) {
+        while (!check(LINE_FEED, AS)) {
             consume(DOT, "unexpected name");
             packages.add(consumeIdentifier());
         }
@@ -116,63 +120,109 @@ public class HolderParser extends AbstractParser {
         }
     }
 
-    public ClassConstructor parseFile(String fileName) {
-        List<Token> pck = new ArrayList<>();
-        consume(PACKAGE, "package expected!");
-        pck.add(consumeIdentifier());
-        while (!check(EOA)) {
-            consume(DOT, "unexpected token");
-            pck.add(consumeIdentifier());
-        }
-        consumeEndOfArg();
-        if (panicMode)
-            synchronize();
-
+    public ClassConstructor parseFile(String fileName, String declaredPck) {
         parseImports();
 
-        String pckId = pck.stream().map(Token::lexeme).collect(Collectors.joining("."));
+        ClassReference target = getOrCreate(fileName, declaredPck);
 
-        ModifiersParser parser = MODS_NO_GENERICS;
-        parser.parse();
+        List<Token> mainMethodCode = new ArrayList<>();
+        List<PythonMethodHolder> methods = new ArrayList<>();
+        List<FieldHolder> fields = new ArrayList<>();
 
-        return switch (advance().type()) {
-            case CLASS -> classDecl(parser, null, pckId, fileName);
-            case ENUM -> enumDecl(parser, null, pckId, fileName);
-            case ANNOTATION -> annotationDecl(parser, null, pckId, fileName);
-            case INTERFACE -> interfaceDecl(parser, null, pckId, fileName);
-            default -> {
-                error(peek(), "'interface', 'class', 'enum' or 'annotation' expected");
-                yield null;
+        this.anonymousNames.push(fileName);
+        while (!isAtEnd()) {
+            skipIndent();
+
+            if (check(TokenTypeCategory.ATT_MODIFIER) || check(TokenTypeCategory.ATT_KEYWORD)) {
+                ModifiersParser parser = MODS_NO_GENERICS;
+                parser.parse();
+                if (match(FUNC)) {
+                    SourceReference reference = consumeVarType();
+                    Token name = consumeIdentifier();
+                    methods.add(funcDecl(reference, parser, name));
+                } else if (match(GLOBAL)) {
+                    Token name = consumeIdentifier();
+                    consumeColon("attribute");
+                    SourceReference type = consumeVarType();
+
+                    fields.addAll(fieldDecl(type, parser.annotations, name, parser.packModifiers()));
+                } else {
+                    readClass(declaredPck, fileName, parser);
+                }
+                continue;
+            } else {
+                while (!isAtEnd() && !check(LINE_FEED))
+                    mainMethodCode.add(advance());
+                if (!isAtEnd()) {
+                    mainMethodCode.add(advance()); //add line feed
+                }
             }
-        };
+        }
+        if (!mainMethodCode.isEmpty()) {
+            mainMethodCode.removeLast();
+            methods.add(new PythonMethodHolder(
+                    Modifiers.pack(false, true, false),
+                    new AnnotationObj[0],
+                    new Generics(new Generic[0]),
+                    SourceReference.from(null, VarTypeManager.VOID.reference()),
+                    Token.createNative("main"),
+                    tokens[tokens.length - 1].after(),
+                    List.of(Pair.of(SourceReference.from(null, VarTypeManager.STRING.array()), "args")),
+                    List.of(),
+                    mainMethodCode.toArray(new Token[0]),
+                    0
+            ));
+        }
+        this.anonymousNames.pop();
+        return new ClassHolder(
+                target,
+                (short) 0,
+                new AnnotationObj[0],
+                new Generics(new Generic[0]),
+                declaredPck,
+                Token.createNative(fileName),
+                SourceReference.from(null, VarTypeManager.OBJECT),
+                new SourceReference[0],
+                new ConstructorHolder[0],
+                methods.toArray(new PythonMethodHolder[0]),
+                fields.toArray(new FieldHolder[0])
+        );
     }
 
     private static ClassReference getOrCreate(String name, String pck) {
         return VarTypeManager.getOrCreateClass(name, pck);
     }
 
-    public void parseClassProperties(ModifierScope.Group scope, List<MethodHolder> methodHolders, @Nullable List<ConstructorHolder> constructorHolders, List<FieldHolder> fieldHolders, ClassReference target, String pckId, Token name, boolean asEnum) {
+    public void parseClassProperties(ModifierScope.Group scope, List<PythonMethodHolder> methodHolders, @Nullable List<PythonConstructorHolder> constructorHolders, List<FieldHolder> fieldHolders, ClassReference target, String pckId, Token name, boolean asEnum) {
         String constructorName = constructorHolders != null ? name.lexeme().contains("$") ? name.lexeme().substring(name.lexeme().lastIndexOf('$') + 1) : name.lexeme() : null;
-        while (!check(C_BRACKET_C) && !isAtEnd()) {
+        while (!isAtEnd()) {
             ModifiersParser modifiers = MODIFIERS;
-            modifiers.parse();
-            AnnotationObj[] annotations = modifiers.getAnnotations();
-            if (readClass(pckId, name.lexeme(), modifiers)) {
-                modifiers.generics.pushToStack(activeGenerics);
-                if (Objects.equals(advance().lexeme(), constructorName) && !check(IDENTIFIER)) {
-                    Token constName = previous();
-                    consumeBracketOpen("constructors");
-                    ConstructorHolder decl = constructorDecl(annotations, modifiers.getGenerics(), constName, asEnum);
-                    constructorHolders.add(decl);
-                } else {
-                    current--; //reset after advancing in line 199
-                    SourceReference type = consumeVarType(activeGenerics);
-                    Token elementName = consumeIdentifier();
-                    if (match(BRACKET_O)) {
+            if (skipIndent()) {
+                modifiers.parse();
+                AnnotationObj[] annotations = modifiers.getAnnotations();
+                if (readClass(pckId, name.lexeme(), modifiers)) {
+                    modifiers.generics.pushToStack(activeGenerics);
+
+                    if (match(FUNC)) {
+                        if (Objects.equals(advance().lexeme(), constructorName) && !check(IDENTIFIER)) {
+                            Token constName = previous();
+                            consumeBracketOpen("constructors");
+                            indents++;
+                            PythonConstructorHolder decl = constructorDecl(annotations, modifiers.getGenerics(), constName, asEnum);
+                            indents--;
+                            constructorHolders.add(decl);
+                            continue;
+                        }
+                        current--; //reset after advancing in line 205
+                        SourceReference type = consumeVarType(activeGenerics);
+                        Token elementName = consumeIdentifier();
                         scope.method.check(this, modifiers);
-                        MethodHolder decl = funcDecl(type, modifiers, elementName);
+                        PythonMethodHolder decl = funcDecl(type, modifiers, elementName);
                         methodHolders.add(decl);
                     } else {
+                        consume(GLOBAL, "'global' expected");
+                        SourceReference type = consumeVarType(activeGenerics);
+                        Token elementName = consumeIdentifier();
                         if (modifiers.generics.variables().length > 0) {
                             error(modifiers.generics.variables()[0].name(), "generics not allowed here");
                         }
@@ -180,9 +230,10 @@ public class HolderParser extends AbstractParser {
                         if (modifiers.isAbstract()) error(elementName, "fields may not be abstract");
                         fieldHolders.addAll(fieldDecl(type, annotations, elementName, modifiers.packModifiers()));
                     }
+                    activeGenerics.pop();
                 }
-                activeGenerics.pop();
-            }
+            } else
+                break;
         }
     }
 
@@ -203,7 +254,7 @@ public class HolderParser extends AbstractParser {
     }
 
     //region attribute decl
-    private ConstructorHolder constructorDecl(AnnotationObj[] annotation, Generics generics, Token origin, boolean asEnum) {
+    private PythonConstructorHolder constructorDecl(AnnotationObj[] annotation, Generics generics, Token origin, boolean asEnum) {
         List<Pair<SourceReference, String>> parameters = parseParams();
         if (asEnum) { //add name and ordinal access
             parameters.add(0, Pair.of(SourceReference.from(origin, VarTypeManager.STRING), "$name"));
@@ -212,18 +263,33 @@ public class HolderParser extends AbstractParser {
 
         consumeBracketClose("params");
 
-        consumeCurlyOpen("method body");
+        List<SourceReference> thrown = new ArrayList<>();
+        if (match(THROWS)) {
+            do {
+                thrown.add(consumeVarType(activeGenerics));
+            } while (match(COMMA));
+        }
 
-        Token[] code = getCurlyEnclosedCode();
+        consumeScopeOpen("method body");
 
-        Token endToken = consumeCurlyClose("method body");
+        Token[] code = getIndentedCode(indents);
 
-        return new ConstructorHolder(annotation, generics, origin, endToken, parameters, code);
+        Token endToken = peek();
+
+        return new PythonConstructorHolder(annotation, generics, origin, endToken, parameters, thrown, code, indents);
     }
 
-    private MethodHolder funcDecl(SourceReference type, ModifiersParser modifiers, Token name) {
+    private PythonMethodHolder funcDecl(SourceReference type, ModifiersParser modifiers, Token name) {
+        consumeBracketOpen("params");
         List<Pair<SourceReference, String>> parameters = parseParams();
         consumeBracketClose("params");
+
+        List<SourceReference> thrown = new ArrayList<>();
+        if (match(THROWS)) {
+            do {
+                thrown.add(consumeVarType(activeGenerics));
+            } while (match(COMMA));
+        }
 
         short mods = modifiers.packModifiers();
 
@@ -231,7 +297,8 @@ public class HolderParser extends AbstractParser {
         Token endClose = null;
 
         if (!Modifiers.isAbstract(mods)) { //body only if method isn't abstract
-            consumeCurlyOpen("method body");
+            consumeColon("method body");
+            consumeLineFeed("method body");
 
             GenericStack shadowed = null;
             if (Modifiers.isStatic(mods)) {
@@ -239,13 +306,13 @@ public class HolderParser extends AbstractParser {
                 activeGenerics = new GenericStack();
             }
 
-            code = getCurlyEnclosedCode();
+            code = getIndentedCode(++indents);
+            indents--;
 
             if (shadowed != null) activeGenerics = shadowed;
 
-            endClose = consumeCurlyClose("method body");
         } else consumeEndOfArg();
-        return new MethodHolder(modifiers.packModifiers(), modifiers.getAnnotations(), modifiers.getGenerics(), type, name, endClose, parameters, code);
+        return new PythonMethodHolder(modifiers.packModifiers(), modifiers.getAnnotations(), modifiers.getGenerics(), type, name, endClose, parameters, thrown, code, indents + 1);
     }
 
     private List<FieldHolder> fieldDecl(SourceReference type, AnnotationObj[] annotations, Token name, short modifiers) {
@@ -255,7 +322,8 @@ public class HolderParser extends AbstractParser {
         List<FieldHolder> fieldHolders = new ArrayList<>();
 
         do {
-            if (!fieldHolders.isEmpty()) name = consumeIdentifier(); //only consume a new name if the name comes after a `,`
+            if (!fieldHolders.isEmpty())
+                name = consumeIdentifier(); //only consume a new name if the name comes after a `,`
             if (match(ASSIGN)) {
                 assign = previous();
                 code = getFieldCode();
@@ -274,16 +342,16 @@ public class HolderParser extends AbstractParser {
     private boolean readClass(String pckID, String name, ModifiersParser modifiers) {
         if (match(CLASS)) {
             ModifierScope.CLASS.check(this, modifiers);
-            Compiler.queueRegister(classDecl(modifiers, name, pckID, null), this.errorStorage, this.parser, name);
+            addInternal(classDecl(modifiers, name, pckID, null), this.errorStorage, this.parser);
         } else if (match(INTERFACE)) {
             ModifierScope.INTERFACE.check(this, modifiers);
-            Compiler.queueRegister(interfaceDecl(modifiers, name, pckID, null), this.errorStorage, this.parser, name);
+            addInternal(interfaceDecl(modifiers, name, pckID, null), this.errorStorage, this.parser);
         } else if (match(ENUM)) {
             ModifierScope.ENUM.check(this, modifiers);
-            Compiler.queueRegister(enumDecl(modifiers, name, pckID, null), this.errorStorage, this.parser, name);
+            addInternal(enumDecl(modifiers, name, pckID, null), this.errorStorage, this.parser);
         } else if (match(ANNOTATION)) {
             ModifierScope.ANNOTATION.check(this, modifiers);
-            Compiler.queueRegister(annotationDecl(modifiers, name, pckID, null), this.errorStorage, this.parser, name);
+            addInternal(annotationDecl(modifiers, name, pckID, null), this.errorStorage, this.parser);
         } else return true;
         return false;
     }
@@ -321,19 +389,20 @@ public class HolderParser extends AbstractParser {
             } while (match(COMMA));
         }
 
-        consumeCurlyOpen("class head");
+        consumeScopeOpen("classBody");
+        indents++;
 
-        activePackages.push(pckID + "." + name.lexeme());
+        anonymousNames.push(name.lexeme());
 
         ClassHolder h = parseClass(target, mods, stack, classGenerics, pckID, name, superClass, implemented);
-        consumeCurlyClose("class");
-        activePackages.pop();
+        indents--;
+        anonymousNames.pop();
         return h;
     }
 
     public ClassHolder parseClass(ClassReference target, @Nullable ModifiersParser mods, @Nullable GenericStack stack, @Nullable Generics classGenerics, String pckID, Token name, SourceReference superClass, List<SourceReference> implemented) {
-        List<MethodHolder> methodHolders = new ArrayList<>();
-        List<ConstructorHolder> constructorHolders = new ArrayList<>();
+        List<PythonMethodHolder> methodHolders = new ArrayList<>();
+        List<PythonConstructorHolder> constructorHolders = new ArrayList<>();
         List<FieldHolder> fieldHolders = new ArrayList<>();
 
         short modifiers = mods != null ? mods.packModifiers() : 0;
@@ -349,8 +418,8 @@ public class HolderParser extends AbstractParser {
                 pckID, name,
                 superClass,
                 implemented.toArray(new SourceReference[0]),
-                constructorHolders.toArray(new ConstructorHolder[0]),
-                methodHolders.toArray(new MethodHolder[0]),
+                constructorHolders.toArray(PythonConstructorHolder[]::new),
+                methodHolders.toArray(new PythonMethodHolder[0]),
                 fieldHolders.toArray(new FieldHolder[0])
         );
     }
@@ -414,8 +483,8 @@ public class HolderParser extends AbstractParser {
             } while (match(COMMA));
         }
 
-        consumeCurlyOpen("enum");
-        activePackages.push(pckID + "." + name.lexeme());
+        consumeScopeOpen("enum");
+        anonymousNames.push(name.lexeme());
 
         List<EnumConstantHolder> enumConstantHolders = new ArrayList<>();
 
@@ -434,20 +503,20 @@ public class HolderParser extends AbstractParser {
 
         if (!check(C_BRACKET_C)) consumeEndOfArg();
 
-        List<ConstructorHolder> constructorHolders = new ArrayList<>();
-        List<MethodHolder> methodHolders = new ArrayList<>();
+        List<PythonConstructorHolder> constructorHolders = new ArrayList<>();
+        List<PythonMethodHolder> methodHolders = new ArrayList<>();
         List<FieldHolder> fieldHolders = new ArrayList<>();
 
         parseClassProperties(ModifierScope.Group.ENUM, methodHolders, constructorHolders, fieldHolders, target, pckID, name, true);
 
         consumeCurlyClose("enum");
-        activePackages.pop();
+        anonymousNames.pop();
 
         return new EnumHolder(
                 target, modifiers.packModifiers(), modifiers.getAnnotations(), modifiers.getGenerics(), pckID, name,
                 interfaces.toArray(new SourceReference[0]),
-                constructorHolders.toArray(new ConstructorHolder[0]),
-                methodHolders.toArray(new MethodHolder[0]),
+                constructorHolders.toArray(new PythonConstructorHolder[0]),
+                methodHolders.toArray(new PythonMethodHolder[0]),
                 fieldHolders.toArray(new FieldHolder[0]),
                 enumConstantHolders.toArray(new EnumConstantHolder[0])
         );
@@ -466,7 +535,7 @@ public class HolderParser extends AbstractParser {
         parser.addClass(SourceReference.from(name, target), originalName);
 
         consumeCurlyOpen("annotation");
-        activePackages.push(pckId + "." + name.lexeme());
+        anonymousNames.push(name.lexeme());
 
         List<MethodHolder> methodHolders = new ArrayList<>();
 
@@ -486,7 +555,7 @@ public class HolderParser extends AbstractParser {
         }
 
         consumeCurlyClose("annotation");
-        activePackages.pop();
+        anonymousNames.pop();
         return new AnnotationHolder(
                 target, mods.packModifiers(), mods.getAnnotations(), mods.getGenerics(), pckId, name,
                 methodHolders.toArray(new MethodHolder[0])
@@ -502,7 +571,7 @@ public class HolderParser extends AbstractParser {
             defaulted = true;
         }
         consumeEndOfArg();
-        return new MethodHolder(Modifiers.pack(false, false, !defaulted), annotations, null, type, elementName, null, List.of(), defaultCode);
+        return new MethodHolder(Modifiers.pack(false, false, !defaulted), annotations, null, type, elementName, null, List.of(), List.of(), defaultCode);
     }
 
     private InterfaceHolder interfaceDecl(ModifiersParser mods, @Nullable String namePrefix, String pckID, @Nullable String fileId) {
@@ -535,30 +604,30 @@ public class HolderParser extends AbstractParser {
             } while (match(COMMA));
         }
 
-        activePackages.push(pckID + "." + name.lexeme());
+        anonymousNames.push(name.lexeme());
 
-        consumeCurlyOpen("class");
+        consumeScopeOpen("interface");
 
         return parseInterface(target, pckID, name, stack, classGenerics, mods, parentInterfaces);
     }
 
     public InterfaceHolder parseInterface(ClassReference target, String pckID, Token name, @Nullable GenericStack stack, @Nullable Generics classGenerics, @Nullable ModifiersParser mods, List<SourceReference> parentInterfaces) {
-        List<MethodHolder> methodHolders = new ArrayList<>();
+        List<PythonMethodHolder> methodHolders = new ArrayList<>();
         List<FieldHolder> fieldHolders = new ArrayList<>();
 
         parseClassProperties(ModifierScope.Group.INTERFACE, methodHolders, null, fieldHolders, target, pckID, name, false);
 
-        consumeCurlyClose("class");
+        consumeCurlyClose("interface");
 
         if (stack != null) activeGenerics = stack;
         else if (classGenerics != null) activeGenerics.pop();
-        activePackages.pop();
+        anonymousNames.pop();
         short modifiers = mods != null ? mods.packModifiers() : 0;
         AnnotationObj[] annotations = mods != null ? mods.getAnnotations() : new AnnotationObj[0];
         return new InterfaceHolder(target, modifiers,
                 annotations, classGenerics, pckID, name,
                 parentInterfaces.toArray(new SourceReference[0]),
-                methodHolders.toArray(new MethodHolder[0]),
+                methodHolders.toArray(new PythonMethodHolder[0]),
                 fieldHolders.toArray(new FieldHolder[0])
         );
     }
@@ -585,7 +654,7 @@ public class HolderParser extends AbstractParser {
         private Generics generics;
         private AnnotationObj[] annotations;
         private final Map<TokenType, List<TokenType>> illegalCombinations = new HashMap<>();
-        private final TokenType[] interrupt = {IDENTIFIER, CLASS, INTERFACE, ANNOTATION, ENUM, EOF};
+        private final TokenType[] interrupt = {IDENTIFIER, CLASS, INTERFACE, ANNOTATION, ENUM, EOF, FUNC, GLOBAL};
         private boolean defaultAbstract = false;
         private final boolean allowGenerics;
 
@@ -690,8 +759,7 @@ public class HolderParser extends AbstractParser {
             this.illegalModifiers = List.of(illegalModifiers);
         }
 
-
-        public void check(HolderParser holderParser, ModifiersParser parser) {
+        public void check(PythonHolderParser holderParser, ModifiersParser parser) {
             parser.setDefaultAbstract(this == INTERFACE);
             illegalModifiers.stream()
                     .map(parser::get)
@@ -773,13 +841,13 @@ public class HolderParser extends AbstractParser {
         }
 
         if (reference == null) {
-            reference = VarTypeManager.getOrCreateClass(token.lexeme(), activePackages.getLast());
+            String name = String.join("$", anonymousNames);
+            reference = VarTypeManager.getOrCreateClass(name + "$" + token.lexeme(), pck);
             SourceReference sourceReference = SourceReference.from(token, reference); //skip rest
-            parser.addClass(sourceReference, null);
+            parser.addClass(sourceReference, token.lexeme());
         }
         AppliedGenerics declared = appliedGenerics(activeGenerics);
         if (declared != null) return SourceReference.from(last, new AppliedGenericsReference(reference, declared));
         return SourceReference.from(last, reference);
     }
-
 }

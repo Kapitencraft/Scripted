@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.lang.compiler.analyser;
 
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.holder.ast.ElifBranch;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
@@ -9,9 +10,29 @@ import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor<Void> {
+    private final ErrorStorage errorStorage;
+
+    public FinalsPopulatedAnalyser(ErrorStorage errorStorage) {
+        this.errorStorage = errorStorage;
+    }
+
+    public void apply(List<String> requireValue) {
+        for (String s : requireValue) {
+            this.states.put(s, Status.NOT_ASSIGNED);
+        }
+    }
+
+    private void errorAssigned(Token name) {
+        error(name, "can not write to final field");
+    }
+
+    private void error(Token loc, String s) {
+        errorStorage.error(loc, s);
+    }
 
     private enum Status {
         ASSIGNED,
@@ -20,6 +41,12 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     //TODO add scopes
     private final Map<String, Status> states = new LinkedHashMap<>(); //ensure order equals creation order
+
+    private void analyseIfNN(Expr value) {
+        if (value != null) {
+            analyse(value);
+        }
+    }
 
     private void analyse(Expr expr) {
         expr.accept(this);
@@ -37,6 +64,10 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
     @Override
     public Void visitSetExpr(Expr.Set expr) {
         //TODO
+        String lexeme = expr.name.lexeme();
+        if (states.get(lexeme) == Status.ASSIGNED)
+            errorAssigned(expr.name);
+        states.put(lexeme, Status.ASSIGNED);
         analyse(expr.value);
         analyse(expr.object);
         return null;
@@ -51,8 +82,7 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     @Override
     public Void visitCallExpr(Expr.Call expr) {
-        if (expr.object != null)
-            analyse(expr.object);
+        analyse(expr.object);
         for (Expr arg : expr.args) {
             analyse(arg);
         }
@@ -111,6 +141,12 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     @Override
     public Void visitSpecialSetExpr(Expr.SpecialSet expr) {
+        String name = expr.name.lexeme();
+        if (states.get(name) == Status.ASSIGNED) {
+            errorAssigned(expr.name);
+        } else {
+            error(expr.name, "can not read unassigned final field");
+        }
         analyse(expr.object);
         return null;
     }
@@ -125,6 +161,12 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     @Override
     public Void visitIdentifierSpecialAssignExpr(Expr.IdentifierSpecialAssign expr) {
+        if (expr.type != null && !expr.isStatic) {
+            String name = expr.name.lexeme();
+            if (states.get(name) == Status.ASSIGNED) {
+                errorAssigned(expr.name);
+            }
+        }
         return null;
     }
 
@@ -158,6 +200,7 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     @Override
     public Void visitStaticGetExpr(Expr.StaticGet expr) {
+        //doesn't need to do anything
         return null;
     }
 
@@ -167,18 +210,16 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
         for (SwitchKey param : expr.params) {
             analyse(param.expr);
         }
+        analyseIfNN(expr.defaulted);
         return null;
     }
 
     @Override
     public Void visitSliceExpr(Expr.Slice expr) {
         analyse(expr.object);
-        if (expr.start != null)
-            analyse(expr.start);
-        if (expr.end != null)
-            analyse(expr.end);
-        if (expr.interval != null)
-            analyse(expr.interval);
+        analyseIfNN(expr.start);
+        analyseIfNN(expr.end);
+        analyseIfNN(expr.interval);
         return null;
     }
 
@@ -203,6 +244,7 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
 
     @Override
     public Void visitReturnStmt(Stmt.Return stmt) {
+        analyseIfNN(stmt.value);
         return null;
     }
 
@@ -210,7 +252,7 @@ public class FinalsPopulatedAnalyser implements Expr.Visitor<Void>, Stmt.Visitor
     public Void visitForStmt(Stmt.For stmt) {
         analyse(stmt.init);
         analyse(stmt.condition);
-        analyse(stmt.increment);
+        analyseIfNN(stmt.increment);
         analyse(stmt.body);
         return null;
     }

@@ -27,4 +27,9 @@ public class IntegerConstantInstruction extends CodeInstruction {
     public String toString() {
         return String.valueOf(value);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 }

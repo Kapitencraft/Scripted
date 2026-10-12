@@ -1,13 +1,19 @@
-package net.kapitencraft.scripted.lang.compiler.parser;
+package net.kapitencraft.scripted.lang.compiler.java.parser;
 
 import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.VarTypeContainer;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;
+import net.kapitencraft.scripted.lang.compiler.exe.source.SourceTree;
+import net.kapitencraft.scripted.lang.compiler.java.JavaCompilePipeline;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.AppliedGenericsSourceReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericStack;
+import net.kapitencraft.scripted.lang.holder.oop.clazz.ClassConstructor;
 import net.kapitencraft.scripted.lang.holder.oop.generic.AppliedGenerics;
 import net.kapitencraft.scripted.lang.holder.oop.generic.Generic;
 import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
@@ -23,7 +29,7 @@ import java.util.*;
 import static net.kapitencraft.scripted.lang.holder.token.TokenType.*;
 
 @SuppressWarnings({"UnusedReturnValue"})
-public class AbstractParser {
+public class AbstractJavaParser {
 
     private static final Map<TokenTypeCategory, TokenType[]> categoryLookup = createCategoryLookup();
 
@@ -39,17 +45,31 @@ public class AbstractParser {
     protected Token[] tokens;
     protected VarTypeContainer parser;
     protected final LocationAnalyser locFinder = new LocationAnalyser();
-    protected final Compiler.ErrorStorage errorStorage;
+    protected final ErrorStorage errorStorage;
     protected boolean panicMode = false;
+    protected final SourceTree sourceSink;
+    protected final CompileSource source;
 
-    public AbstractParser(Compiler.ErrorStorage errorStorage) {
+    public AbstractJavaParser(ErrorStorage errorStorage, SourceTree sourceSink, CompileSource source) {
         this.errorStorage = errorStorage;
+        this.sourceSink = sourceSink;
+        this.source = source;
+    }
+
+    public void addInternal(ClassConstructor holder, ErrorStorage storage, VarTypeContainer parser) {
+        SourceTree.DirectoryNode declaring = this.source.getDeclaring();
+        String name = holder.name().lexeme();
+
+        CompileSource compileSource = JavaCompilePipeline.INSTANCE.createSource(name, this.source.pck(), holder, storage, parser, declaring);
+        sourceSink.addSource(declaring, name, compileSource);
+        Compiler.dispatch(compileSource);
     }
 
     public void apply(Token[] toParse, VarTypeContainer targetAnalyser) {
         this.current = 0;
         this.tokens = toParse;
         this.parser = targetAnalyser;
+        this.panicMode = false;
     }
 
     protected @Nullable AppliedGenerics appliedGenerics(GenericStack stack) {
@@ -108,7 +128,7 @@ public class AbstractParser {
     }
 
     /**
-     * same as {@link AbstractParser#check(TokenType) check} but consumes token
+     * same as {@link AbstractJavaParser#check(TokenType) check} but consumes token
      */
     protected boolean match(TokenType... types) {
         for (TokenType type : types) {
@@ -205,8 +225,7 @@ public class AbstractParser {
             return Optional.of(SourceReference.from(t, reference));
         } else if (reference != null)
             return Optional.of(SourceReference.from(t, reference));
-        else
-            current--;
+        current--;
         return Optional.empty();
     }
 
@@ -301,12 +320,17 @@ public class AbstractParser {
             errorStorage.error(token, message);
     }
 
+    protected void errorF(Token token, String msg, Object... args) {
+        if (!this.panicMode)
+            errorStorage.errorF(token, msg, args);
+    }
+
     protected void warn(Token token, String message) {
         errorStorage.warn(token, message);
     }
 
-
     protected void synchronize() {
+        this.current--; //move back one to ensure finding EOA if they have been consumed by the underlying code
         while (!isAtEnd()) {
             switch (peek().type()) {
                 case EOF:
@@ -320,7 +344,6 @@ public class AbstractParser {
                 case RETURN:
                     return;
             }
-
             advance();
         }
     }

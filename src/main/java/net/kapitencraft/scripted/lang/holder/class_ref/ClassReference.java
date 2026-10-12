@@ -56,6 +56,14 @@ public class ClassReference implements Supplier<ScriptedClass> {
         return Objects.equals(reference.pck, this.pck) && Objects.equals(reference.name, this.name);
     }
 
+    public boolean isParentOf(ClassReference other) {
+        return other.isChildOf(this);
+    }
+
+    public boolean isChildOf(ClassReference other) {
+        return get().isChildOf(other.get());
+    }
+
     public ClassReference array() {
         return new ClassWrapper(this.name + "[]", this.pck, ScriptedClass::array, this);
     }

@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.holder.class_ref.generic;
 
-import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -11,7 +11,7 @@ public class GenericSourceReference extends SourceReference {
     }
 
     @Override
-    public void validate(Compiler.ErrorStorage logger) {
+    public void validate(ErrorStorage logger) {
         //always exists
     }
 }

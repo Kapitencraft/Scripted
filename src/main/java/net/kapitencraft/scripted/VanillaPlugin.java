@@ -1,4 +1,4 @@
-package net.kapitencraft.scripted.lang.exe.natives.scripted;
+package net.kapitencraft.scripted;
 
 import net.kapitencraft.scripted.lang.exe.natives.ClassRegistration;
 import net.kapitencraft.scripted.lang.exe.natives.ScriptedPlugin;

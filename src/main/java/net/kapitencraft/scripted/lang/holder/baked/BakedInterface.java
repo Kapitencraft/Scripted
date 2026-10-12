@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
 import net.kapitencraft.scripted.lang.compiler.analyser.SemanticAnalyser;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
@@ -18,7 +19,7 @@ import net.kapitencraft.scripted.lang.oop.method.builder.DataMethodContainer;
 import java.util.HashMap;
 import java.util.Map;
 
-public record BakedInterface(Compiler.ErrorStorage logger, Generics generics, ClassReference target,
+public record BakedInterface(ErrorStorage logger, Generics generics, ClassReference target,
                              Pair<Token, CompileCallable>[] methods,
                              Map<String, CompileField> staticFields, ClassReference[] interfaces,
                              Token name, String pck,

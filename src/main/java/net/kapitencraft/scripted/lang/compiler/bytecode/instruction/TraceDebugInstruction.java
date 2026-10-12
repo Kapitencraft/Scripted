@@ -21,4 +21,9 @@ public class TraceDebugInstruction extends CodeInstruction {
     public int length() {
         return 3 + locals.length;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 }

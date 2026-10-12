@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.lang.compiler;
 
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -25,7 +26,7 @@ public class MethodLookup {
 
     //region compile
 
-    public void checkFinal(Compiler.ErrorStorage logger, Pair<Token, CompileCallable>[] map) {
+    public void checkFinalMethods(ErrorStorage logger, Pair<Token, CompileCallable>[] map) {
         for (Pair<Token, CompileCallable> pair : map) {
             for (Pair<ScriptedClass, AbstractMethodMap> lookupElement : lookup) {
                 Map<String, DataMethodContainer> methodMap = lookupElement.getSecond().asMap();
@@ -40,7 +41,7 @@ public class MethodLookup {
         }
     }
 
-    public void checkAbstract(Compiler.ErrorStorage logger, Token className, Pair<Token, CompileCallable>[] map) {
+    public void checkAbstract(ErrorStorage logger, Token className, Pair<Token, CompileCallable>[] map) {
         Map<String, List<Pair<ScriptedClass, ScriptedCallable>>> abstracts = new HashMap<>();
         for (Pair<ScriptedClass, AbstractMethodMap> methods : lookup) {
             methods.getSecond().asMap().forEach((s, dataMethodContainer) -> {

@@ -43,7 +43,7 @@ public class CompileField implements ScriptedField {
     public void analyseSemantics(SemanticAnalyser analyser) {
         if (this.init != null) {
             ClassReference initType = analyser.analyseExpr(this.init);
-            if (!type.get().isParentOf(initType.get())) {
+            if (!type.isParentOf(initType)) {
                 analyser.errorF(Compiler.LOCATION_ANALYSER.find(this.init), "incompatible types: %s can not be converted to %s", initType.absoluteName(), type.absoluteName());
             }
         }

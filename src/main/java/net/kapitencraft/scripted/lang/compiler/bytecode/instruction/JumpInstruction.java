@@ -35,4 +35,9 @@ public class JumpInstruction extends CodeInstruction implements JumpableInstruct
     public String toString() {
         return "JumpInstruction{" + super.toString() + ", target = " + index + "}";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof JumpInstruction ji && ji.code() == this.code() && ji.index == this.index;
+    }
 }

@@ -171,6 +171,10 @@ public interface ScriptedClass {
 
     boolean isNative();
 
+    default boolean isPrimitive() {
+        return false;
+    }
+
     default EnumConstantHolder getEnumConstant(String lexeme) {
         return null;
     }

@@ -36,7 +36,6 @@ public class SkeletonClass implements ScriptedClass {
 
     private final short modifiers;
     private final String[] interfaces;
-    private final boolean isCompiler; //this is necessary in order to use the correct mapper from string -> ClassReference
 
     public SkeletonClass(Generics generics,
                          String name, String pck, String superclass,
@@ -52,7 +51,6 @@ public class SkeletonClass implements ScriptedClass {
         this.methods = new GeneratedMethodMap(methods);
         this.modifiers = modifiers;
         this.interfaces = interfaces;
-        this.isCompiler = true;
     }
 
     public SkeletonClass(String name, String pck, String superclass,
@@ -68,7 +66,6 @@ public class SkeletonClass implements ScriptedClass {
         this.methods = new GeneratedMethodMap(methods);
         this.modifiers = modifiers;
         this.interfaces = interfaces;
-        this.isCompiler = false;
     }
 
     public static SkeletonClass fromCache(JsonObject data, String pck) {
@@ -140,7 +137,7 @@ public class SkeletonClass implements ScriptedClass {
 
     @Override
     public @Nullable ClassReference superclass() {
-        return isCompiler ? VarTypeManager.directParseTypeCompiler(superclass) : VarTypeManager.directParseType(superclass);
+        return VarTypeManager.directParseType(superclass);
     }
 
     @Override
@@ -170,7 +167,7 @@ public class SkeletonClass implements ScriptedClass {
 
     @Override
     public ClassReference[] interfaces() {
-        return Arrays.stream(interfaces).map(isCompiler ? VarTypeManager::directParseTypeCompiler : VarTypeManager::directParseType).toArray(ClassReference[]::new);
+        return Arrays.stream(interfaces).map(VarTypeManager::directParseType).toArray(ClassReference[]::new);
     }
 
     @Override

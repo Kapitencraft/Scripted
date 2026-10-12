@@ -21,7 +21,6 @@ import java.util.Map;
 @ApiStatus.Internal
 public class NativeClassImpl implements ScriptedClass {
     private final GeneratedMethodMap methods;
-    private MethodLookup lookup;
     private final Map<String, NativeField> fields;
     private final ClassReference superclass;
     private final ClassReference[] interfaces;
@@ -70,9 +69,7 @@ public class NativeClassImpl implements ScriptedClass {
 
     @Override
     public ScriptedCallable getMethod(String signature) {
-        if (this.lookup == null)
-            this.lookup = MethodLookup.createFromClass(this, this.interfaces);
-        return lookup.get(signature);
+        return methods.getMethod(signature);
     }
 
     @Override

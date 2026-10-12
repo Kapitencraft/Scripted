@@ -31,4 +31,9 @@ public class LocalInstruction extends CodeInstruction {
     public String toString() {
         return "Local{" + super.toString() + ", ordinal = " + id + "}";
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 }

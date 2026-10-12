@@ -3,7 +3,6 @@ package net.kapitencraft.scripted.lang.exe.load;
 import com.google.gson.JsonObject;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
-import net.kapitencraft.kap_lib.core.helpers.GsonHelper;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.oop.clazz.ClassType;
 import net.kapitencraft.scripted.lang.oop.clazz.ScriptedClass;
@@ -11,6 +10,7 @@ import net.kapitencraft.scripted.lang.oop.clazz.generated.RuntimeClass;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonAnnotation;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonClass;
 import net.kapitencraft.scripted.lang.oop.clazz.skeleton.SkeletonInterface;
+import net.minecraft.util.GsonHelper;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,10 +20,11 @@ public class VMLoaderHolder extends ClassLoaderHolder<VMLoaderHolder> {
     private final JsonObject data;
     private final ClassType type;
     public final String name;
+    private final String pck;
     final ClassReference reference;
 
-    public VMLoaderHolder(File file, String pck) {
-        super(file, pck);
+    public VMLoaderHolder(File file) {
+        super(file);
         try {
             this.data = Streams.parse(new JsonReader(new FileReader(file))).getAsJsonObject();
         } catch (FileNotFoundException e) {
@@ -31,8 +32,14 @@ public class VMLoaderHolder extends ClassLoaderHolder<VMLoaderHolder> {
         }
         String fileId = file.getPath().substring(12);
         String[] packages = fileId.substring(0, fileId.length() - 5).split("\\\\");
+        StringBuilder pck = new StringBuilder(packages[0]);
+        for (int i = 1; i < packages.length - 1; i++) {
+            pck.append(".");
+            pck.append(packages[i]);
+        }
         this.name = packages[packages.length-1];
-        this.reference = new ClassReference(name, pck);
+        this.reference = new ClassReference(name, pck.toString());
+        this.pck = pck.toString();
         this.type = ClassType.valueOf(GsonHelper.getAsString(data, "TYPE").toUpperCase());
     }
 
@@ -40,9 +47,9 @@ public class VMLoaderHolder extends ClassLoaderHolder<VMLoaderHolder> {
     public void applySkeleton()  {
 
         ScriptedClass skeleton = switch (type) {
-            case ENUM, CLASS -> SkeletonClass.fromCache(data, pck());
-            case INTERFACE -> SkeletonInterface.fromCache(data, pck());
-            case ANNOTATION -> SkeletonAnnotation.fromCache(data, pck());
+            case ENUM, CLASS -> SkeletonClass.fromCache(data, pck);
+            case INTERFACE -> SkeletonInterface.fromCache(data, pck);
+            case ANNOTATION -> SkeletonAnnotation.fromCache(data, pck);
         };
         this.reference.setTarget(skeleton);
     }
@@ -50,7 +57,7 @@ public class VMLoaderHolder extends ClassLoaderHolder<VMLoaderHolder> {
     public ScriptedClass loadClass()  {
         ScriptedClass target;
         try {
-            target = RuntimeClass.load(data, pck());
+            target = RuntimeClass.load(data, pck);
             this.reference.setTarget(target);
             return target;
         } catch (Exception e) {

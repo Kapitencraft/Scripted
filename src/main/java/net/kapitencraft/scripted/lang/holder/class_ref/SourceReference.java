@@ -1,6 +1,6 @@
 package net.kapitencraft.scripted.lang.holder.class_ref;
 
-import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.holder.class_ref.generic.GenericStack;
 import net.kapitencraft.scripted.lang.holder.oop.Validatable;
 import net.kapitencraft.scripted.lang.holder.token.Token;
@@ -50,7 +50,7 @@ public class SourceReference implements Validatable {
         return reference;
     }
 
-    public void validate(Compiler.ErrorStorage logger) {
+    public void validate(ErrorStorage logger) {
         if (!reference.exists())
             logger.errorF(nameToken, "unknown class '%s'", reference.absoluteName());
     }

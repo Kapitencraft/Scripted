@@ -3,9 +3,10 @@ package net.kapitencraft.scripted.lang.holder.oop.clazz;
 import com.google.common.collect.ImmutableMap;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.Modifiers;
+import net.kapitencraft.scripted.lang.compiler.VarTypeContainer;
 import net.kapitencraft.scripted.lang.compiler.analyser.SemanticAnalyser;
-import net.kapitencraft.scripted.lang.compiler.parser.StmtParser;
-import net.kapitencraft.scripted.lang.compiler.parser.VarTypeContainer;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.text.StmtParser;
 import net.kapitencraft.scripted.lang.func.ScriptedCallable;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.kapitencraft.scripted.lang.holder.baked.BakedAnnotation;
@@ -26,17 +27,17 @@ public record AnnotationHolder(ClassReference target, short modifiers,
                                AnnotationObj[] annotations, Generics generics, String pck, Token name,
                                MethodHolder[] methodHolders) implements ClassConstructor {
 
-    public BakedAnnotation construct(StmtParser stmtParser, SemanticAnalyser analyser, VarTypeContainer parser, Compiler.ErrorStorage logger) {
+    public BakedAnnotation construct(StmtParser javaStmtParser, VarTypeContainer parser, ErrorStorage logger) {
         ImmutableMap.Builder<String, MethodWrapper> methods = new ImmutableMap.Builder<>();
         for (MethodHolder methodHolder : methodHolders()) {
             Expr val = null;
             if (!Modifiers.isAbstract(methodHolder.modifiers())) {
-                stmtParser.apply(methodHolder.body(), parser);
-                val = stmtParser.literalOrReference();
+                javaStmtParser.apply(methodHolder.body(), parser);
+                val = javaStmtParser.literalOrReference();
             }
-            Annotation[] annotations = stmtParser.parseAnnotations(methodHolder.annotations(), parser);
+            Annotation[] annotations = javaStmtParser.parseAnnotations(methodHolder.annotations(), parser);
 
-            methods.put(methodHolder.name().lexeme(), new MethodWrapper(val, methodHolder.type().getReference(), annotations, methodHolder.modifiers()));
+            methods.put(methodHolder.name().lexeme(), new MethodWrapper(val, methodHolder.returnType().getReference(), annotations, methodHolder.modifiers()));
         }
 
         return new BakedAnnotation(
@@ -44,16 +45,16 @@ public record AnnotationHolder(ClassReference target, short modifiers,
                 this.name(),
                 this.pck(),
                 methods.build(),
-                parseAnnotations(stmtParser, parser)
+                parseAnnotations(javaStmtParser, parser)
         );
     }
 
     //annotations are not available at skeleton construction
-    public ScriptedClass createSkeleton(Compiler.ErrorStorage logger) {
+    public ScriptedClass createSkeleton(ErrorStorage logger) {
 
         ImmutableMap.Builder<String, AnnotationCallable> methods = new ImmutableMap.Builder<>();
         for (MethodHolder methodHolder : methodHolders()) {
-            methods.put(methodHolder.name().lexeme(), new SkeletonAnnotationMethod(methodHolder.type().getReference(), methodHolder.body().length > 0));
+            methods.put(methodHolder.name().lexeme(), new SkeletonAnnotationMethod(methodHolder.returnType().getReference(), methodHolder.body().length > 0));
         }
 
         return new SkeletonAnnotation(
@@ -63,7 +64,7 @@ public record AnnotationHolder(ClassReference target, short modifiers,
         );
     }
 
-    public void validate(Compiler.ErrorStorage logger) {
+    public void validate(ErrorStorage logger) {
         Validatable.validateNullable(annotations, logger);
         for (MethodHolder methodHolder : methodHolders) methodHolder.validate(logger);
     }
@@ -94,6 +95,11 @@ public record AnnotationHolder(ClassReference target, short modifiers,
         @Override
         public boolean isStatic() {
             return Modifiers.isStatic(this.modifiers);
+        }
+
+        @Override
+        public ClassReference[] thrown() {
+            return new ClassReference[0];
         }
     }
 }

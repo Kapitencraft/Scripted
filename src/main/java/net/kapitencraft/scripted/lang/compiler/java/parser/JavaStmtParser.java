@@ -1,7 +1,12 @@
-package net.kapitencraft.scripted.lang.compiler.parser;
+package net.kapitencraft.scripted.lang.compiler.java.parser;
 
 import com.mojang.datafixers.util.Pair;
 import net.kapitencraft.scripted.lang.compiler.Compiler;
+import net.kapitencraft.scripted.lang.compiler.VarTypeContainer;
+import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
+import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;
+import net.kapitencraft.scripted.lang.compiler.exe.source.SourceTree;
+import net.kapitencraft.scripted.lang.compiler.exe.text.StmtParser;
 import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.kapitencraft.scripted.lang.holder.ast.ElifBranch;
 import net.kapitencraft.scripted.lang.holder.ast.Expr;
@@ -10,6 +15,7 @@ import net.kapitencraft.scripted.lang.holder.bytecode.annotation.Annotation;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
 import net.kapitencraft.scripted.lang.holder.oop.AnnotationObj;
+import net.kapitencraft.scripted.lang.holder.oop.attribute.OperationHolder;
 import net.kapitencraft.scripted.lang.holder.oop.generic.Generics;
 import net.kapitencraft.scripted.lang.holder.token.Token;
 import org.jetbrains.annotations.Nullable;
@@ -18,10 +24,10 @@ import java.util.*;
 
 import static net.kapitencraft.scripted.lang.holder.token.TokenType.*;
 
-public class StmtParser extends ExprParser {
+public class JavaStmtParser extends JavaExprParser implements StmtParser {
 
-    public StmtParser(Compiler.ErrorStorage errorStorage) {
-        super(errorStorage);
+    public JavaStmtParser(ErrorStorage errorStorage, SourceTree sourceSink, CompileSource source) {
+        super(errorStorage, sourceSink, source);
     }
 
     private ClassReference funcRetType = VarTypeManager.VOID.reference();
@@ -33,6 +39,15 @@ public class StmtParser extends ExprParser {
         super.apply(toParse, targetAnalyser);
         seenReturn.clear(); //reset entire return stack
         seenReturn.add(false);
+    }
+
+    @Override
+    public void applyOperation(OperationHolder holder, VarTypeContainer  targetAnalyser) {
+        apply(holder.body(), targetAnalyser);
+        if (holder.isStatic())
+            applyStaticMethod(holder.retType(), holder.generics());
+        else
+            applyMethod(holder.retType(), holder.generics());
     }
 
     private void seenReturn() {
@@ -112,6 +127,7 @@ public class StmtParser extends ExprParser {
 
         if (panicMode) {
             synchronize();
+            panicMode = false;
         }
         return stmt;
     }
@@ -243,20 +259,37 @@ public class StmtParser extends ExprParser {
             pushScope();
             loopIndex++;
             initializer = null;
-        } else if (match(IDENTIFIER) && parser.hasClass(previous().lexeme())) {
+        } else if (parser.hasClass(peek().lexeme()) && match(IDENTIFIER)) {
             pushScope();
             loopIndex++;
             initializer = varDeclaration(false, parser.getClass(previous().lexeme()));
         } else {
-            pushScope();
-            loopIndex++;
-            initializer = expressionStatement();
+            if (match(IDENTIFIER) && check(COLON)) {
+                Token identifier = previous();
+                advance(); //consume colon
+                error(identifier, "Missing variable type");
+                Expr init = expression();
+                consumeBracketClose("for");
+                pushScope();
+                loopIndex++;
+
+                Stmt stmt = statement();
+                stmt = mergeBody(stmt, popScopeStmt());
+                Stmt.ForEach forEach = new Stmt.ForEach();
+                forEach.type = VarTypeManager.VOID.reference();
+                forEach.name = identifier;
+                forEach.initializer = init;
+                forEach.body = stmt;
+                return forEach;
+            } else {
+                pushScope();
+                loopIndex++;
+                initializer = expressionStatement();
+            }
         }
 
-        Expr condition = null;
-        if (!check(EOA)) {
-            condition = expression();
-        }
+        Expr condition = expression();
+        this.panicMode = false;
         consumeEndOfArg();
 
         Expr increment = null;
@@ -269,6 +302,7 @@ public class StmtParser extends ExprParser {
 
         Stmt body = statement();
 
+        loopIndex--;
         body = mergeBody(body, popScopeStmt());
 
         Stmt.For aFor = new Stmt.For();
@@ -357,6 +391,7 @@ public class StmtParser extends ExprParser {
         this.pushScope();
         Stmt body = statement();
         body = mergeBody(body, popScopeStmt());
+        this.loopIndex--;
 
         Stmt.While aWhile = new Stmt.While();
         aWhile.condition = condition;
@@ -384,12 +419,12 @@ public class StmtParser extends ExprParser {
         return stmt;
     }
 
-    public Stmt[] parse() {
-        if (tokens.length == 0) return new Stmt[]{returnStmt(Token.createNative("return"))};
+    public List<Stmt> parse() {
+        if (tokens.length == 0) return List.of(returnStmt(Token.createNative("return")));
         List<Stmt> stmts = new ArrayList<>();
         while (!isAtEnd()) stmts.add(declaration());
         if (!seenReturn.getLast()) stmts.add(returnStmt(Token.createNative("return")));
-        return stmts.toArray(Stmt[]::new);
+        return stmts;
     }
 
     private Stmt returnStmt(Token aReturn) {
@@ -398,9 +433,9 @@ public class StmtParser extends ExprParser {
         return stmt;
     }
 
-    public void applyMethod(ClassReference funcRetType, @Nullable Generics generics) {
+    public void applyMethod(ClassReference retType, @Nullable Generics generics) {
         this.pushScope();
-        this.funcRetType = funcRetType;
+        this.funcRetType = retType;
         if (generics != null) generics.pushToStack(this.generics);
         else this.generics.push(Map.of());
     }
@@ -413,12 +448,11 @@ public class StmtParser extends ExprParser {
         funcRetType = VarTypeManager.VOID.reference();
     }
 
-    public void applyStaticMethod(ClassReference funcRetType, @Nullable Generics generics) {
+    public void applyStaticMethod(ClassReference retType, @Nullable Generics generics) {
         this.pushScope();
-        this.funcRetType = funcRetType;
+        this.funcRetType = retType;
         if (generics != null) generics.pushToStack(this.generics);
         else this.generics.push(Map.of());
-
     }
 
     public Annotation[] parseAnnotations(AnnotationObj[] annotations, VarTypeContainer container) {

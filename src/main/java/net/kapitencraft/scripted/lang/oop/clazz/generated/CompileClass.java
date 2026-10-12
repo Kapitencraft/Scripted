@@ -77,6 +77,16 @@ public final class CompileClass implements CacheableClass, ScriptedClass {
         return object;
     }
 
+    @Override
+    public void optimize() {
+        for (DataMethodContainer value : this.allMethods.values()) {
+            for (ScriptedCallable method : value.methods()) {
+                if (method instanceof CompileCallable callable)
+                    callable.optimize();
+            }
+        }
+    }
+
     public RuntimeClass convert() {
         return new RuntimeClass(
                 convertMethods(methods),

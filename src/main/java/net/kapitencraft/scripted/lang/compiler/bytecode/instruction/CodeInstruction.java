@@ -33,4 +33,9 @@ public class CodeInstruction implements Instruction {
     public String toString() {
         return opcode.toString();
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof CodeInstruction ci && ci.opcode == this.opcode;
+    }
 }

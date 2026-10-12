@@ -115,7 +115,6 @@ public class NativeClassLoader {
         } catch (InvocationTargetException | IllegalAccessException e) {
             LOGGER.warn("unable to execute plugin method 'registerClasses': {}", e.getMessage());
         }
-
     }
 
     private static synchronized void setupLookup(Class<?> clazz, String name, String pck) {
@@ -127,7 +126,6 @@ public class NativeClassLoader {
     /**
      * creates and registers a native class for the given java class
      * <br>Developers should use {@link ScriptedPlugin} or {@link NativeClass}
-     *
      * @param clazz the target to create & register
      */
     private static void createNativeClass(Class<?> clazz, String className, String pck, @Nullable String[] capturedMethods, @Nullable String[] capturedFields, ResourceKey<? extends Registry<?>> owner) {
@@ -142,6 +140,7 @@ public class NativeClassLoader {
                         NativeMethod method = new NativeMethod(
                                 getClassOrThrow(declaredMethod.getReturnType()),
                                 Arrays.stream(declaredMethod.getParameterTypes()).map(NativeClassLoader::getClassOrThrow).toArray(ClassReference[]::new),
+                                Arrays.stream(declaredMethod.getExceptionTypes()).map(NativeClassLoader::getClassOrThrow).toArray(ClassReference[]::new),
                                 declaredMethod,
                                 !isStatic,
                                 Modifiers.fromJavaMods(modifiers)
@@ -174,6 +173,7 @@ public class NativeClassLoader {
                         NativeConstructor method = new NativeConstructor(
                                 type,
                                 Arrays.stream(constructor.getParameterTypes()).map(NativeClassLoader::getClassOrThrow).toArray(ClassReference[]::new),
+                                Arrays.stream(constructor.getExceptionTypes()).map(NativeClassLoader::getClassOrThrow).toArray(ClassReference[]::new),
                                 constructor
                         );
                         methods.put("<init>", method);
@@ -231,7 +231,6 @@ public class NativeClassLoader {
 
     /**
      * queries the given class for lookup
-     *
      * @param aClass the class to query
      * @return an optional of the gotten reference
      */
@@ -370,30 +369,30 @@ public class NativeClassLoader {
 
     private record NativeWrapper(String name, String pck) implements ScriptedClass {
 
-        @Override
-        public @Nullable ClassReference superclass() {
-            return null;
-        }
+            @Override
+            public @Nullable ClassReference superclass() {
+                return null;
+            }
 
-        @Override
-        public ScriptedCallable getMethod(String signature) {
-            return null;
-        }
+            @Override
+            public ScriptedCallable getMethod(String signature) {
+                return null;
+            }
 
-        @Override
-        public AbstractMethodMap getMethods() {
-            return new GeneratedMethodMap(Map.of());
-        }
+            @Override
+            public AbstractMethodMap getMethods() {
+                return null;
+            }
 
-        @Override
-        public Annotation[] annotations() {
-            return new Annotation[0];
-        }
+            @Override
+            public Annotation[] annotations() {
+                return new Annotation[0];
+            }
 
-        @Override
-        public short getModifiers() {
-            return 0;
-        }
+            @Override
+            public short getModifiers() {
+                return 0;
+            }
 
         @Override
         public boolean isNative() {

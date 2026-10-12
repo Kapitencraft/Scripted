@@ -12,11 +12,13 @@ import java.lang.reflect.InvocationTargetException;
 public class NativeConstructor implements ScriptedCallable {
     private final ClassReference type;
     private final ClassReference[] args;
+    private final ClassReference[] thrown;
     private final Constructor<?> constructor;
 
-    public NativeConstructor(ClassReference type, ClassReference[] args, Constructor<?> constructor) {
+    public NativeConstructor(ClassReference type, ClassReference[] args, ClassReference[] thrown, Constructor<?> constructor) {
         this.type = type;
         this.args = args;
+        this.thrown = thrown;
         this.constructor = constructor;
     }
 
@@ -53,5 +55,10 @@ public class NativeConstructor implements ScriptedCallable {
     @Override
     public boolean isStatic() {
         return false;
+    }
+
+    @Override
+    public ClassReference[] thrown() {
+        return thrown;
     }
 }

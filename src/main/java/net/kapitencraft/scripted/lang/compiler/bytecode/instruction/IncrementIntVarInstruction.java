@@ -24,4 +24,9 @@ public class IncrementIntVarInstruction extends CodeInstruction {
     public int length() {
         return 3;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return false;
+    }
 }
