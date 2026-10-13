@@ -1,0 +1,15 @@
+[
+  {
+    "type": "expr",
+    "entry": {
+      "type": "expr",
+      "args": {
+        "stack": {
+          "type": "select_item"
+        }
+      },
+      "category": "other",
+      "translationKey": "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z"
+    }
+  }
+]

@@ -8,6 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.ComparisonWi
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.AssignVarWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.IfStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.SimpleScopeEndWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.stmt.TryCatchWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForEachStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForRangeStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.WhileStmtWidget;
@@ -21,6 +22,7 @@ public interface SelectionTabs {
     ResourceKey<SelectionTab> OPERATORS = reg("operators");
     ResourceKey<SelectionTab> CONTROL = reg("control");
     ResourceKey<SelectionTab> WORLD = reg("world");
+    ResourceKey<SelectionTab> PLAYER = reg("player");
     ResourceKey<SelectionTab> VARIABLES = reg("variables");
 
     private static ResourceKey<SelectionTab> reg(String operation) {
@@ -42,6 +44,10 @@ public interface SelectionTabs {
                 .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;z", Map.of()))
                 .build()
         );
+        context.register(PLAYER, SelectionTab.builder()
+                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z", Map.of("stack", new ItemSelectWidget())))
+                .build()
+        );
         context.register(CONTROL, SelectionTab.builder()
                 .withEntry(IfStmtWidget.builder()
                         .hideElse()
@@ -53,6 +59,7 @@ public interface SelectionTabs {
                 .withEntry(SimpleScopeEndWidget.CONTINUE)
                 .withEntry(SimpleScopeEndWidget.BREAK)
                 .withEntry(SimpleScopeEndWidget.RETURN)
+                .withEntry(new TryCatchWidget())
                 .build()
         );
         context.register(VARIABLES, SelectionTab.builder()

@@ -9,6 +9,7 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.connector.MethodChainConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -32,7 +33,7 @@ public class MethodWidget implements ExprCodeWidget {
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
-    private MethodWidget child;
+    private ExprCodeWidget child;
 
     public MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
         this.type = type;
@@ -74,7 +75,7 @@ public class MethodWidget implements ExprCodeWidget {
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         ArgumentExprConnector.parse(font, aX + 4, aY, this.translationKey, this.args, this.getHeight(), this, collector);
-        //collector.accept(new ExprChainConnector(aX + 4 + this.getWidth(font), aY, this));
+        //collector.accept(new MethodChainConnector(aX + this.getWidth(font), aY, this));
     }
 
     @Override
@@ -109,11 +110,11 @@ public class MethodWidget implements ExprCodeWidget {
         CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
-    public void setChild(@Nullable MethodWidget codeWidget) {
+    public void setChild(@Nullable ExprCodeWidget codeWidget) {
         this.child = codeWidget;
     }
 
-    public @Nullable MethodWidget getChild() {
+    public @Nullable ExprCodeWidget getChild() {
         return this.child;
     }
 

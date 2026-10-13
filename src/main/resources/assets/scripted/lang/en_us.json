@@ -48,6 +48,7 @@
   "Lnet/minecraft/world/phys/Vec3;x": "x value",
   "Lnet/minecraft/world/phys/Vec3;y": "y value",
   "Lnet/minecraft/world/phys/Vec3;z": "z value",
+  "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z": "add item {stack}",
   "Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D": "calculate dot product with {vec}",
   "Lnet/minecraft/world/phys/Vec3;cross(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;": "calculate cross product with {vec}",
   "Lnet/minecraft/world/phys/Vec3;normalize()Lnet/minecraft/world/phys/Vec3;": "then normalize",

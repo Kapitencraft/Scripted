@@ -448,7 +448,7 @@ public class IfStmtWidget extends StmtCodeWidget {
             }
             h += getElseHeadHeight() + getElseBodyHeight();
         }
-        sink.accept(new ModifyWidgetBranchesInteraction(xOrigin + getGlobalHeadWidth() - 9, yOrigin + h + 4, 7, 7));
+        sink.accept(new ModifyWidgetBranchesInteraction(xOrigin + globalHeadWidth - 9, yOrigin + h + 4, 7, 7));
         super.registerInteractions(xOrigin, yOrigin, font, sink);
     }
 

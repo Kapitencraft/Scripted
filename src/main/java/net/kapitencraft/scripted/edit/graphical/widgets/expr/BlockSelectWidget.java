@@ -56,8 +56,7 @@ public class BlockSelectWidget implements ExprCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         PoseStack pose = graphics.pose();
         pose.pushPose();
-        pose.translate(0, 1, 0);
-        pose.translate(renderX, renderY, 0);
+        pose.translate(renderX, renderY + 1, 0);
         pose.scale(.75f, .75f, 1);
         UsefulTextures.renderSlotBackground(graphics, 0, 0);
         graphics.renderItem(this.stack, 0, 0);

@@ -3,13 +3,17 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.locale.Language;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,8 @@ public class TryCatchWidget extends StmtCodeWidget {
     private StmtCodeWidget body;
     private final List<CatchBranch> branches = new ArrayList<>();
 
+    private int globalHeadWidth;
+
     private TryCatchWidget(Optional<StmtCodeWidget> child, Optional<StmtCodeWidget> body, List<CatchBranch> branches) {
         child.ifPresent(this::setChild);
         this.body = body.orElse(null);
@@ -39,6 +45,10 @@ public class TryCatchWidget extends StmtCodeWidget {
         this.setChild(child);
         this.body = body;
         this.branches.addAll(branches);
+    }
+
+    public TryCatchWidget() {
+        this((StmtCodeWidget) null, null, List.of(new CatchBranch()));
     }
 
     @Override
@@ -53,7 +63,7 @@ public class TryCatchWidget extends StmtCodeWidget {
 
     @Override
     public int getHeight() {
-        return 0;
+        return 20;
     }
 
     @Override
@@ -67,13 +77,26 @@ public class TryCatchWidget extends StmtCodeWidget {
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
+        graphics.blitSprite(CodeWidgetSprites.SCOPE_HEAD, renderX, renderY, getWidth(font), getHeight());
 
         super.render(graphics, font, renderX, renderY);
+    }
+
+    private int getGlobalHeadWidth(Font font) {
+        int width = font.width(Language.getInstance().getOrDefault("§try"));
+        return width;
     }
 
     @Override
     public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
 
+    }
+
+    @Override
+    public void update(@Nullable MethodContext context, Font font) {
+        super.update(context, font);
+        this.branches.forEach(b -> b.updateWidth(font));
+        this.globalHeadWidth = getGlobalHeadWidth(font);
     }
 
     @Override
@@ -86,10 +109,18 @@ public class TryCatchWidget extends StmtCodeWidget {
                 StmtCodeWidget.CODEC.optionalFieldOf("body").forGetter(b -> Optional.ofNullable(b.body))
         ).apply(i, CatchBranch::new));
         private StmtCodeWidget body;
+        private int width;
 
         private CatchBranch(Optional<StmtCodeWidget> body) {
             this.body = body.orElse(null);
         }
 
+        private CatchBranch() {
+            this.body = null;
+        }
+
+        private void updateWidth(Font font) {
+            this.width = 0;
+        }
     }
 }

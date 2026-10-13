@@ -41,8 +41,8 @@ public class SelectBlockWidget extends SelectRegistryElementWidget<Block> {
     @Override
     protected void renderInternal(GuiGraphics graphics, int pMouseX, int pMouseY, float pPartialTick) {
         int elementsPerRow = getEPR();
-        int minIndex = (int) scroll / ITEM_WIDTH_WITH_OFFSET * elementsPerRow;
-        int maxIndex = Math.min(ITEMS_CACHE.size(), ((int) scroll + this.height) / ITEM_WIDTH_WITH_OFFSET * elementsPerRow);
+        int minIndex = (int) -scroll / ITEM_WIDTH_WITH_OFFSET * elementsPerRow;
+        int maxIndex = Math.min(ITEMS_CACHE.size(), ((int) -scroll + this.height) / ITEM_WIDTH_WITH_OFFSET * elementsPerRow);
         for (int i = minIndex; i < maxIndex; i++) {
             int column = i % elementsPerRow;
             int row = i / elementsPerRow;
