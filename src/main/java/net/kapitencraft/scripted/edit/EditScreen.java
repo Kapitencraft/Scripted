@@ -24,6 +24,7 @@ public class EditScreen extends Screen {
 
         GraphicalEditor original = graphicalEditor;
         this.addRenderableWidget(this.graphicalEditor = new GraphicalEditor(10, 10, width - 20, height - 20, Component.literal("hi"), this.font, tabs));
+        this.setFocused(this.graphicalEditor);
         this.graphicalEditor.updateContentFrom(original);
         if (updateForOverview) {
             this.graphicalEditor.setViewData(12, -129.5f, -35.33f);

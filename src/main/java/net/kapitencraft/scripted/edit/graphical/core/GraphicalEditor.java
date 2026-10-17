@@ -461,6 +461,28 @@ public class GraphicalEditor extends AbstractWidget {
         return super.mouseReleased(mouseX, mouseY, button);
     }
 
+    @Override
+    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+        if (this.widget != null)
+            return this.widget.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (this.widget != null) {
+            return this.widget.keyPressed(keyCode, scanCode, modifiers);
+        }
+        return super.keyPressed(keyCode, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char codePoint, int modifiers) {
+        if (this.widget != null)
+            return this.widget.charTyped(codePoint, modifiers);
+        return super.charTyped(codePoint, modifiers);
+    }
+
     private void setWidget(@Nullable PositionedWidget widget) {
         this.widget = widget;
     }

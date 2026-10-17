@@ -3,6 +3,8 @@ package net.kapitencraft.scripted.edit.graphical;
 import net.kapitencraft.scripted.Scripted;
 import net.minecraft.resources.ResourceLocation;
 
+import java.util.Scanner;
+
 public interface CodeWidgetSprites {
     ResourceLocation BOOL_EXPR = Scripted.res("code/bool_expr");
     ResourceLocation BRANCH_END = Scripted.res("code/branch_end");
@@ -17,5 +19,6 @@ public interface CodeWidgetSprites {
     ResourceLocation SCOPE_END_NO_IN = Scripted.res("code/scope_end_no_in");
     ResourceLocation SCOPE_END_WITH_CODE = Scripted.res("code/scope_end_with_code");
     ResourceLocation SIMPLE_BLOCK = Scripted.res("code/simple_block");
-    ResourceLocation MODIFY_IF = Scripted.res("code/modify_if");
+    ResourceLocation ADD = Scripted.res("code/add");
+    ResourceLocation REMOVE = Scripted.res("code/remove");
 }

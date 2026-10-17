@@ -1,6 +1,5 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
-import net.kapitencraft.kap_lib.core.client.widget.select.SelectEnumWidget;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
@@ -9,6 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
+import net.kapitencraft.scripted.edit.graphical.widgets.io.ExtensibleSelectStringWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -97,7 +97,6 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     }
 
     private class SelectVarNameInteraction extends CodeInteraction {
-        //TODO add ability to create new variables
 
         protected SelectVarNameInteraction(int x, int y, int width, int height) {
             super(x, y, width, height);
@@ -106,8 +105,8 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData callbacks) {
             if (context != null) {
-                callbacks.openWidget(new SelectEnumWidget<>(
-                        mouseX + x, mouseY + y, 100, 50,
+                callbacks.openWidget(new ExtensibleSelectStringWidget(
+                        mouseX + x, mouseY + y, 100, 60,
                         callbacks.getFont(),
                         new ArrayList<>(context.lvt.getAll()),
                         Component::literal,

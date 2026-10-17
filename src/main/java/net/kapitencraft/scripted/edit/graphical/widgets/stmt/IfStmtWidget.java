@@ -281,13 +281,9 @@ public class IfStmtWidget extends StmtCodeWidget {
             endY += elseHeadHeight + elseBodyHeight;
         }
         //end
-        renderScopeEnd(graphics, ended, renderX, endY, globalHeadWidth);
+        graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_END_NO_IN : CodeWidgetSprites.SCOPE_END, renderX, endY, globalHeadWidth, 16);
+        graphics.blitSprite(CodeWidgetSprites.ADD, renderX + globalHeadWidth - 9, endY + 4, 7, 7);
         super.render(graphics, font, renderX, renderY);
-    }
-
-    private void renderScopeEnd(GuiGraphics graphics, boolean ended, int renderX, int renderY, int width) {
-        graphics.blitSprite(ended ? CodeWidgetSprites.SCOPE_END_NO_IN : CodeWidgetSprites.SCOPE_END, renderX, renderY, width, 16);
-        graphics.blitSprite(CodeWidgetSprites.MODIFY_IF, renderX + width - 9, renderY + 4, 7, 7);
     }
 
     //region interaction

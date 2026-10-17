@@ -69,7 +69,7 @@ public class TryCatchWidget extends StmtCodeWidget {
     @Override
     public StmtCodeWidget copy() {
         return new TryCatchWidget(
-                this.getChild().copy(),
+                this.getChildCopy(),
                 this.body.copy(),
                 this.branches
         );

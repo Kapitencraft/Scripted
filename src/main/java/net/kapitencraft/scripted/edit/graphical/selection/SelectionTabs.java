@@ -59,7 +59,6 @@ public interface SelectionTabs {
                 .withEntry(SimpleScopeEndWidget.CONTINUE)
                 .withEntry(SimpleScopeEndWidget.BREAK)
                 .withEntry(SimpleScopeEndWidget.RETURN)
-                .withEntry(new TryCatchWidget())
                 .build()
         );
         context.register(VARIABLES, SelectionTab.builder()
