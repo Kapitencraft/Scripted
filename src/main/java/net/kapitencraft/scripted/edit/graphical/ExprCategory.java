@@ -1,6 +1,8 @@
 package net.kapitencraft.scripted.edit.graphical;
 
 import com.mojang.serialization.Codec;
+import net.kapitencraft.scripted.lang.exe.VarTypeManager;
+import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +22,14 @@ public enum ExprCategory implements StringRepresentable {
 
     public ResourceLocation getSpriteLocation() {
         return spriteLocation;
+    }
+
+    public static ExprCategory fromType(ClassReference type) {
+        if (type.is(VarTypeManager.INTEGER) || type.is(VarTypeManager.DOUBLE) || type.is(VarTypeManager.FLOAT))
+            return ExprCategory.NUMBER;
+        if (type.is(VarTypeManager.BOOLEAN))
+            return ExprCategory.BOOLEAN;
+        return ExprCategory.OTHER;
     }
 
     @Override

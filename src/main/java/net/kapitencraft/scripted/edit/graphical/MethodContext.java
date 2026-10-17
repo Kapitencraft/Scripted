@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical;
 
 import net.kapitencraft.scripted.edit.graphical.variable.LocalVariableTable;
+import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 
 import java.util.Map;
 

@@ -1,11 +1,12 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 
+import net.kapitencraft.kap_lib.core.client.widget.select.SelectEnumWidget;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.ChatFormatting;
@@ -16,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class VarNameSelectorWidget implements ExprCodeWidget {
@@ -25,6 +27,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     private ExprCategory category = ExprCategory.OTHER;
     private @Nullable String selected = "something";
     private boolean createVar;
+    private MethodContext context;
 
     @Override
     public @NotNull Type getType() {
@@ -93,8 +96,8 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
         return this.category;
     }
 
-    private static class SelectVarNameInteraction extends CodeInteraction {
-        //TODO
+    private class SelectVarNameInteraction extends CodeInteraction {
+        //TODO add ability to create new variables
 
         protected SelectVarNameInteraction(int x, int y, int width, int height) {
             super(x, y, width, height);
@@ -102,7 +105,16 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData callbacks) {
-            //callbacks.openWidget();
+            if (context != null) {
+                callbacks.openWidget(new SelectEnumWidget<>(
+                        mouseX + x, mouseY + y, 100, 50,
+                        callbacks.getFont(),
+                        new ArrayList<>(context.lvt.getAll()),
+                        Component::literal,
+                        callbacks.wrapCloseWidget(VarNameSelectorWidget.this::setSelected),
+                        Component.translatable("scripted.widget.select_var_name")
+                ));
+            }
         }
     }
 
@@ -117,6 +129,7 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
             this.category = context.lvt.getType(this.selected);
         } else
             status = Status.MISSING;
+        this.context = context;
     }
 
     public @NotNull String getVisualSelected() {

@@ -425,7 +425,6 @@ public class IfStmtWidget extends StmtCodeWidget {
 
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
-        //TODO
         this.condition.registerInteractions(xOrigin, yOrigin + 7 + (headHeight - 20) / 2, font, sink);
         if (this.conditionBody != null) {
             this.conditionBody.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
@@ -469,7 +468,6 @@ public class IfStmtWidget extends StmtCodeWidget {
                 guiGraphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, 2, yOffset, 48, 22);
                 yOffset += 19;
             }
-            //TODO
             if (IfStmtWidget.this.elseVisible) {
                 guiGraphics.blitSprite(CodeWidgetSprites.BRANCH_END, 2, yOffset, 48, 19);
             }

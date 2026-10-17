@@ -29,7 +29,6 @@ public interface ExprCodeWidget extends CodeWidget {
 
     ExprCodeWidget copy();
 
-    //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
     enum Type implements StringRepresentable {
         PARAM(() -> ParamWidget.CODEC),

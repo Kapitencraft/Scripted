@@ -79,6 +79,8 @@ public class TryCatchWidget extends StmtCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.SCOPE_HEAD, renderX, renderY, getWidth(font), getHeight());
 
+
+
         super.render(graphics, font, renderX, renderY);
     }
 
