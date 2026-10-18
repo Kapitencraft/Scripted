@@ -1,5 +1,91 @@
 [
   {
+    "type": "stmt",
+    "entry": {
+      "type": "compound",
+      "args": {
+        "type": {
+          "type": "select_block",
+          "block": "minecraft:stone"
+        }
+      },
+      "target": {
+        "type": "method_stmt",
+        "args": {},
+        "methodChild": {
+          "type": "expr",
+          "args": {
+            "flags": {
+              "type": "param",
+              "category": "number"
+            },
+            "newState": {
+              "type": "get_var",
+              "name": "type"
+            },
+            "pos": {
+              "type": "get_var",
+              "name": "data"
+            }
+          },
+          "category": "boolean",
+          "translationKey": "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"
+        },
+        "signature": "Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;"
+      },
+      "translation": "compound_stmts.scripted.world.set_block"
+    }
+  },
+  {
+    "type": "stmt",
+    "entry": {
+      "type": "compound",
+      "args": {
+        "type": {
+          "type": "select_block",
+          "block": "minecraft:stone"
+        },
+        "x": {
+          "type": "param",
+          "category": "number"
+        },
+        "y": {
+          "type": "param",
+          "category": "number"
+        },
+        "z": {
+          "type": "param",
+          "category": "number"
+        }
+      },
+      "target": {
+        "type": "method_stmt",
+        "args": {},
+        "methodChild": {
+          "type": "expr",
+          "args": {
+            "flags": {
+              "type": "param",
+              "category": "number"
+            },
+            "newState": {
+              "type": "get_var",
+              "name": "type"
+            },
+            "pos": {
+              "type": "get_var",
+              "name": "data"
+            }
+          },
+          "category": "boolean",
+          "translationKey": "Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z"
+        },
+        "signature": "Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;"
+      },
+      "translation": "compound_stmts.scripted.world.set_block_offset"
+    }
+  },
+  {
     "type": "expr",
     "entry": {
       "type": "expr",

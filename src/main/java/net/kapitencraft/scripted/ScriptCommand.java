@@ -88,7 +88,7 @@ public class ScriptCommand {
             return 1;
         }
 
-        CommandData data = new CommandData(context.getSource().getPlayerOrException());
+        CommandData data = new CommandData(context.getSource());
 
         VirtualMachine.executeMethod("Lscripted/exe/CommandScript;execute(Lscripted/exe/CommandData;)",
                 new DynamicClassInstance(c.get()),

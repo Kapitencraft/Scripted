@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.SingletonExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
@@ -12,7 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.client.gui.Font;
@@ -32,7 +33,7 @@ public class ForEachStmtWidget extends LoopStmtWidget {
 
     private ExprCodeWidget values = ParamWidget.OBJ;
     private final Map<String, ExprCodeWidget> args;
-    private final VarNameSelectorWidget varName = new VarNameSelectorWidget();
+    private final VarNameSelectorWidget varName = new VarNameSelectorWidget(ExprCategory.OTHER);
 
     public ForEachStmtWidget(Optional<StmtCodeWidget> child, Optional<StmtCodeWidget> body, ExprCodeWidget values) {
         this(values);

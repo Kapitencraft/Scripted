@@ -61,14 +61,5 @@
       "type": "simple_scope_end",
       "end_type": "return"
     }
-  },
-  {
-    "type": "stmt",
-    "entry": {
-      "type": "try_catch_stmt",
-      "branches": [
-        {}
-      ]
-    }
   }
 ]

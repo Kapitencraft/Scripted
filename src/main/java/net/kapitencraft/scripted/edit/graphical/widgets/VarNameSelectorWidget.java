@@ -1,10 +1,10 @@
-package net.kapitencraft.scripted.edit.graphical.widgets.expr;
+package net.kapitencraft.scripted.edit.graphical.widgets;
 
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
+import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
@@ -24,10 +24,23 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
     private static final ResourceLocation ARROW = ResourceLocation.withDefaultNamespace("transferable_list/move_down");
 
     private @NotNull Status status = Status.UNKNOWN;
-    private ExprCategory category = ExprCategory.OTHER;
+    private ExprCategory category;
     private @Nullable String selected = "something";
     private boolean createVar;
     private MethodContext context;
+
+    public VarNameSelectorWidget(ExprCategory category) {
+        if ((this.category = category) == ExprCategory.NUMBER) {
+            this.selected = "i";
+        }
+    }
+
+    private VarNameSelectorWidget(@NotNull Status status, ExprCategory category, @Nullable String selected, boolean createVar) {
+        this.status = status;
+        this.category = category;
+        this.selected = selected;
+        this.createVar = createVar;
+    }
 
     @Override
     public @NotNull Type getType() {
@@ -57,7 +70,12 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
 
     @Override
     public ExprCodeWidget copy() {
-        return new VarNameSelectorWidget();
+        return new VarNameSelectorWidget(
+                Status.UNKNOWN,
+                this.category,
+                this.selected,
+                this.createVar
+        );
     }
 
     @Override

@@ -10,6 +10,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchRe
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
@@ -27,20 +28,24 @@ public class MethodStmtWidget extends StmtCodeWidget {
             commonFields(i)
                     .and(Codec.STRING.fieldOf("signature").forGetter(w -> w.signature))
                     .and(Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args))
+                    .and(ExprCodeWidget.CODEC.optionalFieldOf("methodChild").forGetter(mSW -> Optional.ofNullable(mSW.methodChild)))
                     .apply(i, MethodStmtWidget::new)
     );
 
     private final String signature;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
+    private ExprCodeWidget methodChild;
 
-    public MethodStmtWidget(Optional<StmtCodeWidget> child, String signature, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(Optional<StmtCodeWidget> child, String signature, Map<String, ExprCodeWidget> args, Optional<ExprCodeWidget> methodChild) {
         this.signature = signature;
         this.args.putAll(args);
         child.ifPresent(this::setChild);
+        methodChild.ifPresent(w -> this.methodChild = w);
     }
 
-    public MethodStmtWidget(StmtCodeWidget child, String sig, Map<String, ExprCodeWidget> args) {
+    public MethodStmtWidget(StmtCodeWidget child, ExprCodeWidget methodChild, String sig, Map<String, ExprCodeWidget> args) {
         this.setChild(child);
+        this.methodChild = methodChild;
         this.signature = sig;
         this.args.putAll(args);
     }
@@ -49,6 +54,7 @@ public class MethodStmtWidget extends StmtCodeWidget {
     public StmtCodeWidget copy() {
         return new MethodStmtWidget(
                 this.getChildCopy(),
+                methodChild != null ? methodChild.copy() : null,
                 this.signature,
                 this.args
         );
@@ -110,9 +116,15 @@ public class MethodStmtWidget extends StmtCodeWidget {
         private StmtCodeWidget child = null;
         private String signature = null;
         private final Map<String, ExprCodeWidget> arguments = new HashMap<>();
+        private ExprCodeWidget methodChild;
 
         public Builder setChild(StmtCodeWidget child) {
             this.child = child;
+            return this;
+        }
+
+        public Builder setMethodChild(ExprCodeWidget child) {
+            this.methodChild = child;
             return this;
         }
 
@@ -132,7 +144,12 @@ public class MethodStmtWidget extends StmtCodeWidget {
 
         @Override
         public MethodStmtWidget build() {
-            return new MethodStmtWidget(child, Objects.requireNonNull(signature, "missing signature"), arguments);
+            return new MethodStmtWidget(
+                    child,
+                    methodChild,
+                    Objects.requireNonNull(signature, "missing signature"),
+                    arguments
+            );
         }
     }
 }

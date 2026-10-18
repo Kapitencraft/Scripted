@@ -9,7 +9,6 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
-import net.kapitencraft.scripted.edit.graphical.widgets.connector.MethodChainConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
@@ -19,26 +18,37 @@ import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.security.spec.ECField;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
-public class MethodWidget implements ExprCodeWidget {
+public class MethodWidget extends ChainableExprWidget {
     public static final MapCodec<MethodWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ExprCategory.CODEC.fieldOf("category").forGetter(w -> w.type),
             Codec.STRING.fieldOf("translationKey").forGetter(w -> w.translationKey),
-            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args)
+            Codec.unboundedMap(Codec.STRING, ExprCodeWidget.CODEC).fieldOf("args").forGetter(w -> w.args),
+            ExprCodeWidget.CODEC.optionalFieldOf("child").forGetter(w -> Optional.ofNullable(w.chainChild))
     ).apply(i, MethodWidget::new));
 
     private final ExprCategory type;
     private final String translationKey;
     private final Map<String, ExprCodeWidget> args = new HashMap<>();
-    private ExprCodeWidget child;
 
-    public MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args) {
+    private MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args, Optional<ExprCodeWidget> child) {
         this.type = type;
         this.translationKey = translationKey;
         this.args.putAll(args);
+        child.ifPresent(this::setChainChild);
+    }
+
+    private MethodWidget(ExprCategory type, String translationKey, Map<String, ExprCodeWidget> args, ExprCodeWidget child) {
+        this.type = type;
+        this.translationKey = translationKey;
+        this.args.putAll(args);
+        this.chainChild = child;
     }
 
     public static Builder builder() {
@@ -52,10 +62,7 @@ public class MethodWidget implements ExprCodeWidget {
 
     @Override
     public MethodWidget copy() {
-        MethodWidget methodWidget = new MethodWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap());
-        if (this.child != null)
-            methodWidget.setChild(this.child.copy());
-        return methodWidget;
+        return new MethodWidget(this.type, this.translationKey, MapStream.of(this.args).mapValues(ExprCodeWidget::copy).toMap(), this.chainChild);
     }
 
     @Override
@@ -98,8 +105,8 @@ public class MethodWidget implements ExprCodeWidget {
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (x > this.getWidth(font)) {
-            if (this.child != null)
-                return this.child.fetchAndRemoveHovered(x + this.getWidth(font), y, font);
+            if (this.chainChild != null)
+                return this.chainChild.fetchAndRemoveHovered(x + this.getWidth(font), y, font);
             return null;
         }
         return ExprWidgetFetchResult.fromExprList(4, x, y, font, this, this.translationKey, this.args);
@@ -110,21 +117,16 @@ public class MethodWidget implements ExprCodeWidget {
         CodeWidgetHelper.registerAllInteractions(xOrigin, yOrigin + 5 + (getHeight() - 18) / 2, font, sink, translationKey, args);
     }
 
-    public void setChild(@Nullable ExprCodeWidget codeWidget) {
-        this.child = codeWidget;
-    }
-
-    public @Nullable ExprCodeWidget getChild() {
-        return this.child;
-    }
-
     public static class Builder implements ExprCodeWidget.Builder<MethodWidget> {
         private ExprCategory type;
-        private String translationKey;
+        private String signature;
         private final Map<String, ExprCodeWidget> args = new HashMap<>();
+        private ExprCodeWidget child;
 
-        public Builder setTranslationKey(String translationKey) {
-            this.translationKey = translationKey;
+        private Builder() {}
+
+        public Builder setSignature(String translationKey) {
+            this.signature = translationKey;
             return this;
         }
 
@@ -142,9 +144,14 @@ public class MethodWidget implements ExprCodeWidget {
             return this.withParam(argName, builder.build());
         }
 
+        public Builder setChild(ExprCodeWidget child) {
+            this.child = child;
+            return this;
+        }
+
         @Override
         public MethodWidget build() {
-            return new MethodWidget(type, translationKey, args);
+            return new MethodWidget(Objects.requireNonNull(type, "missing type!"), signature, args, child);
         }
     }
 

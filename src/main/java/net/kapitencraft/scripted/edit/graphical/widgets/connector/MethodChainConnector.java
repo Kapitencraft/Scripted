@@ -16,12 +16,12 @@ public class MethodChainConnector extends ExprConnector {
 
     @Override
     public void insert(@Nullable CodeWidget widget) {
-        this.expr.setChild((ExprCodeWidget) widget);
+        this.expr.setChainChild((ExprCodeWidget) widget);
     }
 
     @Override
     public CodeWidget get() {
-        return this.expr.getChild();
+        return this.expr.getChainChild();
     }
 
     @Override

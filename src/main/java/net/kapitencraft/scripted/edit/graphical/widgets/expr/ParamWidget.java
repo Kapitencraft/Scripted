@@ -15,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.Consumer;
 
 public class ParamWidget implements ExprCodeWidget {
+    //TODO add registry for fallback types depending on the arg type
+
     public static final MapCodec<ParamWidget> CODEC = ExprCategory.CODEC.xmap(ParamWidget::new, w -> w.exprCategory).fieldOf("category");
 
     public static final ParamWidget CONDITION = new ParamWidget(ExprCategory.BOOLEAN);

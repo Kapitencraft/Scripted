@@ -45,6 +45,9 @@
   "scripted.code.expr.test1": "Some Expression",
   "scripted.code.expr.test2": "",
 
+  "compound_stmts.scripted.world.set_block": "set block at origin to {type}",
+  "compound_stmts.scripted.world.set_block_offset": "set block offset by {x} {y} {z} from the origin to {type}",
+
   "Lnet/minecraft/core/BlockPos;<init>(III)V": "position at {x} {y} {z}",
   "Lnet/minecraft/world/phys/Vec3;x": "x value",
   "Lnet/minecraft/world/phys/Vec3;y": "y value",

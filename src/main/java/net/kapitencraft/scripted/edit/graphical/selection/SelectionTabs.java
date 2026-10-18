@@ -5,18 +5,13 @@ import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.*;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.BinaryNumOperationWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.binary.ComparisonWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.stmt.AssignVarWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.stmt.IfStmtWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.stmt.SimpleScopeEndWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.stmt.TryCatchWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.stmt.*;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForEachStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForRangeStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.WhileStmtWidget;
 import net.kapitencraft.scripted.registry.ModRegistries;
 import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
-
-import java.util.Map;
 
 public interface SelectionTabs {
     ResourceKey<SelectionTab> OPERATORS = reg("operators");
@@ -31,21 +26,91 @@ public interface SelectionTabs {
 
     static void bootstrap(BootstrapContext<SelectionTab> context) {
         context.register(WORLD, SelectionTab.builder()
-                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/core/BlockPos;<init>(III)V", Map.of(
-                        "x", ParamWidget.NUM,
-                        "y", ParamWidget.NUM,
-                        "z", ParamWidget.NUM
-                )))
-                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;", Map.of("pos", ParamWidget.OBJ)))
-                .withEntry(new MethodWidget(ExprCategory.BOOLEAN, "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z", Map.of("block", new BlockSelectWidget())))
-
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;x", Map.of()))
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;y", Map.of()))
-                .withEntry(new MethodWidget(ExprCategory.NUMBER, "Lnet/minecraft/world/phys/Vec3;z", Map.of()))
+                .withEntry(new CompoundStmtWidget.Builder()
+                        .setKey("compound_stmts.scripted.world.set_block")
+                        .setTarget(MethodStmtWidget.builder()
+                                .setSignature("Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;")
+                                .setMethodChild(MethodWidget.builder()
+                                        .setSignature("Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z")
+                                        .withParam("pos", new GetVarWidget("data").setChainChild(MethodWidget.builder()
+                                                .setSignature("Lscripted/exe/CommandData;getPosition()")
+                                                .setType(ExprCategory.OTHER)
+                                                .build()
+                                        ))
+                                        .withParam("newState", new GetVarWidget("type"))
+                                        .withParam("flags", new ParamWidget(ExprCategory.NUMBER))
+                                        .setType(ExprCategory.BOOLEAN)
+                                        .build())
+                                .build())
+                        .addArgument("type", new BlockSelectWidget())
+                        .build()
+                ).withEntry(new CompoundStmtWidget.Builder()
+                        .setKey("compound_stmts.scripted.world.set_block_offset")
+                        .setTarget(MethodStmtWidget.builder()
+                                .setSignature("Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;")
+                                .setMethodChild(MethodWidget.builder()
+                                        .setSignature("Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z")
+                                        .withParam("pos", new GetVarWidget("data").setChainChild(MethodWidget.builder()
+                                                .setSignature("Lscripted/exe/CommandData;getPosition()")
+                                                .setChild(MethodWidget.builder()
+                                                        .setType(ExprCategory.OTHER)
+                                                        .setSignature("Lnet/minecraft/core/BlockPos;offset(III)Lnet/minecraft/core/BlockPos;")
+                                                        .withParam("dx", new GetVarWidget("x"))
+                                                        .withParam("dy", new GetVarWidget("y"))
+                                                        .withParam("dz", new GetVarWidget("z"))
+                                                        .build())
+                                                .setType(ExprCategory.OTHER)
+                                                .build()
+                                        ))
+                                        .withParam("newState", new GetVarWidget("type"))
+                                        .withParam("flags", new ParamWidget(ExprCategory.NUMBER))
+                                        .setType(ExprCategory.BOOLEAN)
+                                        .build())
+                                .build())
+                        .addArgument("type", new BlockSelectWidget())
+                        .addArgument("x", ParamWidget.NUM)
+                        .addArgument("y", ParamWidget.NUM)
+                        .addArgument("z", ParamWidget.NUM)
+                        .build()
+                )
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.OTHER)
+                        .setSignature("Lnet/minecraft/core/BlockPos;<init>(III)V")
+                        .withParam("x", ParamWidget.NUM)
+                        .withParam("y", ParamWidget.NUM)
+                        .withParam("z", ParamWidget.NUM)
+                        .build()
+                )
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.OTHER)
+                        .setSignature("Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;")
+                        .withParam("pos", ParamWidget.OBJ)
+                        .build())
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.BOOLEAN)
+                        .setSignature("Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z")
+                        .withParam("block", new BlockSelectWidget())
+                        .build())
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.NUMBER)
+                        .setSignature("Lnet/minecraft/world/phys/Vec3;x")
+                        .build())
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.NUMBER)
+                        .setSignature("Lnet/minecraft/world/phys/Vec3;y")
+                        .build())
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.NUMBER)
+                        .setSignature("Lnet/minecraft/world/phys/Vec3;z")
+                        .build())
                 .build()
         );
         context.register(PLAYER, SelectionTab.builder()
-                .withEntry(new MethodWidget(ExprCategory.OTHER, "Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z", Map.of("stack", new ItemSelectWidget())))
+                .withEntry(MethodWidget.builder()
+                        .setType(ExprCategory.OTHER)
+                        .setSignature("Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z")
+                        .withParam("stack", new ItemSelectWidget())
+                        .build())
                 .build()
         );
         context.register(CONTROL, SelectionTab.builder()
@@ -64,7 +129,8 @@ public interface SelectionTabs {
         context.register(VARIABLES, SelectionTab.builder()
                 .withEntry(AssignVarWidget.builder().doesCreateVar())
                 .withEntry(AssignVarWidget.builder().setExpr(ParamWidget.OBJ))
-                .withEntry(new GetVarWidget(null))
+                .withEntry(new GetVarWidget("something"))
+                .withEntry(new GetVarWidget("i"))
                 .build()
         );
         context.register(OPERATORS, SelectionTab.builder()

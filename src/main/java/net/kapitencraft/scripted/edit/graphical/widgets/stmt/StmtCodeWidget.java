@@ -65,9 +65,7 @@ public abstract class StmtCodeWidget implements CodeWidget {
         return this.child != null && this.child.ends();
     }
 
-    //TODO convert back to code representation before saving
     //lambda necessary to ensure load order doesn't create cycle
-    @Deprecated //convert to AST instead
     protected enum Type implements StringRepresentable {
         HEAD(() -> HeadWidget.CODEC),
         TRY_CATCH_STMT(() -> TryCatchWidget.CODEC),
@@ -77,6 +75,7 @@ public abstract class StmtCodeWidget implements CodeWidget {
         IF_STMT(() -> IfStmtWidget.CODEC),
         BODY(() -> AssignVarWidget.CODEC),
         METHOD_STMT(() -> MethodStmtWidget.CODEC),
+        COMPOUND(() -> CompoundStmtWidget.CODEC),
         SIMPLE_SCOPE_END(() -> SimpleScopeEndWidget.CODEC);
 
         public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);

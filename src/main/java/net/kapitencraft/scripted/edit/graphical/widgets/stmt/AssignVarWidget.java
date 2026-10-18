@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
@@ -12,7 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -35,7 +36,7 @@ public class AssignVarWidget extends StmtCodeWidget {
     );
 
     private ExprCodeWidget expr;
-    private final VarNameSelectorWidget varNameSelectorWidget = new VarNameSelectorWidget();
+    private final VarNameSelectorWidget varNameSelectorWidget = new VarNameSelectorWidget(ExprCategory.OTHER);
 
     private AssignVarWidget(StmtCodeWidget child, String varName, ExprCodeWidget expr, boolean createsVar) {
         this.expr = expr;

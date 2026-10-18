@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
@@ -12,7 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.client.gui.Font;
@@ -34,7 +35,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
             .apply(i, ForRangeStmtWidget::new)
     );
 
-    private final VarNameSelectorWidget varName = new VarNameSelectorWidget();
+    private final VarNameSelectorWidget varName = new VarNameSelectorWidget(ExprCategory.NUMBER);
     private final Map<String, ExprCodeWidget> args;
 
     private ForRangeStmtWidget(Optional<StmtCodeWidget> child, ExprCodeWidget min, ExprCodeWidget max, ExprCodeWidget step, Optional<StmtCodeWidget> body) {

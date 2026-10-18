@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
@@ -20,7 +21,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class GetVarWidget implements ExprCodeWidget {
+public class GetVarWidget extends ChainableExprWidget {
     public static final MapCodec<GetVarWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("name").forGetter(w -> Optional.ofNullable(w.name))
     ).apply(i, GetVarWidget::fromCodec));
@@ -30,7 +31,7 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     private final @Nullable String name;
-    private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget();
+    private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget(ExprCategory.OTHER);
     private ExprCategory exprCategory = ExprCategory.OTHER;
 
     public GetVarWidget(@Nullable String name) {
