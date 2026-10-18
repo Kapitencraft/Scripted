@@ -1,5 +1,6 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
@@ -15,18 +16,18 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ForRangeStmtWidget extends LoopStmtWidget {
     public static final MapCodec<ForRangeStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i -> commonFields(i)
+            .and(Codec.STRING.fieldOf("varName").forGetter(w -> w.varName.getSelected()))
             .and(ExprCodeWidget.CODEC.optionalFieldOf("min", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getMin))
             .and(ExprCodeWidget.CODEC.optionalFieldOf("max", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getMax))
             .and(ExprCodeWidget.CODEC.optionalFieldOf("step", ParamWidget.NUM).forGetter(ForRangeStmtWidget::getStep))
@@ -35,19 +36,20 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     );
 
     private final VarNameSelectorWidget varName = new VarNameSelectorWidget();
-    private final Map<String, ExprCodeWidget> args;
+    private final List<ExprCodeWidget> args;
 
-    private ForRangeStmtWidget(Optional<StmtCodeWidget> child, ExprCodeWidget min, ExprCodeWidget max, ExprCodeWidget step, Optional<StmtCodeWidget> body) {
+    private ForRangeStmtWidget(Optional<StmtCodeWidget> child, String varName, ExprCodeWidget min, ExprCodeWidget max, ExprCodeWidget step, Optional<StmtCodeWidget> body) {
         this(min, max, step, body.orElse(null));
+        this.varName.setSelected(varName);
         child.ifPresent(this::setChild);
     }
 
     private ForRangeStmtWidget(ExprCodeWidget lowerBound, ExprCodeWidget upperBound, ExprCodeWidget step, StmtCodeWidget body) {
-        this.args = new HashMap<>();
-        args.put("var", varName);
-        args.put("min", lowerBound);
-        args.put("max", upperBound);
-        args.put("interval", step);
+        this.args = new ArrayList<>();
+        args.add(varName);
+        args.add(lowerBound);
+        args.add(upperBound);
+        args.add(step);
         this.varName.setCreate(true);
         this.body = body;
     }
@@ -68,43 +70,48 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
     @Override
     public StmtCodeWidget copy() {
         return new ForRangeStmtWidget(
-                this.args.get("min").copy(),
-                this.args.get("max").copy(),
-                this.args.get("interval").copy(),
+                this.args.get(1).copy(),
+                this.args.get(2).copy(),
+                this.args.get(3).copy(),
                 this.body == null ? null : this.body.copy()
         );
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if ("var".equals(arg) || !args.containsKey(arg))
-            throw new IllegalStateException("unknown argument \"" + arg + "\" on ForRange widget");
-        this.args.put(arg, obj);
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 0 || arg > 3)
+            throw new IllegalStateException("unknown argument " + arg + " on ForRange widget");
+        this.args.set(arg, obj);
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
-        if ("var".equals(arg) || !args.containsKey(arg))
-            throw new IllegalStateException("unknown argument \"" + arg + "\" on ForRange widget");
+    public CodeWidget getByIndex(int arg) {
+        if (arg == 0 || arg > 3)
+            throw new IllegalStateException("unknown argument " + arg + " on ForRange widget");
         return args.get(arg);
     }
 
     public ExprCodeWidget getMin() {
-        return args.get("min");
+        return args.get(1);
     }
 
     public ExprCodeWidget getMax() {
-        return args.get("max");
+        return args.get(2);
     }
 
     public ExprCodeWidget getStep() {
-        return args.get("interval");
+        return args.get(3);
     }
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         ArgumentExprConnector.parse(font, aX + 4, aY, "§for_range", this.args, this.getHeadHeight(), this, collector);
         super.collectConnectors(aX, aY, font, collector);
+    }
+
+    @Override
+    public Stmt parse() {
+        return null;
     }
 
     @Override
@@ -155,7 +162,7 @@ public class ForRangeStmtWidget extends LoopStmtWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font) {
-        this.args.values().forEach(w -> w.update(context, font));
+        this.args.forEach(w -> w.update(context, font));
         super.update(context, font);
     }
 

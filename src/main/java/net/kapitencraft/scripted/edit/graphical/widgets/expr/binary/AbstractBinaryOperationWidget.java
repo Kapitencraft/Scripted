@@ -49,12 +49,12 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§bin_op", List.of(left, this.operatorWidget, right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§bin_op", Map.of("left", left, "op", this.operatorWidget, "right", right));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§bin_op", List.of(left, this.operatorWidget, right));
     }
 
     @Override
@@ -133,19 +133,19 @@ public abstract class AbstractBinaryOperationWidget<O extends StringRepresentabl
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
         switch (arg) {
-            case "left" -> this.left = obj;
-            case "right" -> this.right = obj;
+            case 0 -> this.left = obj;
+            case 2 -> this.right = obj;
             default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
         }
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
+    public CodeWidget getByIndex(int arg) {
         return switch (arg) {
-            case "left" -> this.left;
-            case "right" -> this.right;
+            case 0 -> this.left;
+            case 2 -> this.right;
             default -> throw new IllegalArgumentException("unknown arg type for binary: " + arg);
         };
     }

@@ -32,13 +32,15 @@
   {
     "type": "stmt",
     "entry": {
-      "type": "for_range_stmt"
+      "type": "for_range_stmt",
+      "varName": "something"
     }
   },
   {
     "type": "stmt",
     "entry": {
-      "type": "for_each_stmt"
+      "type": "for_each_stmt",
+      "varName": "something"
     }
   },
   {

@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop;
 
 import com.google.common.base.Preconditions;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
@@ -15,37 +16,38 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class ForEachStmtWidget extends LoopStmtWidget {
     public static final MapCodec<ForEachStmtWidget> CODEC = RecordCodecBuilder.mapCodec(i -> loopCommonFields(i)
             .and(ExprCodeWidget.CODEC.optionalFieldOf("expr", ParamWidget.OBJ).forGetter(w -> w.values))
+            .and(Codec.STRING.fieldOf("varName").forGetter(w -> w.varName.getSelected()))
             .apply(i, ForEachStmtWidget::new)
     );
 
-    private ExprCodeWidget values = ParamWidget.OBJ;
-    private final Map<String, ExprCodeWidget> args;
+    private ExprCodeWidget values;
+    private final List<ExprCodeWidget> args;
     private final VarNameSelectorWidget varName = new VarNameSelectorWidget();
 
-    public ForEachStmtWidget(Optional<StmtCodeWidget> child, Optional<StmtCodeWidget> body, ExprCodeWidget values) {
+    public ForEachStmtWidget(Optional<StmtCodeWidget> child, Optional<StmtCodeWidget> body, ExprCodeWidget values, String varName) {
         this(values);
         child.ifPresent(this::setChild);
         body.ifPresent(this::setBody);
+        this.varName.setSelected(varName);
     }
 
     public ForEachStmtWidget(ExprCodeWidget values) {
         Preconditions.checkNotNull(values);
         this.values = values;
-        this.args = new HashMap<>();
-        this.args.put("var", varName);
-        this.args.put("expr", values);
+        this.args = new ArrayList<>();
+        this.args.add(varName);
+        this.args.add(values);
     }
 
     public ForEachStmtWidget(ExprCodeWidget values, StmtCodeWidget body) {
@@ -74,29 +76,36 @@ public class ForEachStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if ("expr".equals(arg)) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 1) {
             this.values = obj;
+            return;
         }
+        throw new IllegalStateException("unknown argument " + arg + " on ForEach widget");
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
-        if ("expr".equals(arg))
+    public CodeWidget getByIndex(int arg) {
+        if (arg == 1)
             return values;
-        throw new IllegalStateException("unknown argument \"" + arg + "\" on ForEach widget");
+        throw new IllegalStateException("unknown argument " + arg + " on ForEach widget");
     }
 
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int valuesOffset = CodeWidgetHelper.getPartialWidth(font, "§for_each", Map.of("var", varName), "expr");
+        int valuesOffset = CodeWidgetHelper.getPartialWidth(font, "§for_each", List.of(varName), 1);
         collector.accept(new SingletonExprConnector(
                 aX + 4 + valuesOffset, aY + 7 + (getHeadHeight() - 20) / 2,
                 w -> this.values = w,
                 () -> this.values
         ));
         super.collectConnectors(aX, aY, font, collector);
+    }
+
+    @Override
+    public Stmt parse() {
+        return null;
     }
 
     @Override

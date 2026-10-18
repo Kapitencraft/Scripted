@@ -90,15 +90,16 @@ public class MethodStmtWidget extends StmtCodeWidget {
         ClassReference reference = VarTypeManager.parseType(reader);
         String mName = reader.readUntil('(');
 
-        return new Stmt.Expression(
-                new Expr.StaticCall(
-                        reference,
-                        Token.createNative(mName),
-                        this.args.stream().map(ExprCodeWidget::parse).toArray(Expr[]::new),
-                        null,
-                        ""
-                )
-        );
+        return null;
+        //return new Stmt.Expression(
+        //        new Expr.StaticCall(
+        //                reference,
+        //                Token.createNative(mName),
+        //                this.args.stream().map(ExprCodeWidget::parse).toArray(Expr[]::new),
+        //                null,
+        //                ""
+        //        )
+        //);
     }
 
     @Override

@@ -3,6 +3,7 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr.binary;
 import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,6 +35,11 @@ public class ComparisonWidget extends AbstractBinaryOperationWidget<ComparisonWi
                 this.operatorWidget.getValue(),
                 this.right
         );
+    }
+
+    @Override
+    public Expr parse() {
+        return null;
     }
 
     enum Operation implements StringRepresentable {

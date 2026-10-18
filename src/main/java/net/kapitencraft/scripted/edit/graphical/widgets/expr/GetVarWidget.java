@@ -102,6 +102,7 @@ public class GetVarWidget implements ExprCodeWidget {
     }
 
     public Expr parse() {
-        return new Expr.VarRef(Token.createNative(this.name), getOrdinal());
+        return null;
+        //return new Expr.VarRef(Token.createNative(this.name), getOrdinal());
     }
 }

@@ -47,6 +47,11 @@ public class TryCatchWidget extends StmtCodeWidget {
     }
 
     @Override
+    public Stmt parse() {
+        return null;
+    }
+
+    @Override
     public int getWidth(Font font) {
         return 0;
     }
@@ -66,19 +71,19 @@ public class TryCatchWidget extends StmtCodeWidget {
     }
 
     @Override
+    public void insertById(int arg, @NotNull ExprCodeWidget obj) {
+
+    }
+
+    @Override
+    public CodeWidget getByIndex(int argName) {
+        return null;
+    }
+
+    @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
 
         super.render(graphics, font, renderX, renderY);
-    }
-
-    @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-
-    }
-
-    @Override
-    public CodeWidget getByName(String arg) {
-        return null;
     }
 
     public static class CatchBranch {

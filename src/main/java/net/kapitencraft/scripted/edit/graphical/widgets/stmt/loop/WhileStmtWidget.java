@@ -15,11 +15,13 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -64,15 +66,15 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if ("condition".equals(arg)) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
+        if (0 == arg) {
             this.condition = obj;
         }
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
-        if ("condition".equals(arg)) {
+    public CodeWidget getByIndex(int arg) {
+        if (0 == arg) {
             return this.condition;
         }
         throw new IllegalArgumentException("unknown argument " + arg + " in While");
@@ -86,7 +88,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
         collector.accept(new SingletonExprConnector(
-                aX + 6 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                aX + 6 + CodeWidgetHelper.getPartialWidth(font, "§while", List.of(), 0),
                 aY,
                 this::setCondition,
                 () -> this.condition
@@ -95,9 +97,14 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     @Override
+    public Stmt parse() {
+        return null;
+    }
+
+    @Override
     void renderHead(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int headHeight = getHeadHeight();
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 18) / 2, "§while", Map.of("condition", this.condition));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (headHeight - 18) / 2, "§while", List.of(this.condition));
     }
 
     protected int getHeadHeight() {
@@ -105,14 +112,14 @@ public class WhileStmtWidget extends LoopStmtWidget {
     }
 
     protected int getHeadWidth(Font font) {
-        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§while", Map.of("condition", this.condition));
+        return 4 + CodeWidgetHelper.getVisualTextWidth(font, "§while", List.of(this.condition));
     }
 
     @Override
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while",
-                    ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition)
+                    ArgumentStorage.createSingle(this::setCondition, () -> this.condition)
             );
         } else if (y > this.getHeight()) {
             return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
@@ -130,7 +137,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     @Override
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         this.condition.registerInteractions(
-                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, "§while", Map.of(), "condition"),
+                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, "§while", List.of(), 0),
                 yOrigin + 7 + (getHeadHeight() - 18) / 2 - (this.condition.getHeight() - 8) / 2,
                 font,
                 sink

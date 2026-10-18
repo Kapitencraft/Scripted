@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.mojang.datafixers.util.Pair;
+import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.BlocklyCompilerPipeline;
 import net.kapitencraft.scripted.lang.compiler.analyser.LocationAnalyser;
 import net.kapitencraft.scripted.lang.compiler.bytecode.CacheBuilder;
@@ -22,6 +23,7 @@ import net.kapitencraft.scripted.lang.tool.Util;
 import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +64,9 @@ public class Compiler {
         }
     }
 
-    public static SourceTree compile(boolean logInfo, boolean failFast, File data, CommandSourceStack errorSink) {
-        src = new File(data, "src");
-        cache = new File(data, "cache");
+    public static SourceTree compile(boolean logInfo, boolean failFast, MinecraftServer data, CommandSourceStack errorSink) {
+        src = data.getWorldPath(Scripted.SOURCE_DIR).toFile();
+        cache = data.getWorldPath(Scripted.CACHE_DIR).toFile();
 
         compileData = SourceTree.load(src);
 

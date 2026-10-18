@@ -4,6 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
@@ -42,6 +43,11 @@ public class SimpleScopeEndWidget extends ScopeEndWidget {
     }
 
     @Override
+    public Stmt parse() {
+        return null;
+    }
+
+    @Override
     public int getWidth(Font font) {
         return font.width(Component.translatable("§" + this.endType.getSerializedName())) + 6;
     }
@@ -63,12 +69,12 @@ public class SimpleScopeEndWidget extends ScopeEndWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
         throw new IllegalAccessError("can not insert into scope end widget");
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
+    public CodeWidget getByIndex(int arg) {
         throw new IllegalAccessError("can not insert into scope end widget");
     }
 }

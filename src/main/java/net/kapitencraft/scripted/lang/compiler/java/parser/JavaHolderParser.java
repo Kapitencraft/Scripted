@@ -327,7 +327,7 @@ public class JavaHolderParser extends AbstractJavaParser implements HolderParser
         ClassReference target = getOrCreate(name.lexeme(), pckID);
 
         parser.addClass(SourceReference.from(name, target), originalName);
-        SourceReference superClass = SourceReference.from(null, VarTypeManager.OBJECT);
+        SourceReference superClass = SourceReference.createNative(VarTypeManager.OBJECT);
         Generics classGenerics = generics();
 
         GenericStack stack = null;
@@ -404,7 +404,7 @@ public class JavaHolderParser extends AbstractJavaParser implements HolderParser
                 generics.add(generic());
             } while (match(COMMA));
             consume(GREATER, "unclosed generic declaration");
-            return new Generics(generics.toArray(new Generic[0]));
+            return Generics.fromList(generics);
         }
         return null;
     }
@@ -658,7 +658,7 @@ public class JavaHolderParser extends AbstractJavaParser implements HolderParser
                 }
                 if (!handled) error(peek(), "modifier or <identifier> expected");
             }
-            this.generics = new Generics(generics.toArray(new Generic[0]));
+            this.generics = Generics.fromList(generics);
         }
 
         private void clear() {

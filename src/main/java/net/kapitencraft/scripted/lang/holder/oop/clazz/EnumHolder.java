@@ -219,7 +219,7 @@ public record EnumHolder(ClassReference target, short modifiers,
 
         return new BakedClass(
                 logger,
-                new Generics(new Generic[0]),
+                Generics.EMPTY,
                 target(),
                 methods.toArray(Pair[]::new),
                 constructors.toArray(Pair[]::new),

@@ -92,7 +92,7 @@ public class AbstractPythonParser {
                 generics.add(generic(genericStack));
             } while (match(COMMA));
             consume(GREATER, "unclosed generic declaration");
-            return new Generics(generics.toArray(new Generic[0]));
+            return Generics.fromList(generics);
         }
         return null;
     }

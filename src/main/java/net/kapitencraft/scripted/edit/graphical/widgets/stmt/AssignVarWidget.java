@@ -78,7 +78,7 @@ public class AssignVarWidget extends StmtCodeWidget {
         if (argName == 0) {
             return this.expr;
         }
-        throw new IllegalArgumentException("unknown argument in VarModWidget: " + arg);
+        throw new IllegalArgumentException("unknown argument in VarModWidget: " + argName);
     }
 
     @Override
@@ -88,15 +88,22 @@ public class AssignVarWidget extends StmtCodeWidget {
 
     @Override
     public Stmt parse() {
-        return new Stmt.Expression(
-                new Expr.Assign(
-                        Token.createNative(this.varNameSelectorWidget.getSelected()),
-                        this.expr.parse(),
-                        Token.createNativeWithType("=", TokenType.ASSIGN),
-                        this.varNameSelectorWidget.getOrdinal(),
-                        null
-                )
-        );
+        if (createsVar()) {
+            Stmt.VarDecl varDecl = new Stmt.VarDecl();
+            varDecl.initializer = this.expr.parse();
+            varDecl.localId = this.varNameSelectorWidget.getOrdinal();
+            return varDecl;
+        }
+        return null;
+        //return new Stmt.Expression(
+        //        new Expr.Assign(
+        //                Token.createNative(this.varNameSelectorWidget.getSelected()),
+        //                this.expr.parse(),
+        //                Token.createNativeWithType("=", TokenType.ASSIGN),
+        //                this.varNameSelectorWidget.getOrdinal(),
+        //                null
+        //        )
+        //);
     }
 
     @Override
@@ -140,7 +147,7 @@ public class AssignVarWidget extends StmtCodeWidget {
     public void registerInteractions(int xOrigin, int yOrigin, Font font, Consumer<CodeInteraction> sink) {
         this.expr.registerInteractions(xOrigin, yOrigin, font, sink);
         this.varNameSelectorWidget.registerInteractions(
-                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, getTranslationKey(), Map.of(), "var"),
+                xOrigin + 4 + CodeWidgetHelper.getPartialWidth(font, getTranslationKey(), List.of(), 0),
                 yOrigin + 4 + (getHeight() - 20) / 2,
                 font,
                 sink

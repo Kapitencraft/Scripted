@@ -94,27 +94,28 @@ public class BlockSelectWidget implements ExprCodeWidget {
         //ResourceLocation: Lnet/minecraft/resources/ResourceLocation;
         //BuiltInRegistries: Lnet/minecraft/core/registries/BuiltInRegistries;
         BuiltInRegistries.BLOCK.get(location);
-        return new Expr.InstCall(
-                new Expr.StaticGet(
-                        VarTypeManager.BUILTIN_REGISTRIES,
-                        Token.createNative("BLOCK")
-                ),
-                Token.createNative("get"),
-                new Expr[]{
-                        new Expr.StaticCall(
-                                VarTypeManager.RESOURCE_LOCATION,
-                                Token.createNative("fromNamespaceAndPath"),
-                                new Expr[] {
-                                        new Expr.Literal(Token.createNativeWithStringLiteral(location.getNamespace())),
-                                        new Expr.Literal(Token.createNativeWithStringLiteral(location.getPath()))
-                                },
-                                VarTypeManager.RESOURCE_LOCATION,
-                                "Lnet/minecraft/resources/ResourceLocation;fromNamespaceAndPath(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation"
-                        )
-                },
-                VarTypeManager.BLOCK,
-                "Lnet/minecraft/core/DefaultedRegistry;get(Lnet/minecraft/resources/ResourceLocation)Lnet/java/lang/Object"
-        );
+        return null;
+        //return new Expr.InstCall(
+        //        new Expr.StaticGet(
+        //                VarTypeManager.BUILTIN_REGISTRIES,
+        //                Token.createNative("BLOCK")
+        //        ),
+        //        Token.createNative("get"),
+        //        new Expr[]{
+        //                new Expr.StaticCall(
+        //                        VarTypeManager.RESOURCE_LOCATION,
+        //                        Token.createNative("fromNamespaceAndPath"),
+        //                        new Expr[] {
+        //                                new Expr.Literal(Token.createNativeWithStringLiteral(location.getNamespace())),
+        //                                new Expr.Literal(Token.createNativeWithStringLiteral(location.getPath()))
+        //                        },
+        //                        VarTypeManager.RESOURCE_LOCATION,
+        //                        "Lnet/minecraft/resources/ResourceLocation;fromNamespaceAndPath(Ljava/lang/String;Ljava/lang/String;)Lnet/minecraft/resources/ResourceLocation"
+        //                )
+        //        },
+        //        VarTypeManager.BLOCK,
+        //        "Lnet/minecraft/core/DefaultedRegistry;get(Lnet/minecraft/resources/ResourceLocation)Lnet/java/lang/Object"
+        //);
     }
 
     @Override

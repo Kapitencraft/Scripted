@@ -16,7 +16,7 @@ public class VarTypeContainer implements Validatable {
     private final Map<String, SourceReference> implemented = new HashMap<>();
 
     public VarTypeContainer() {
-        implemented.putAll(VarTypeManager.getPackage("scripted.lang").allClasses().stream().collect(Collectors.toMap(ClassReference::name, scriptedClass -> SourceReference.from(null, scriptedClass))));
+        implemented.putAll(VarTypeManager.getPackage("scripted.lang").allClasses().stream().collect(Collectors.toMap(ClassReference::name, SourceReference::createNative)));
     }
 
     public boolean hasClass(String clazz) {

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
 import net.kapitencraft.kap_lib.core.helpers.ClientHelper;
+import net.kapitencraft.scripted.Scripted;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.BlockConnector;
@@ -18,6 +19,9 @@ import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteract
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.HeadWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
+import net.kapitencraft.scripted.io.network.C2S.SendBlocklySourcePacket;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,9 +33,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -479,10 +485,13 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     public void compile() {
+        List<StmtCodeWidget> methods = new ArrayList<>();
         for (CodeElement element : this.elements) {
-            if (element instanceof BlockCodeElement bCE && bCE.widget instanceof HeadWidget) { //only compile completed methods
+            if (element instanceof BlockCodeElement bCE && bCE.widget instanceof HeadWidget headWidget) { //only compile completed methods
+                methods.add(headWidget);
             }
         }
+        PacketDistributor.sendToServer(new SendBlocklySourcePacket(methods));
     }
 
     //region element

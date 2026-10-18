@@ -13,6 +13,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteract
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForEachStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.ForRangeStmtWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.loop.WhileStmtWidget;
+import net.kapitencraft.scripted.lang.holder.ast.Stmt;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;

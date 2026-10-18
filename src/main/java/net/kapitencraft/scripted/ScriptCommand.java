@@ -89,8 +89,7 @@ public class ScriptCommand {
             source.sendFailure(Component.literal("class not a command script"));
             return 1;
         }
-        Vec3 pos = source.getPosition();
-        CommandData data = new CommandData(source.getPlayerOrException(), new BlockPos((int) pos.x, (int) pos.y, (int) pos.z), pos, source.getLevel());
+        CommandData data = new CommandData(source);
 
         VirtualMachine.executeMethod("Lscripted/exe/CommandScript;execute(Lscripted/exe/CommandData;)",
                 new DynamicClassInstance(c.get()),
@@ -102,11 +101,7 @@ public class ScriptCommand {
     }
 
     private static int compile(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        File src = new File(
-                context.getSource().getServer().getWorldPath(LevelResource.ROOT).toFile(),
-                "scripted"
-        );
-        Compiler.compile(true, true, src, context.getSource());
+        Compiler.compile(true, true, context.getSource().getServer(), context.getSource());
 
         return 1;
     }

@@ -128,7 +128,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         if (argName < this.elseIfs.size() + 1) {
             return this.elseIfs.get(argName - 1).condition;
         }
-        throw new IllegalArgumentException("unknown argument named " + arg + " in If");
+        throw new IllegalArgumentException("unknown argument named " + argName + " in If");
     }
 
     public static Builder builder() {
@@ -150,13 +150,15 @@ public class IfStmtWidget extends StmtCodeWidget {
                                 false
                                 )).toArray(ElifBranch[]::new);
 
-        return new Stmt.If(
-                CodeParser.parseExpr(condition),
-                CodeParser.parseOptionalStmtList(conditionBody),
-                CodeParser.parseOptionalStmtList(elseBody),
-                branches,
-                Token.createNative("if")
-        );
+        Stmt.If stmt = new Stmt.If();
+        return stmt;
+        //return new Stmt.If(
+        //        CodeParser.parseExpr(condition),
+        //        CodeParser.parseOptionalStmtList(conditionBody),
+        //        CodeParser.parseOptionalStmtList(elseBody),
+        //        branches,
+        //        Token.createNative("if")
+        //);
 
     }
 
@@ -313,7 +315,7 @@ public class IfStmtWidget extends StmtCodeWidget {
     //region interaction
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        int conditionOffset = aX + 4 + CodeWidgetHelper.getPartialWidth(font, "§if", Map.of(), "condition");
+        int conditionOffset = aX + 4 + CodeWidgetHelper.getPartialWidth(font, "§if", List.of(), 0);
         collector.accept(new SingletonExprConnector(
                 conditionOffset,
                 aY,
@@ -332,7 +334,7 @@ public class IfStmtWidget extends StmtCodeWidget {
                 collector
         ));
         int yOffset = headHeight + this.getBodyHeight();
-        int cOffset = CodeWidgetHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
+        int cOffset = CodeWidgetHelper.getPartialWidth(font, "§else_if", List.of(), 0);
         for (ElseIfEntry elseIf : this.elseIfs) {
             collector.accept(new SingletonExprConnector(
                     aX + 4 + cOffset,
@@ -397,7 +399,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         for (ElseIfEntry elseIf : this.elseIfs) {
             if (y - yOffset < this.getElseIfHeadHeight(elseIf)) {
                 if (x < elseIf.headWidth)
-                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", ArgumentStorage.createSingle("condition", w -> elseIf.condition = w == null ? ParamWidget.CONDITION : w, () -> elseIf.condition));
+                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", ArgumentStorage.createSingle(w -> elseIf.condition = w == null ? ParamWidget.CONDITION : w, () -> elseIf.condition));
             }
             yOffset += getElseIfHeadHeight(elseIf);
             if (y - yOffset < elseIf.getBodyHeight()) {
@@ -451,7 +453,7 @@ public class IfStmtWidget extends StmtCodeWidget {
             this.conditionBody.registerInteractions(xOrigin + 6, yOrigin + getHeadHeight(), font, sink);
         }
         int h = getHeadHeight() + getBodyHeight();
-        int xOffsetElseIfCondition = CodeWidgetHelper.getPartialWidth(font, "§else_if", Map.of(), "condition");
+        int xOffsetElseIfCondition = CodeWidgetHelper.getPartialWidth(font, "§else_if", List.of(), 0);
         for (ElseIfEntry elseIf : this.elseIfs) {
             elseIf.condition.registerInteractions(xOrigin + xOffsetElseIfCondition, yOrigin + h, font, sink);
 

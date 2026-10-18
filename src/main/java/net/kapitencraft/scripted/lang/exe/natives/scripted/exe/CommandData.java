@@ -1,6 +1,7 @@
 package net.kapitencraft.scripted.lang.exe.natives.scripted.exe;
 
 import net.kapitencraft.scripted.lang.exe.natives.NativeClass;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Player;
@@ -8,31 +9,25 @@ import net.minecraft.world.phys.Vec3;
 
 @NativeClass(pck = "scripted.exe")
 public class CommandData {
-    private final Player player;
-    private final BlockPos blockPos;
-    private final Vec3 pos;
-    private final ServerLevel level;
+    private final CommandSourceStack stack;
 
-    public CommandData(Player player, BlockPos blockPos, Vec3 pos, ServerLevel level) {
-        this.player = player;
-        this.blockPos = blockPos;
-        this.pos = pos;
-        this.level = level;
+    public CommandData(CommandSourceStack stack) {
+        this.stack = stack;
     }
 
     public Player getPlayer() {
-        return player;
+        return stack.getPlayer();
     }
 
     public ServerLevel getLevel() {
-        return level;
+        return stack.getLevel();
     }
 
     public Vec3 getPos() {
-        return pos;
+        return stack.getPosition();
     }
 
     public BlockPos getBlockPos() {
-        return blockPos;
+        return BlockPos.containing(stack.getPosition());
     }
 }

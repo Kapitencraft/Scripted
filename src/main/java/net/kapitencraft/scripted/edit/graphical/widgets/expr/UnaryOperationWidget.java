@@ -11,6 +11,8 @@ import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchRes
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
+import net.kapitencraft.scripted.lang.holder.ast.Expr;
+import net.kapitencraft.scripted.lang.holder.token.Token;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.util.StringRepresentable;
@@ -46,12 +48,12 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(CodeWidgetSprites.NUMBER_EXPR, renderX, renderY, getWidth(font), getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§un_op", Map.of("op", this.operatorWidget, "right", right));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 6 + (getHeight() - 20) / 2, "§un_op", List.of(this.operatorWidget, right));
     }
 
     @Override
     public int getWidth(Font font) {
-        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§un_op", Map.of("op", this.operatorWidget, "right", right));
+        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§un_op", List.of(this.operatorWidget, right));
     }
 
     @Override
@@ -64,6 +66,14 @@ public class UnaryOperationWidget implements ExprCodeWidget {
         return new UnaryOperationWidget(
                 this.operatorWidget.getValue(), this.right
         );
+    }
+
+    @Override
+    public Expr parse() {
+        Expr.Unary unary = new Expr.Unary();
+        unary.operator = Token.createNative(this.operatorWidget.getValue().literal);
+        unary.right = this.right.parse();
+        return unary;
     }
 
     @Override
@@ -113,8 +123,8 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
-    public void insertByName(@NotNull String arg, @NotNull ExprCodeWidget obj) {
-        if (arg.equals("right")) {
+    public void insertById(@NotNull int arg, @NotNull ExprCodeWidget obj) {
+        if (arg == 1) {
             this.right = obj;
         } else {
             throw new IllegalArgumentException("unknown arg type for binary: " + arg);
@@ -122,11 +132,10 @@ public class UnaryOperationWidget implements ExprCodeWidget {
     }
 
     @Override
-    public CodeWidget getByName(String arg) {
-        return switch (arg) {
-            case "right" -> this.right;
-            default -> throw new IllegalArgumentException("unknown arg type for unary: " + arg);
-        };
+    public CodeWidget getByIndex(int arg) {
+        if (arg == 1)
+            return this.right;
+        throw new IllegalArgumentException("unknown arg for unary: " + arg);
     }
 
     private enum Operation implements StringRepresentable {

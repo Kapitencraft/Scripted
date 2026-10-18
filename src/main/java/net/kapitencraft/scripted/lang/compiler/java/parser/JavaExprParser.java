@@ -1,6 +1,5 @@
 package net.kapitencraft.scripted.lang.compiler.java.parser;
 
-import net.kapitencraft.scripted.lang.compiler.Compiler;
 import net.kapitencraft.scripted.lang.compiler.VarTypeContainer;
 import net.kapitencraft.scripted.lang.compiler.error.ErrorStorage;
 import net.kapitencraft.scripted.lang.compiler.exe.source.CompileSource;

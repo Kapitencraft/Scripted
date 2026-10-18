@@ -163,7 +163,7 @@ public class PythonHolderParser extends AbstractPythonParser implements HolderPa
             methods.add(new PythonMethodHolder(
                     Modifiers.pack(false, true, false),
                     new AnnotationObj[0],
-                    new Generics(new Generic[0]),
+                    Generics.EMPTY,
                     SourceReference.from(null, VarTypeManager.VOID.reference()),
                     Token.createNative("main"),
                     tokens[tokens.length - 1].after(),
@@ -178,7 +178,7 @@ public class PythonHolderParser extends AbstractPythonParser implements HolderPa
                 target,
                 (short) 0,
                 new AnnotationObj[0],
-                new Generics(new Generic[0]),
+                Generics.EMPTY,
                 declaredPck,
                 Token.createNative(fileName),
                 SourceReference.from(null, VarTypeManager.OBJECT),
@@ -367,7 +367,7 @@ public class PythonHolderParser extends AbstractPythonParser implements HolderPa
         ClassReference target = getOrCreate(name.lexeme(), pckID);
 
         parser.addClass(SourceReference.from(name, target), originalName);
-        SourceReference superClass = SourceReference.from(null, VarTypeManager.OBJECT);
+        SourceReference superClass = SourceReference.createNative(VarTypeManager.OBJECT);
         Generics classGenerics = generics();
 
         GenericStack stack = null;
@@ -445,7 +445,7 @@ public class PythonHolderParser extends AbstractPythonParser implements HolderPa
                 generics.add(generic());
             } while (match(COMMA));
             consume(GREATER, "unclosed generic declaration");
-            return new Generics(generics.toArray(new Generic[0]));
+            return Generics.fromList(generics);
         }
         return null;
     }
@@ -699,7 +699,7 @@ public class PythonHolderParser extends AbstractPythonParser implements HolderPa
                 }
                 if (!handled) error(peek(), "modifier or <identifier> expected");
             }
-            this.generics = new Generics(generics.toArray(new Generic[0]));
+            this.generics = Generics.fromList(generics);
         }
 
         private void clear() {

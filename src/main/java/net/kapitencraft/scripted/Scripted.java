@@ -6,6 +6,7 @@ import net.kapitencraft.scripted.lang.exe.VarTypeManager;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.storage.LevelResource;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -24,6 +25,8 @@ import java.util.regex.Pattern;
 public class Scripted {
     public static final Pattern NUMBER_PATTERN = Pattern.compile("-?[0-9]+\\.[0-9]+([Ee]-?[0-9]+)?");
     public static File SCRIPTED_DIRECTORY = new File("./scripted"); //bruh
+    public static final LevelResource SOURCE_DIR = new LevelResource("scripted/src");
+    public static final LevelResource CACHE_DIR = new LevelResource("scripted/cache");
 
     public static final String MOD_ID = "scripted";
     public static final Logger LOGGER = LogUtils.getLogger();

@@ -29,6 +29,10 @@ public class SourceReference implements Validatable {
         reference.setTarget(target);
     }
 
+    public static SourceReference createNative(ClassReference type) {
+        return new SourceReference(type.name(), Token.createNative(type.name()), type);
+    }
+
     public static SourceReference from(Token name, ClassReference other) {
         return new SourceReference(other.name(), name, other);
     }
