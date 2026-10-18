@@ -5,8 +5,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
-import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.MapArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.ArgumentExprConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
@@ -110,7 +110,7 @@ public class CompoundStmtWidget extends StmtCodeWidget {
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, translationKey,
-                    ArgumentStorage.create(this.args)
+                    MapArgumentStorage.create(this.args)
             );
         return null;
     }

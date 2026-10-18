@@ -1,5 +1,7 @@
 package net.kapitencraft.scripted.lang.exe;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import net.kapitencraft.scripted.lang.exe.natives.NativeClassLoader;
 import net.kapitencraft.scripted.lang.holder.class_ref.ClassReference;
 import net.kapitencraft.scripted.lang.holder.class_ref.SourceReference;
@@ -17,6 +19,17 @@ import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
 public class VarTypeManager {
+    public static final Codec<ClassReference> CLASS_REFERENCE_CODEC = Codec.STRING.flatXmap( s ->
+            {
+                ClassReference reference = VarTypeManager.directParseType(s);
+                if (reference != null) {
+                    return DataResult.success(reference);
+                }
+                return DataResult.error(() -> "unknown class: " + s);
+            },
+            c -> DataResult.success(VarTypeManager.getClassName(c))
+    );
+
     private static final Package root = new Package("");
     private static final Package LANG_ROOT = getOrCreatePackage("scripted.lang");
     private static final Package ANNOTATION_PCK = LANG_ROOT.getOrCreatePackage("annotations");

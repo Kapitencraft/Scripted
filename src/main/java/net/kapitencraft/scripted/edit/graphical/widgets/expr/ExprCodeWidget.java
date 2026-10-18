@@ -33,7 +33,7 @@ public interface ExprCodeWidget extends CodeWidget {
     enum Type implements StringRepresentable {
         PARAM(() -> ParamWidget.CODEC),
         EXPR(() -> MethodWidget.CODEC),
-        GET_VAR(() -> GetVarWidget.CODEC),
+        VAR_REF(() -> VarRefWidget.CODEC),
         UNARY(() -> UnaryOperationWidget.CODEC),
         ALGEBRA(() -> BinaryNumOperationWidget.CODEC),
         BOOL_ALGEBRA(() -> BoolAlgebraOperationWidget.CODEC),
@@ -41,7 +41,7 @@ public interface ExprCodeWidget extends CodeWidget {
         SELECT_BLOCK(() -> BlockSelectWidget.CODEC),
         SELECT_ITEM(() -> ItemSelectWidget.CODEC);
 
-        public static final EnumCodec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
+        public static final Codec<Type> CODEC = StringRepresentable.fromEnum(Type::values);
 
         private final Supplier<MapCodec<? extends ExprCodeWidget>> entryCodec;
 
@@ -59,11 +59,11 @@ public interface ExprCodeWidget extends CodeWidget {
         }
     }
 
-    static int getHeightFromArgs(Map<String, ExprCodeWidget> widgets) {
+    static int getHeightFromArgs(Map<String, ? extends ExprCodeWidget> widgets) {
         return getHeightFromEntries(widgets.values());
     }
 
-    static int getHeightFromEntries(Collection<ExprCodeWidget> widgets) {
+    static int getHeightFromEntries(Collection<? extends ExprCodeWidget> widgets) {
         return widgets.stream().mapToInt(ExprCodeWidget::getHeight).max().orElse(0);
     }
 

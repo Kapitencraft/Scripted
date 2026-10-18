@@ -3,55 +3,72 @@ package net.kapitencraft.scripted.edit.graphical.widgets.expr;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.ExprWidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class GetVarWidget extends ChainableExprWidget {
-    public static final MapCodec<GetVarWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+public class VarRefWidget extends ChainableExprWidget {
+    public static final MapCodec<VarRefWidget> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.optionalFieldOf("name").forGetter(w -> Optional.ofNullable(w.name))
-    ).apply(i, GetVarWidget::fromCodec));
+    ).apply(i, VarRefWidget::fromCodec));
 
-    private static GetVarWidget fromCodec(Optional<String> s) {
-        return new GetVarWidget(s.orElse(null));
+    private static VarRefWidget fromCodec(Optional<String> s) {
+        return new VarRefWidget(s.orElse(null));
     }
 
-    private final @Nullable String name;
+    private final String name;
     private final VarNameSelectorWidget nameSelector = new VarNameSelectorWidget(ExprCategory.OTHER);
+    private final boolean param;
     private ExprCategory exprCategory = ExprCategory.OTHER;
 
-    public GetVarWidget(@Nullable String name) {
+    public VarRefWidget(String name) {
+        this(name, false);
+    }
+
+    public VarRefWidget(String name, ExprCategory category) {
+        this(name, true);
+        this.exprCategory = category;
+    }
+
+    private VarRefWidget(String name, boolean param) {
         this.name = name;
+        this.param = param;
+    }
+
+    public ExprCategory getExprCategory() {
+        return exprCategory;
+    }
+
+    public String getName() {
+        return name;
     }
 
     @Override
     public @NotNull Type getType() {
-        return Type.GET_VAR;
+        return Type.VAR_REF;
     }
 
     @Override
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         graphics.blitSprite(this.exprCategory.getSpriteLocation(), renderX, renderY, getWidth(font), getHeight());
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 5, "§get", Map.of("var", this.nameSelector));
+        graphics.drawString(font, this.name, renderX + 4, renderY + 5, 0, false);
     }
 
     @Override
     public ExprCodeWidget copy() {
-        return new GetVarWidget(this.name);
+        return new VarRefWidget(this.name, false);
     }
 
     @Override
@@ -71,7 +88,7 @@ public class GetVarWidget extends ChainableExprWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 + CodeWidgetHelper.getVisualTextWidth(font, "§get", Map.of("var", this.nameSelector));
+        return 6 + font.width(this.name);
     }
 
     @Override
@@ -81,7 +98,13 @@ public class GetVarWidget extends ChainableExprWidget {
 
     @Override
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
-        return x < this.getWidth(font) ? ExprWidgetFetchResult.notRemoved(this, x, y) : null;
+        if (x < this.getWidth(font)) {
+            if (param) {
+                return new ExprWidgetFetchResult(true, x, y, this);
+            }
+            return ExprWidgetFetchResult.notRemoved(this, x, y);
+        }
+        return null;
     }
 
     @Override
@@ -91,7 +114,9 @@ public class GetVarWidget extends ChainableExprWidget {
 
     @Override
     public void update(@Nullable MethodContext context, Font font) {
-        this.nameSelector.update(context, font);
-        this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
+        if (!this.param) {
+            this.nameSelector.update(context, font);
+            this.exprCategory = context == null ? ExprCategory.OTHER : context.lvt.getType(this.name);
+        }
     }
 }

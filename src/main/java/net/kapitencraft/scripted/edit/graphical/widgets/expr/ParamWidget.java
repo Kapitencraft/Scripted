@@ -31,7 +31,7 @@ public class ParamWidget implements ExprCodeWidget {
 
     @Override
     public ExprCodeWidget copy() {
-        return this; //param widgets should be treated as singletons
+        return this; //param entries should be treated as singletons
     }
 
     @Override

@@ -5,14 +5,14 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.MapArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.SingletonExprConnector;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.client.gui.Font;
@@ -112,7 +112,7 @@ public class WhileStmtWidget extends LoopStmtWidget {
     public WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§while",
-                    ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition)
+                    MapArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition)
             );
         } else if (y > this.getHeight()) {
             return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);

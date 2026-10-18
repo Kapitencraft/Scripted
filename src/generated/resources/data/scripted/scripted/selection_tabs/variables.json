@@ -23,7 +23,15 @@
   {
     "type": "expr",
     "entry": {
-      "type": "get_var"
+      "type": "var_ref",
+      "name": "something"
+    }
+  },
+  {
+    "type": "expr",
+    "entry": {
+      "type": "var_ref",
+      "name": "i"
     }
   }
 ]

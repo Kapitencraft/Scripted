@@ -20,11 +20,11 @@
               "category": "number"
             },
             "newState": {
-              "type": "get_var",
+              "type": "var_ref",
               "name": "type"
             },
             "pos": {
-              "type": "get_var",
+              "type": "var_ref",
               "name": "data"
             }
           },
@@ -69,11 +69,11 @@
               "category": "number"
             },
             "newState": {
-              "type": "get_var",
+              "type": "var_ref",
               "name": "type"
             },
             "pos": {
-              "type": "get_var",
+              "type": "var_ref",
               "name": "data"
             }
           },

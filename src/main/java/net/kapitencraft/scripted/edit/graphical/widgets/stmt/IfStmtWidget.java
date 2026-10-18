@@ -8,15 +8,15 @@ import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
+import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.MapArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.CommonBranchBlockConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.SingletonExprConnector;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
-import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
 import net.minecraft.client.gui.Font;
@@ -352,7 +352,7 @@ public class IfStmtWidget extends StmtCodeWidget {
     public @Nullable WidgetFetchResult fetchAndRemoveHovered(int x, int y, Font font) {
         if (y < this.getHeadHeight()) {
             if (x < this.getHeadWidth(font))
-                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§if", ArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
+                return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§if", MapArgumentStorage.createSingle("condition", this::setCondition, () -> this.condition));
             return null;
         }
 
@@ -373,7 +373,7 @@ public class IfStmtWidget extends StmtCodeWidget {
         for (ElseIfEntry elseIf : this.elseIfs) {
             if (y - yOffset < this.getElseIfHeadHeight(elseIf)) {
                 if (x < elseIf.headWidth)
-                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", ArgumentStorage.createSingle("condition", w -> elseIf.condition = w == null ? ParamWidget.CONDITION : w, () -> elseIf.condition));
+                    return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, "§else_if", MapArgumentStorage.createSingle("condition", w -> elseIf.condition = w == null ? ParamWidget.CONDITION : w, () -> elseIf.condition));
             }
             yOffset += getElseIfHeadHeight(elseIf);
             if (y - yOffset < elseIf.getBodyHeight()) {

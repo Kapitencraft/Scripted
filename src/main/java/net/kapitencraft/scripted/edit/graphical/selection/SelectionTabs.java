@@ -14,6 +14,7 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 
 public interface SelectionTabs {
+    ResourceKey<SelectionTab> METHOD = reg("method");
     ResourceKey<SelectionTab> OPERATORS = reg("operators");
     ResourceKey<SelectionTab> CONTROL = reg("control");
     ResourceKey<SelectionTab> WORLD = reg("world");
@@ -25,6 +26,9 @@ public interface SelectionTabs {
     }
 
     static void bootstrap(BootstrapContext<SelectionTab> context) {
+        context.register(METHOD, SelectionTab.builder()
+                        .withAction()
+                .build());
         context.register(WORLD, SelectionTab.builder()
                 .withEntry(new CompoundStmtWidget.Builder()
                         .setKey("compound_stmts.scripted.world.set_block")
@@ -32,12 +36,12 @@ public interface SelectionTabs {
                                 .setSignature("Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;")
                                 .setMethodChild(MethodWidget.builder()
                                         .setSignature("Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z")
-                                        .withParam("pos", new GetVarWidget("data").setChainChild(MethodWidget.builder()
+                                        .withParam("pos", new VarRefWidget("data").setChainChild(MethodWidget.builder()
                                                 .setSignature("Lscripted/exe/CommandData;getPosition()")
                                                 .setType(ExprCategory.OTHER)
                                                 .build()
                                         ))
-                                        .withParam("newState", new GetVarWidget("type"))
+                                        .withParam("newState", new VarRefWidget("type"))
                                         .withParam("flags", new ParamWidget(ExprCategory.NUMBER))
                                         .setType(ExprCategory.BOOLEAN)
                                         .build())
@@ -50,19 +54,19 @@ public interface SelectionTabs {
                                 .setSignature("Lscripted/exe/CommandData;getLevel();Lnet/minecraft/world/level/Level;")
                                 .setMethodChild(MethodWidget.builder()
                                         .setSignature("Lnet/minecraft/world/level/Level;setBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Z")
-                                        .withParam("pos", new GetVarWidget("data").setChainChild(MethodWidget.builder()
+                                        .withParam("pos", new VarRefWidget("data").setChainChild(MethodWidget.builder()
                                                 .setSignature("Lscripted/exe/CommandData;getPosition()")
                                                 .setChild(MethodWidget.builder()
                                                         .setType(ExprCategory.OTHER)
                                                         .setSignature("Lnet/minecraft/core/BlockPos;offset(III)Lnet/minecraft/core/BlockPos;")
-                                                        .withParam("dx", new GetVarWidget("x"))
-                                                        .withParam("dy", new GetVarWidget("y"))
-                                                        .withParam("dz", new GetVarWidget("z"))
+                                                        .withParam("dx", new VarRefWidget("x"))
+                                                        .withParam("dy", new VarRefWidget("y"))
+                                                        .withParam("dz", new VarRefWidget("z"))
                                                         .build())
                                                 .setType(ExprCategory.OTHER)
                                                 .build()
                                         ))
-                                        .withParam("newState", new GetVarWidget("type"))
+                                        .withParam("newState", new VarRefWidget("type"))
                                         .withParam("flags", new ParamWidget(ExprCategory.NUMBER))
                                         .setType(ExprCategory.BOOLEAN)
                                         .build())
@@ -129,8 +133,8 @@ public interface SelectionTabs {
         context.register(VARIABLES, SelectionTab.builder()
                 .withEntry(AssignVarWidget.builder().doesCreateVar())
                 .withEntry(AssignVarWidget.builder().setExpr(ParamWidget.OBJ))
-                .withEntry(new GetVarWidget("something"))
-                .withEntry(new GetVarWidget("i"))
+                .withEntry(new VarRefWidget("something"))
+                .withEntry(new VarRefWidget("i"))
                 .build()
         );
         context.register(OPERATORS, SelectionTab.builder()

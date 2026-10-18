@@ -7,13 +7,13 @@ import net.kapitencraft.scripted.edit.CodeWidgetHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
-import net.kapitencraft.scripted.edit.graphical.widgets.ArgumentStorage;
 import net.kapitencraft.scripted.edit.graphical.widgets.CodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.MapArgumentStorage;
+import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ParamWidget;
-import net.kapitencraft.scripted.edit.graphical.widgets.VarNameSelectorWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.BlockWidgetFetchResult;
+import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -118,7 +118,7 @@ public class AssignVarWidget extends StmtCodeWidget {
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font))
             return BlockWidgetFetchResult.fromExprList(4, x, y, font, this, getTranslationKey(),
-                    ArgumentStorage.createDouble(
+                    MapArgumentStorage.createDouble(
                             "var", null, () -> this.varNameSelectorWidget,
                             "value", this::setExpr, () -> this.expr
                     )

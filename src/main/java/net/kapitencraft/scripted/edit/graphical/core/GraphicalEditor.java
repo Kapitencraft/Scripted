@@ -5,6 +5,7 @@ import net.kapitencraft.kap_lib.core.client.widget.PositionedWidget;
 import net.kapitencraft.kap_lib.core.config.CoreClientModConfig;
 import net.kapitencraft.kap_lib.core.helpers.ClientHelper;
 import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
+import net.kapitencraft.scripted.edit.graphical.ExprCategory;
 import net.kapitencraft.scripted.edit.graphical.MethodContext;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.BlockConnector;
 import net.kapitencraft.scripted.edit.graphical.widgets.connector.Connector;
@@ -70,16 +71,13 @@ public class GraphicalEditor extends AbstractWidget {
             tab.update(font);
             this.tabScrolls[i] = yO;
             yO += 10;
-            for (int i1 = 0; i1 < tab.size(); i1++) {
-                CodeWidget widget = tab.get(i1);
-                yO += widget.getHeight();
-                yO += 10;
-            }
+            yO += tab.getHeight();
         }
 
         this.elements.add(
                 new BlockCodeElement(HeadWidget.builder()
-                        .setTranslationKey("scripted.code.head.test")
+                        .setName("execute")
+                        .withParam("data", ExprCategory.OTHER)
                         //.setChild(
                         //        MethodStmtWidget.builder()
                         //                .setSignature("Lnet/minecraft/world/phys/Vec3;dot(Lnet/minecraft/world/phys/Vec3;)D")
@@ -211,12 +209,8 @@ public class GraphicalEditor extends AbstractWidget {
         for (SelectionTab tab : tabs) {
             pGuiGraphics.drawString(font, Component.translatable(Util.makeDescriptionId("selection_tab", this.registry.getKey(tab))), 2, yO, -1, false);
             yO += 10;
-            for (int i1 = 0; i1 < tab.size(); i1++) {
-                CodeWidget widget = tab.get(i1);
-                widget.render(pGuiGraphics, font, 0, yO);
-                yO += widget.getHeight();
-                yO += 10;
-            }
+            tab.render(pGuiGraphics, font, yO);
+            yO += tab.getHeight();
         }
         pose.popPose();
         pGuiGraphics.disableScissor();
@@ -335,6 +329,7 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private void attemptGetWidgetFromPool(double x, double mouseY) {
+        InteractionAccess access = new InteractionAccess();
         int uX = (int) x;
         //vPos = .75 * (translate + aPos) | / (3 / 4)
         //vPos * (4 / 3) = translate + aPos | - translate
@@ -342,17 +337,11 @@ public class GraphicalEditor extends AbstractWidget {
         int uY = (int) mouseY * 4 / 3 - (int) selectionScroll;
         for (SelectionTab tab : tabs) {
             uY -= 10;
-            for (int i1 = 0; i1 < tab.size(); i1++) {
-                CodeWidget widget = tab.get(i1);
-                if (uY > 0 && uY < widget.getHeight()) {
-                    this.draggedWidget = widget.copy();
-                    this.draggedOffsetX = -uX;
-                    this.draggedOffsetY = -uY;
-                    return;
-                }
-                uY -= widget.getHeight();
-                uY -= 10;
+            if (uY > tab.getHeight()) {
+                uY -= tab.getHeight();
+                continue;
             }
+            tab.interact(uX, uY, access);
         }
     }
 
@@ -756,6 +745,18 @@ public class GraphicalEditor extends AbstractWidget {
         @Override
         public CodeWidget getByName(String arg) {
             throw new IllegalAccessError("can not get from ghost");
+        }
+    }
+
+    public class InteractionAccess {
+        public void setDragged(CodeWidget widget, int uX, int uY) {
+            draggedWidget = widget.copy();
+            draggedOffsetX = -uX;
+            draggedOffsetY = -uY;
+        }
+
+        public void openWidget(PositionedWidget widget) {
+            GraphicalEditor.this.widget = widget;
         }
     }
     //endregion

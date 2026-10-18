@@ -24,7 +24,7 @@ public abstract class ScopeEndWidget extends StmtCodeWidget {
 
     @Override
     public void collectConnectors(int aX, int aY, Font font, Consumer<Connector> collector) {
-        //do not call super, as that would add the child connector, which doesn't exist for scope ending widgets
+        //do not call super, as that would add the child connector, which doesn't exist for scope ending entries
     }
 
     @Override

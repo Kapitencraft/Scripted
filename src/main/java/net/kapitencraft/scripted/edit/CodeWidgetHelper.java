@@ -17,7 +17,7 @@ public interface CodeWidgetHelper {
 
     Pattern VAR_TEXT_REGEX = Pattern.compile("\\{([a-zA-Z0-9_]+)}"); //oooh pattern :pog:
 
-    static void renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, Map<String, ExprCodeWidget> entries) {
+    static void renderVisualText(GuiGraphics graphics, Font font, int x, int y, String key, Map<String, ? extends ExprCodeWidget> entries) {
         x += 4;
         String inst = Language.getInstance().getOrDefault(key);
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
@@ -38,7 +38,7 @@ public interface CodeWidgetHelper {
         graphics.drawString(font, subElement, x, y, 0, false);
     }
 
-    static int getVisualTextWidth(Font font, String key, Map<String, ExprCodeWidget> map) {
+    static int getVisualTextWidth(Font font, String key, Map<String, ? extends ExprCodeWidget> map) {
         String inst = Language.getInstance().getOrDefault(key);
         int width = 0;
         Matcher matcher = VAR_TEXT_REGEX.matcher(inst);
