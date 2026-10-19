@@ -104,11 +104,11 @@ public class HeadWidget extends StmtCodeWidget {
 
     @Override
     public int getWidth(Font font) {
-        return 6 +
+        return Math.max(36, 6 +
                 font.width(this.name) +
                 font.width("(") + font.width(")") +
-                font.width(", ") * (this.args.size() - 1) +
-                this.args.stream().mapToInt(w -> w.getWidth(font)).sum();
+                font.width(", ") * Math.max(0, (this.args.size() - 1)) +
+                this.args.stream().mapToInt(w -> w.getWidth(font)).sum());
     }
 
     @Override
@@ -125,12 +125,19 @@ public class HeadWidget extends StmtCodeWidget {
         if (y < 8) return BlockWidgetFetchResult.notRemoved(this, x, y);
         if (y > this.getHeight()) return super.fetchAndRemoveHovered(x, y - this.getHeight(), font);
         if (x < this.getWidth(font)) {
-            x -= 4 + font.width(this.name) + font.width("(");
+            int oX = x;
+            int paramOffset = 4 + font.width(this.name) + font.width("(");
+            if (x < paramOffset)
+                return BlockWidgetFetchResult.notRemoved(this, x, y);
+            x -= paramOffset;
             int separatorWidth = font.width(", ");
             for (VarRefWidget arg : this.args) {
                 if (x < arg.getWidth(font))
                     return new ExprWidgetFetchResult(true, x, y, arg.copy());
-                x -= arg.getWidth(font) + separatorWidth;
+                x -= arg.getWidth(font);
+                if (x < separatorWidth)
+                    return BlockWidgetFetchResult.notRemoved(this, oX, y);
+                x -= separatorWidth;
             }
         }
         return null;

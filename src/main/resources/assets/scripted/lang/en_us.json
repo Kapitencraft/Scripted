@@ -59,5 +59,8 @@
   "Lnet/minecraft/world/level/Level;getBlockState(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;": "BlockState at {pos}",
   "Lnet/minecraft/world/level/block/state/BlockState;is(Lnet/minecraft/world/level/block/Block;)Z": "matches block {block}",
   "scripted.widget.select_var_name": "Select Variable",
-  "scripted.widget.add": "Add"
+  "scripted.widget.add": "Add",
+  "scripted.widget.set_method_name": "Set Method Name...",
+  "scripted.widget.create_method": "Create Method",
+  "scripted.widget.create": "Create"
 }

@@ -75,7 +75,7 @@ public class GraphicalEditor extends AbstractWidget {
         }
 
         this.elements.add(
-                new BlockCodeElement(HeadWidget.builder()
+                new StmtCodeElement(HeadWidget.builder()
                         .setName("execute")
                         .withParam("data", ExprCategory.OTHER)
                         //.setChild(
@@ -329,7 +329,7 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private void attemptGetWidgetFromPool(double x, double mouseY) {
-        InteractionAccess access = new InteractionAccess();
+        InteractionAccess access = new InteractionAccess(this.font);
         int uX = (int) x;
         //vPos = .75 * (translate + aPos) | / (3 / 4)
         //vPos * (4 / 3) = translate + aPos | - translate
@@ -439,7 +439,7 @@ public class GraphicalEditor extends AbstractWidget {
                 int uiY = (int) (mouseY / scale - scrollY) - getY();
 
                 if (this.draggedWidget instanceof StmtCodeWidget bCW) {
-                    this.elements.addFirst(new BlockCodeElement(uiX + this.draggedOffsetX, uiY + this.draggedOffsetY, bCW)); //add as first view and access
+                    this.elements.addFirst(new StmtCodeElement(uiX + this.draggedOffsetX, uiY + this.draggedOffsetY, bCW)); //add as first view and access
                 } else {
                     this.elements.addFirst(new ExprCodeElement(uiX + this.draggedOffsetX, uiY + this.draggedOffsetY, (ExprCodeWidget) this.draggedWidget));
                 }
@@ -569,13 +569,13 @@ public class GraphicalEditor extends AbstractWidget {
         }
     }
 
-    private class BlockCodeElement extends CodeElement {
+    private class StmtCodeElement extends CodeElement {
 
-        private BlockCodeElement(@NotNull StmtCodeWidget widget) {
+        private StmtCodeElement(@NotNull StmtCodeWidget widget) {
             this(150, 40, widget);
         }
 
-        private BlockCodeElement(int x, int y, @NotNull StmtCodeWidget widget) {
+        private StmtCodeElement(int x, int y, @NotNull StmtCodeWidget widget) {
             super(x, y, widget);
             this.update();
         }
@@ -610,6 +610,10 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     private class ExprCodeElement extends CodeElement {
+
+        private ExprCodeElement(ExprCodeWidget widget) {
+            this(150, 40, widget);
+        }
 
         private ExprCodeElement(int x, int y, ExprCodeWidget widget) {
             super(x, y, widget);
@@ -749,6 +753,12 @@ public class GraphicalEditor extends AbstractWidget {
     }
 
     public class InteractionAccess {
+        private final Font font;
+
+        public InteractionAccess(Font font) {
+            this.font = font;
+        }
+
         public void setDragged(CodeWidget widget, int uX, int uY) {
             draggedWidget = widget.copy();
             draggedOffsetX = -uX;
@@ -757,6 +767,18 @@ public class GraphicalEditor extends AbstractWidget {
 
         public void openWidget(PositionedWidget widget) {
             GraphicalEditor.this.widget = widget;
+        }
+
+        public Font font() {
+            return font;
+        }
+
+        public void addWidgetAndClose(CodeWidget codeWidget) {
+            if (codeWidget instanceof StmtCodeWidget widget) {
+                elements.add(new StmtCodeElement(widget));
+            } else
+                elements.add(new ExprCodeElement((ExprCodeWidget) codeWidget));
+            widget = null;
         }
     }
     //endregion

@@ -3,11 +3,14 @@ package net.kapitencraft.scripted.edit.graphical.selection;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import net.kapitencraft.scripted.edit.graphical.CodeWidgetSprites;
 import net.kapitencraft.scripted.edit.graphical.core.GraphicalEditor;
 import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.io.CreateMethodWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.stmt.StmtCodeWidget;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.StringRepresentable;
 import org.jetbrains.annotations.NotNull;
 
@@ -93,7 +96,7 @@ public record SelectionTab(List<Entry> entries) {
 
         CodeType getType();
 
-        void render(GuiGraphics pGuiGraphics, Font font, int y);
+        void render(GuiGraphics guiGraphics, Font font, int y);
 
         void interact(int uX, int uY, GraphicalEditor.InteractionAccess access);
 
@@ -125,6 +128,11 @@ public record SelectionTab(List<Entry> entries) {
         private static final Codec<ExprEntry> CODEC = ExprCodeWidget.CODEC.xmap(ExprEntry::new, ExprEntry::value);
 
         @Override
+        public void update(Font font) {
+            value.update(null, font);
+        }
+
+        @Override
         public int getHeight() {
             return value.getHeight();
         }
@@ -135,8 +143,8 @@ public record SelectionTab(List<Entry> entries) {
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, Font font, int y) {
-            this.value.render(pGuiGraphics, font, 0, y);
+        public void render(GuiGraphics guiGraphics, Font font, int y) {
+            this.value.render(guiGraphics, font, 0, y);
         }
 
         @Override
@@ -151,6 +159,11 @@ public record SelectionTab(List<Entry> entries) {
         private static final Codec<StmtEntry> CODEC = StmtCodeWidget.CODEC.xmap(StmtEntry::new, StmtEntry::value);
 
         @Override
+        public void update(Font font) {
+            value.update(null, font);
+        }
+
+        @Override
         public int getHeight() {
             return value.getHeight();
         }
@@ -161,8 +174,8 @@ public record SelectionTab(List<Entry> entries) {
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, Font font, int y) {
-            this.value.render(pGuiGraphics, font, 0, y);
+        public void render(GuiGraphics guiGraphics, Font font, int y) {
+            this.value.render(guiGraphics, font, 0, y);
         }
 
         @Override
@@ -174,12 +187,14 @@ public record SelectionTab(List<Entry> entries) {
     }
 
     private record DoActionEntry() implements Entry {
+        private static final Component TITLE = Component.translatable("scripted.widget.create_method");
+
         private static final DoActionEntry INSTANCE = new DoActionEntry();
         private static final Codec<DoActionEntry> CODEC = Codec.unit(INSTANCE);
 
         @Override
         public int getHeight() {
-            return 0;
+            return 18;
         }
 
         @Override
@@ -188,13 +203,14 @@ public record SelectionTab(List<Entry> entries) {
         }
 
         @Override
-        public void render(GuiGraphics pGuiGraphics, Font font, int y) {
-
+        public void render(GuiGraphics guiGraphics, Font font, int y) {
+            guiGraphics.blitSprite(CodeWidgetSprites.GENERIC_EXPR, 0, y, font.width(TITLE), 18);
+            guiGraphics.drawString(font, TITLE, 4, y + 6, 0, false);
         }
 
         @Override
         public void interact(int uX, int uY, GraphicalEditor.InteractionAccess access) {
-            //access.openWidget();
+            access.openWidget(new CreateMethodWidget(100, 50, 100, access.font(), access::addWidgetAndClose));
         }
     }
 }
