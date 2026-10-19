@@ -1,52 +1,90 @@
 package net.kapitencraft.scripted.edit.graphical.variable;
 
 import net.kapitencraft.scripted.edit.graphical.ExprCategory;
-import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class LocalVariableTable {
-    private final List<Map<String, ExprCategory>> stack = new ArrayList<>();
+public class LocalVariableTable implements Iterable<LocalVariableTable.Entry> {
+    private final Entry[] entries = new Entry[256];
+    private int localCount;
+    private int scopeDepth = 0;
 
     public LocalVariableTable() {
-        this.stack.add(new HashMap<>());
     }
 
     public void push() {
-        this.stack.addLast(new HashMap<>(this.stack.getLast()));
+        this.scopeDepth++;
     }
 
     public void pop() {
-        this.stack.removeLast();
-    }
-
-    @ApiStatus.Internal
-    public Map<String, ExprCategory> active() {
-        return stack.getLast();
-    }
-
-    public Set<String> getAll() {
-        return active().keySet();
+        int i = localCount - 1;
+        while (i >= 0 && entries[i].depth >= scopeDepth) {
+            i--;
+        }
+        localCount = (byte) (i + 1);
+        scopeDepth--;
     }
 
     /**
-     * @param name the name of the LV
+     * @param name     the name of the LV
      * @param category the category of the LV
      * @return true when the LV was added, false if a LV with that name already existed
      */
     public boolean add(String name, ExprCategory category) {
-        if (active().containsKey(name))
+        if (get(name) != null) {
             return false;
-        active().put(name, category);
+        }
+        entries[localCount] = new Entry(name, category, scopeDepth);
         return true;
     }
 
+    public @Nullable Entry get(String name) {
+        for (int i = localCount - 1; i >= 0; i--) {
+            Entry entry = entries[i];
+            if (Objects.equals(entry.name, name))
+                return entry;
+        }
+        return null;
+    }
+
     public boolean has(@Nullable String selected) {
-        return active().containsKey(selected);
+        return get(selected) != null;
     }
 
     public ExprCategory getType(@Nullable String name) {
-        return active().getOrDefault(name, ExprCategory.OTHER);
+        Entry entry = get(name);
+        return entry != null ? entry.category : ExprCategory.OTHER;
+    }
+
+    @Override
+    public @NotNull Iterator<Entry> iterator() {
+        return new TableIterator();
+    }
+
+    public int size() {
+        return this.localCount;
+    }
+
+    public Entry get(int selectedIndex) {
+        return this.entries[selectedIndex];
+    }
+
+    private class TableIterator implements Iterator<Entry> {
+        int next = 0;
+
+        @Override
+        public boolean hasNext() {
+            return next < localCount;
+        }
+
+        @Override
+        public Entry next() {
+            return entries[next++];
+        }
+    }
+
+    public record Entry(String name, ExprCategory category, int depth) {
     }
 }

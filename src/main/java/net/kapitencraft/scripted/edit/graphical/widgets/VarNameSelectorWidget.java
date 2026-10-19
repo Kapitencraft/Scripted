@@ -8,7 +8,7 @@ import net.kapitencraft.scripted.edit.graphical.widgets.expr.ExprCodeWidget;
 import net.kapitencraft.scripted.edit.graphical.widgets.fetch.WidgetFetchResult;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.CodeInteraction;
 import net.kapitencraft.scripted.edit.graphical.widgets.interaction.InteractionData;
-import net.kapitencraft.scripted.edit.graphical.widgets.io.ExtensibleSelectStringWidget;
+import net.kapitencraft.scripted.edit.graphical.widgets.io.SelectVariableWidget;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,7 +17,6 @@ import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class VarNameSelectorWidget implements ExprCodeWidget {
@@ -123,11 +122,10 @@ public class VarNameSelectorWidget implements ExprCodeWidget {
         @Override
         public void onClick(int mouseX, int mouseY, InteractionData callbacks) {
             if (context != null) {
-                callbacks.openWidget(new ExtensibleSelectStringWidget(
+                callbacks.openWidget(new SelectVariableWidget(
                         mouseX + x, mouseY + y, 100, 60,
                         callbacks.getFont(),
-                        new ArrayList<>(context.lvt.getAll()),
-                        Component::literal,
+                        context.lvt,
                         callbacks.wrapCloseWidget(VarNameSelectorWidget.this::setSelected),
                         Component.translatable("scripted.widget.select_var_name")
                 ));

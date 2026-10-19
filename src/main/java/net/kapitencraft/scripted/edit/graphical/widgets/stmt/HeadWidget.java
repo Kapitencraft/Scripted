@@ -133,12 +133,13 @@ public class HeadWidget extends StmtCodeWidget {
             int separatorWidth = font.width(", ");
             for (VarRefWidget arg : this.args) {
                 if (x < arg.getWidth(font))
-                    return new ExprWidgetFetchResult(true, x, y, arg.copy());
+                    return new ExprWidgetFetchResult(true, x, y - 10, arg.copy());
                 x -= arg.getWidth(font);
                 if (x < separatorWidth)
                     return BlockWidgetFetchResult.notRemoved(this, oX, y);
                 x -= separatorWidth;
             }
+            return BlockWidgetFetchResult.notRemoved(this, oX, y);
         }
         return null;
     }

@@ -342,6 +342,7 @@ public class GraphicalEditor extends AbstractWidget {
                 continue;
             }
             tab.interact(uX, uY, access);
+            break;
         }
     }
 

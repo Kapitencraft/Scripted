@@ -87,7 +87,7 @@ public class AssignVarWidget extends StmtCodeWidget {
     public void render(GuiGraphics graphics, Font font, int renderX, int renderY) {
         int height = getHeight();
         graphics.blitSprite(CodeWidgetSprites.SIMPLE_BLOCK, renderX, renderY, getWidth(font), 3 + height);
-        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (getHeight() - 20) / 2, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
+        CodeWidgetHelper.renderVisualText(graphics, font, renderX, renderY + 7 + (height - 20) / 2, getTranslationKey(), Map.of("var", varNameSelectorWidget, "value", expr));
         super.render(graphics, font, renderX, renderY);
     }
 
