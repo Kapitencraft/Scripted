@@ -62,5 +62,6 @@
   "scripted.widget.add": "Add",
   "scripted.widget.set_method_name": "Set Method Name...",
   "scripted.widget.create_method": "Create Method",
-  "scripted.widget.create": "Create"
+  "scripted.widget.create": "Create",
+  "scripted.widget.select_param_name": "Param Name..."
 }

@@ -50,6 +50,8 @@ public class SelectVariableWidget extends PositionedWidget {
             pGuiGraphics.drawString(font, entry.category().name(), this.getMaxX() - 3, y, -1);
             i++;
         }
+        int y = this.y + 12 + i * 10;
+        pGuiGraphics.drawString(font, "+", this.x + 3, y, -1);
         pGuiGraphics.disableScissor();
         this.box.render(pGuiGraphics, pMouseX, pMouseY, pPartialTick);
         pGuiGraphics.drawString(this.font, ADD_PANEL, this.x + this.box.getWidth(), this.getMaxY() - 12, 0xFFFFFF);
